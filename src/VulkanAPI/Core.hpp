@@ -7,15 +7,21 @@
 
 namespace ENGINE
 {
+    
+    class SwapChain; 
     class Core
     {
-    public:
-        Core(const char** instanceExtensions, uint8_t instanceExtensionsCount, WindowDesc* compatibleWindowDesc,bool enableDebugging);
-        // ~Core();
-        // void ClearCaches();
 
+    public:
+        
+        Core(const char** instanceExtensions, uint8_t instanceExtensionsCount, WindowDesc* compatibleWindowDesc,bool enableDebugging);
+        ~Core();
+        void ClearCaches();
+        
+        static int32_t FindMemoryTypeIndex(vk::PhysicalDevice logicalDevice, uint32_t memTypeFlags, vk::MemoryPropertyFlags memFlags);
 
     private:
+        
         
         static vk::UniqueInstance CreateInstance(const std::vector<const char*>& instanceExtensions,
                                                  const std::vector<const char*>& validationLayers);

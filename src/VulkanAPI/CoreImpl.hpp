@@ -54,6 +54,35 @@ namespace ENGINE
         
     }
 
+    Core::~Core()
+    {
+        
+    }
+
+    void Core::ClearCaches()
+    {
+        
+    }
+
+    int32_t Core::FindMemoryTypeIndex(vk::PhysicalDevice physicalDevice, uint32_t memTypeFlags, vk::MemoryPropertyFlags memFlags)
+    {
+        vk::PhysicalDeviceMemoryProperties properties = physicalDevice.getMemoryProperties();
+        const uint32_t memCount = properties.memoryTypeCount;
+
+        for (int memIndex = 0; memIndex < memCount; ++memIndex)
+        {
+            const uint32_t memTypeBits = (1 << memIndex);
+            const bool isRequiredMemType = memTypeFlags & memTypeBits;
+
+            const vk::MemoryPropertyFlags prop = properties.memoryTypes[memIndex].propertyFlags;
+            const bool hasRequiredProperties = (prop & memFlags) == memFlags;
+
+            if (isRequiredMemType && hasRequiredProperties)
+                return static_cast<int32_t>(memIndex);
+        }
+        std::cout << "Failed to find a memory type\n";
+        return -1;       
+    }
 
     vk::UniqueInstance Core::CreateInstance(const std::vector<const char*>& instanceExtensions, const std::vector<const char*>& validationLayers)
     {

@@ -9,11 +9,15 @@
 #include <cstdint>
 #include <memory>
 #include <iostream>
+#include <glm/glm.hpp>
 
 #include <vulkan/vulkan.hpp>
 #include "Structs.hpp"
 #include "Surface.hpp"
 #include "Core.hpp"
 #include "CoreImpl.hpp"
+#include "Image.hpp"
+#include "ImageView.hpp"
+#include "Sampler.hpp"
 #include "SwapChain.hpp"
 

@@ -5,6 +5,7 @@
 #ifndef STRUCTS_HPP
 namespace ENGINE
 {
+    //core
     struct QueueFamilyIndices
     {
         uint32_t graphicsFamilyIndex;
@@ -15,7 +16,17 @@ namespace ENGINE
         HINSTANCE hInstance;
         HWND hWnd;
     };
-    
+
+    //image
+    struct SubImageInfo
+    {
+      vk::ImageLayout currLayout;
+    };
+    struct MipInfo
+    {
+      std::vector<SubImageInfo> layerInfos;
+      glm::uvec3 size;
+    };
 }
 #define STRUCTS_HPP
 
