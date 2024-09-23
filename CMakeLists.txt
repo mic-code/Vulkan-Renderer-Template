@@ -33,7 +33,7 @@ target_sources(Engine PRIVATE
         ${engine_headers}
         ${engine_sources})
 
-target_link_libraries(Engine ${Vulkan_LIBRARIES} ${GLFW3_LIBRARIES})
+target_link_libraries(Engine ${Vulkan_LIBRARIES} ${GLF3_LIBRARIES})
 
 set_target_properties(Engine PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"

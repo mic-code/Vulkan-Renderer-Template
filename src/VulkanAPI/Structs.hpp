@@ -10,7 +10,11 @@ namespace ENGINE
         uint32_t graphicsFamilyIndex;
         uint32_t presentFamilyIndex;
     };
-
+    struct WindowDesc
+    {
+        HINSTANCE hInstance;
+        HWND hWnd;
+    };
     
 }
 #define STRUCTS_HPP
