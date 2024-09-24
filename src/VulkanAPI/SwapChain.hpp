@@ -14,7 +14,7 @@ namespace ENGINE
     public:
 
         SwapChain(vk::Instance instance, vk::PhysicalDevice physicalDevice, vk::Device logicalDevice, WindowDesc windowDesc 
-            ,uint32_t imageCount, QueueFamilyIndices queueFamilyIndices, vk::PresentModeKHR prefferedMode, glm::vec2 windowSize)
+            ,uint32_t imagesCount, QueueFamilyIndices queueFamilyIndices, vk::PresentModeKHR prefferedMode, glm::vec2 windowSize)
         {
             this->logicalDevice =logicalDevice;
             this->surface = CreateWin32Surface(instance, windowDesc);
@@ -27,7 +27,7 @@ namespace ENGINE
             this->presentMode = FindSwapchainPresentMode(surfaceDetails.presentModes, prefferedMode);
             this->extent = FindSwapChainExtent(surfaceDetails.capabilities, vk::Extent2D(windowSize.x,windowSize.y));
 
-            uint32_t imageCount = std::max(surfaceDetails.capabilities.minImageCount, imageCount);
+            uint32_t imageCount = std::max(surfaceDetails.capabilities.minImageCount, imagesCount);
             if (surfaceDetails.capabilities.maxImageCount > 0 && imageCount > surfaceDetails.capabilities.maxImageCount)
             {
                 imageCount = surfaceDetails.capabilities.maxImageCount;
@@ -146,7 +146,6 @@ namespace ENGINE
 
         vk::UniqueSurfaceKHR surface;
         vk::UniqueSwapchainKHR swapchain;
-        
         
 
     };
