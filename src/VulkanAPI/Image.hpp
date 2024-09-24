@@ -138,7 +138,7 @@ namespace ENGINE
 
             auto allocInfo = vk::MemoryAllocateInfo()
             .setAllocationSize(imageMemReq.size)
-            .setMemoryTypeIndex(Core::FindMemoryTypeIndex(physicalDevice, imageMemReq.memoryTypeBits, memFlags));
+            .setMemoryTypeIndex(FindMemoryTypeIndex(physicalDevice, imageMemReq.memoryTypeBits, memFlags));
 
             imageMemory = logicalDevice.allocateMemoryUnique(allocInfo);
             

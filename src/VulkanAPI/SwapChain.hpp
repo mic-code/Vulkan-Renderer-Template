@@ -14,7 +14,7 @@ namespace ENGINE
     public:
 
         SwapChain(vk::Instance instance, vk::PhysicalDevice physicalDevice, vk::Device logicalDevice, WindowDesc windowDesc 
-            ,uint32_t imagesCount, QueueFamilyIndices queueFamilyIndices, vk::PresentModeKHR prefferedMode, glm::vec2 windowSize)
+            ,uint32_t imagesCount, QueueFamilyIndices queueFamilyIndices, vk::PresentModeKHR prefferedMode, glm::uvec2 windowSize)
         {
             this->logicalDevice =logicalDevice;
             this->surface = CreateWin32Surface(instance, windowDesc);

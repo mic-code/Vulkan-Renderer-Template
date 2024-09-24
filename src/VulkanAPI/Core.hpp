@@ -17,11 +17,13 @@ namespace ENGINE
         Core(const char** instanceExtensions, uint8_t instanceExtensionsCount, WindowDesc* compatibleWindowDesc,bool enableDebugging);
         ~Core();
         void ClearCaches();
+
+        std::unique_ptr<SwapChain> CreateSwapchain(vk::PresentModeKHR presentModeKHR, uint32_t imageCount,WindowDesc windowDesc, glm::uvec2 windowSize);
+        
         
         static int32_t FindMemoryTypeIndex(vk::PhysicalDevice logicalDevice, uint32_t memTypeFlags, vk::MemoryPropertyFlags memFlags);
 
     private:
-        
         
         static vk::UniqueInstance CreateInstance(const std::vector<const char*>& instanceExtensions,
                                                  const std::vector<const char*>& validationLayers);
@@ -44,6 +46,8 @@ namespace ENGINE
           const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
           void* pUserData);
 
+        friend class Swapchain;
+        
         vk::UniqueInstance instance;
         vk::DispatchLoaderDynamic loader;
         vk::UniqueHandle<vk::DebugUtilsMessengerEXT, vk::DispatchLoaderDynamic> debugUtilsMessenger;
@@ -52,6 +56,7 @@ namespace ENGINE
         vk::UniqueCommandPool commandPool;
         vk::Queue graphicsQueue;
         vk::Queue presentQueue;
+        
         QueueFamilyIndices queueFamilyIndices;
         
     };

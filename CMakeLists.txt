@@ -27,6 +27,9 @@ include_directories("${GLM_INCLUDE_DIR}")
 file(GLOB_RECURSE engine_sources "${SOLUTION_DIR}/src/*.cpp")
 file(GLOB_RECURSE engine_headers "${SOLUTION_DIR}/src/*.hpp")
 
+set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_BUILD_TYPE Debug)
+
 add_executable(Engine "${SOLUTION_DIR}/src/main.cpp")
 
 target_sources(Engine PRIVATE 

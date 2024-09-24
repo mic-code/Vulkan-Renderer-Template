@@ -16,23 +16,40 @@
 
 CONST int WINDOWS_WIDTH= 1024;
 CONST int WINDOWS_HEIGHT= 1024;
-int main(){
-    const char* glfwExtensions[] = { "VK_KHR_surface", "VK_KHR_win32_surface" };
-    uint32_t glfwExtensionCount = sizeof(glfwExtensions) / sizeof(glfwExtensions[0]);
+void run()
+{
+    GLFWwindow* window = glfwCreateWindow(WINDOWS_WIDTH, WINDOWS_HEIGHT, "Vulkan Engine Template", nullptr, nullptr);
+    {
+        const char* glfwExtensions[] = {"VK_KHR_surface", "VK_KHR_win32_surface"};
+        uint32_t glfwExtensionCount = sizeof(glfwExtensions) / sizeof(glfwExtensions[0]);
 
-    
-    GLFWwindow* window = glfwCreateWindow(WINDOWS_WIDTH, WINDOWS_HEIGHT, "Vulkan Engine Template", nullptr,nullptr);
-    ENGINE::WindowDesc windowDesc = {};
-    windowDesc.hInstance = GetModuleHandle(NULL);
-    windowDesc.hWnd = glfwGetWin32Window(window);
+        ENGINE::WindowDesc windowDesc = {};
+        windowDesc.hInstance = GetModuleHandle(NULL);
+        windowDesc.hWnd = glfwGetWin32Window(window);
 
-    bool enableDebugging = false;
+        bool enableDebugging = true;
 #if defined ENGINE_ENABLE_DEBUGGING
     enableDebugging = true;
 #endif
-    
-    
-    auto core = std::make_unique<ENGINE::Core>(glfwExtensions, glfwExtensionCount, &windowDesc, enableDebugging);
 
+        auto core = std::make_unique<ENGINE::Core>(glfwExtensions, glfwExtensionCount, &windowDesc, enableDebugging);
+        auto swapChain = core->CreateSwapchain(vk::PresentModeKHR::eFifo, 3, windowDesc, glm::uvec2(WINDOWS_WIDTH, WINDOWS_HEIGHT));
+
+        while (!glfwWindowShouldClose(window))
+        {
+            glfwPollEvents();
+            
+        }
+        glfwDestroyWindow(window);
+    }
+}
+int main(){
+
+    glfwInit();
+    
+    run();
+
+    glfwTerminate();
+    
     return 0;
 }

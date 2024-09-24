@@ -4,15 +4,17 @@
 
 #ifndef COREIMPL_HPP
 #define COREIMPL_HPP
-#include <set>
 
+#include <set>
 
 
 namespace ENGINE
 {
-    Core::Core(const char** instanceExtensions, uint8_t instanceExtensionsCount, WindowDesc* compatibleWindowDesc, bool enableDebugging)
+    Core::Core(const char** instanceExtensions, uint8_t instanceExtensionsCount, WindowDesc* compatibleWindowDesc,
+               bool enableDebugging)
     {
-        std::vector<const char*> resInstanceExtensions(instanceExtensions, instanceExtensions + instanceExtensionsCount);
+        std::vector<const char*>
+            resInstanceExtensions(instanceExtensions, instanceExtensions + instanceExtensionsCount);
         std::vector<const char*> validationLayers;
 
         if (enableDebugging)
@@ -37,99 +39,94 @@ namespace ENGINE
         // {
         //     std::cout << "  " << extension.extensionName << "\n";
         // }
- 
+
         if (compatibleWindowDesc)
         {
             vk::UniqueSurfaceKHR compatibleSurface;
             compatibleSurface = CreateWin32Surface(instance.get(), *compatibleWindowDesc);
             this->queueFamilyIndices = FindQueueFamilyIndices(physicalDevice, compatibleSurface.get());
-            
         }
         std::vector<const char*> deviceExtensions;
         deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-        this->logicalDevice = CreateLogicalDevice(this->physicalDevice, this->queueFamilyIndices, deviceExtensions, validationLayers);
-        this->graphicsQueue = GetDeviceQueue(this->logicalDevice.get(),queueFamilyIndices.graphicsFamilyIndex); 
-        this->presentQueue = GetDeviceQueue(this->logicalDevice.get(),queueFamilyIndices.presentFamilyIndex);
+        this->logicalDevice = CreateLogicalDevice(this->physicalDevice, this->queueFamilyIndices, deviceExtensions,
+                                                  validationLayers);
+        this->graphicsQueue = GetDeviceQueue(this->logicalDevice.get(), queueFamilyIndices.graphicsFamilyIndex);
+        this->presentQueue = GetDeviceQueue(this->logicalDevice.get(), queueFamilyIndices.presentFamilyIndex);
         this->commandPool = CreateCommandPool(this->logicalDevice.get(), queueFamilyIndices.graphicsFamilyIndex);
-        
     }
 
     Core::~Core()
     {
-        
     }
 
     void Core::ClearCaches()
     {
-        
     }
 
-    int32_t Core::FindMemoryTypeIndex(vk::PhysicalDevice physicalDevice, uint32_t memTypeFlags, vk::MemoryPropertyFlags memFlags)
+    std::unique_ptr<SwapChain> Core::CreateSwapchain(vk::PresentModeKHR presentModeKHR, uint32_t imageCount,
+                                                     WindowDesc windowDesc, glm::uvec2 windowSize)
     {
-        vk::PhysicalDeviceMemoryProperties properties = physicalDevice.getMemoryProperties();
-        const uint32_t memCount = properties.memoryTypeCount;
-
-        for (int memIndex = 0; memIndex < memCount; ++memIndex)
-        {
-            const uint32_t memTypeBits = (1 << memIndex);
-            const bool isRequiredMemType = memTypeFlags & memTypeBits;
-
-            const vk::MemoryPropertyFlags prop = properties.memoryTypes[memIndex].propertyFlags;
-            const bool hasRequiredProperties = (prop & memFlags) == memFlags;
-
-            if (isRequiredMemType && hasRequiredProperties)
-                return static_cast<int32_t>(memIndex);
-        }
-        std::cout << "Failed to find a memory type\n";
-        return -1;       
+        auto swapChain = std::unique_ptr<SwapChain>(new SwapChain(this->instance.get(), this->physicalDevice,
+                                                                  this->logicalDevice.get(), windowDesc
+                                                                  , imageCount, this->queueFamilyIndices,
+                                                                  presentModeKHR, windowSize));
+        return swapChain;
     }
 
-    vk::UniqueInstance Core::CreateInstance(const std::vector<const char*>& instanceExtensions, const std::vector<const char*>& validationLayers)
-    {
 
+
+    vk::UniqueInstance Core::CreateInstance(const std::vector<const char*>& instanceExtensions,
+                                            const std::vector<const char*>& validationLayers)
+    {
         auto appInfo = vk::ApplicationInfo()
-        .setPApplicationName("Vulkan Template App")
-        .setApplicationVersion(VK_MAKE_VERSION(-1,0,0))
-        .setPEngineName("Vulkan Template Engine")
-        .setEngineVersion(VK_MAKE_VERSION(-1,0,0))
-        .setApiVersion(VK_API_VERSION_1_3);
+                       .setPApplicationName("Vulkan Template App")
+                       .setApplicationVersion(VK_MAKE_VERSION(-1, 0, 0))
+                       .setPEngineName("Vulkan Template Engine")
+                       .setEngineVersion(VK_MAKE_VERSION(-1, 0, 0))
+                       .setApiVersion(VK_API_VERSION_1_3);
 
         auto instanceCreateInfo = vk::InstanceCreateInfo()
-        .setPApplicationInfo(&appInfo)
-        .setEnabledExtensionCount(uint32_t(instanceExtensions.size()))
-        .setPpEnabledExtensionNames(instanceExtensions.data())
-        .setEnabledLayerCount(uint32_t(validationLayers.size()))
-        .setPpEnabledLayerNames(validationLayers.data());
+                                  .setPApplicationInfo(&appInfo)
+                                  .setEnabledExtensionCount(uint32_t(instanceExtensions.size()))
+                                  .setPpEnabledExtensionNames(instanceExtensions.data())
+                                  .setEnabledLayerCount(uint32_t(validationLayers.size()))
+                                  .setPpEnabledLayerNames(validationLayers.data());
 
         return vk::createInstanceUnique(instanceCreateInfo);
-        
     }
-    vk::UniqueHandle<vk::DebugUtilsMessengerEXT, vk::DispatchLoaderDynamic> Core::CreateDebugUtilsMessenger(vk::Instance instance, PFN_vkDebugUtilsMessengerCallbackEXT debugCallback, vk::DispatchLoaderDynamic& loader)
-    {
 
+    vk::UniqueHandle<vk::DebugUtilsMessengerEXT, vk::DispatchLoaderDynamic> Core::CreateDebugUtilsMessenger(
+        vk::Instance instance, PFN_vkDebugUtilsMessengerCallbackEXT debugCallback, vk::DispatchLoaderDynamic& loader)
+    {
         auto messengerCreateInfo = vk::DebugUtilsMessengerCreateInfoEXT()
-        .setMessageSeverity(vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning)
-        .setMessageType(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation)
-        .setPfnUserCallback(debugCallback)
-        .setPUserData(nullptr);
+                                   .setMessageSeverity(
+                                       vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+                                       vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning)
+                                   .setMessageType(
+                                       vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+                                       vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance |
+                                       vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation)
+                                   .setPfnUserCallback(debugCallback)
+                                   .setPUserData(nullptr);
         return instance.createDebugUtilsMessengerEXTUnique(messengerCreateInfo, nullptr, loader);
     }
+
     vk::PhysicalDevice Core::FindPhysicalDevice(vk::Instance instance)
     {
         std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
-        std::cout << "Found" << physicalDevices.size() << "physical device(s)\n";
+        std::cout << "Found " << physicalDevices.size() << " physical device(s)\n";
         vk::PhysicalDevice physicalDevice = nullptr;
         for (const auto& device : physicalDevices)
         {
             vk::PhysicalDeviceProperties deviceProperties = device.getProperties();
-            std::cout<< "Physical device found: " << deviceProperties.deviceName;
+            std::cout << "Physical device found: " << deviceProperties.deviceName;
             vk::PhysicalDeviceFeatures physicalDeviceFeatures = device.getFeatures();
-            if(deviceProperties.deviceType== vk::PhysicalDeviceType::eDiscreteGpu)
+            if (deviceProperties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
             {
                 physicalDevice = device;
                 std::cout << "<--- Using this device";
             }
-            std::cout<<"\n";
+            std::cout << "\n";
         }
         assert((physicalDevice != nullptr) && "Failed to find physical device");
         return physicalDevice;
@@ -143,77 +140,79 @@ namespace ENGINE
         queueFamilyIndices.presentFamilyIndex = uint32_t(-1);
         for (int familyIndex = 0; familyIndex < queueFamilies.size(); ++familyIndex)
         {
-            if (queueFamilies[familyIndex].queueFlags & vk::QueueFlagBits::eGraphics && queueFamilies[familyIndex].queueCount > 0 && queueFamilyIndices.graphicsFamilyIndex == uint32_t(-1))
+            if (queueFamilies[familyIndex].queueFlags & vk::QueueFlagBits::eGraphics && queueFamilies[familyIndex].
+                queueCount > 0 && queueFamilyIndices.graphicsFamilyIndex == uint32_t(-1))
             {
                 queueFamilyIndices.graphicsFamilyIndex = familyIndex;
             }
-            if (physicalDevice.getSurfaceSupportKHR(familyIndex, surface) && queueFamilies[familyIndex].queueCount > 0 && queueFamilyIndices.presentFamilyIndex == uint32_t(-1))
+            if (physicalDevice.getSurfaceSupportKHR(familyIndex, surface) && queueFamilies[familyIndex].queueCount > 0
+                && queueFamilyIndices.presentFamilyIndex == uint32_t(-1))
             {
                 queueFamilyIndices.presentFamilyIndex = familyIndex;
             }
-            
         }
         assert(queueFamilyIndices.graphicsFamilyIndex != -1 && "Failed to find appropiate queue families");
 
         return queueFamilyIndices;
-        
     }
 
 
-    vk::UniqueDevice Core::CreateLogicalDevice (vk::PhysicalDevice physicalDevice, QueueFamilyIndices familyIndices, std::vector<const char*> deviceExtensions, std::vector<const char*> validationLayers)
+    vk::UniqueDevice Core::CreateLogicalDevice(vk::PhysicalDevice physicalDevice, QueueFamilyIndices familyIndices,
+                                               std::vector<const char*> deviceExtensions,
+                                               std::vector<const char*> validationLayers)
     {
-
-        std::pmr::set<uint32_t> uniqueQueueFamilyIndices= {familyIndices.graphicsFamilyIndex, familyIndices.presentFamilyIndex};
+        std::pmr::set<uint32_t> uniqueQueueFamilyIndices = {
+            familyIndices.graphicsFamilyIndex, familyIndices.presentFamilyIndex
+        };
         std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
         float queuePriority = 1.0f;
-        for (uint32_t queueFamily  : uniqueQueueFamilyIndices)
+        for (uint32_t queueFamily : uniqueQueueFamilyIndices)
         {
             auto queueCreateInfo = vk::DeviceQueueCreateInfo()
-            .setQueueFamilyIndex(queueFamily)
-            .setQueueCount(1)
-            .setPQueuePriorities(&queuePriority);
+                                   .setQueueFamilyIndex(queueFamily)
+                                   .setQueueCount(1)
+                                   .setPQueuePriorities(&queuePriority);
 
             queueCreateInfos.push_back(queueCreateInfo);
         }
         auto deviceFeatures = vk::PhysicalDeviceFeatures()
-        .setFragmentStoresAndAtomics(true)
-        .setVertexPipelineStoresAndAtomics(true);
+                              .setFragmentStoresAndAtomics(true)
+                              .setVertexPipelineStoresAndAtomics(true);
 
         auto deviceCreateInfo = vk::DeviceCreateInfo()
-          .setQueueCreateInfoCount(uint32_t(queueCreateInfos.size()))
-          .setPQueueCreateInfos(queueCreateInfos.data())
-          .setPEnabledFeatures(&deviceFeatures)
-          .setEnabledExtensionCount(uint32_t(deviceExtensions.size()))
-          .setPpEnabledExtensionNames(deviceExtensions.data())
-          .setEnabledLayerCount(uint32_t(validationLayers.size()))
-          .setPpEnabledLayerNames(validationLayers.data());
+                                .setQueueCreateInfoCount(uint32_t(queueCreateInfos.size()))
+                                .setPQueueCreateInfos(queueCreateInfos.data())
+                                .setPEnabledFeatures(&deviceFeatures)
+                                .setEnabledExtensionCount(uint32_t(deviceExtensions.size()))
+                                .setPpEnabledExtensionNames(deviceExtensions.data())
+                                .setEnabledLayerCount(uint32_t(validationLayers.size()))
+                                .setPpEnabledLayerNames(validationLayers.data());
 
         auto deviceFeatures12 = vk::PhysicalDeviceVulkan12Features()
-        .setScalarBlockLayout(true);
+            .setScalarBlockLayout(true);
 
-        vk::StructureChain<vk::DeviceCreateInfo, vk::PhysicalDeviceVulkan12Features> chain = {deviceCreateInfo, deviceFeatures12};
+        vk::StructureChain<vk::DeviceCreateInfo, vk::PhysicalDeviceVulkan12Features> chain = {
+            deviceCreateInfo, deviceFeatures12
+        };
         return physicalDevice.createDeviceUnique(chain.get<vk::DeviceCreateInfo>());
-        
     }
-    
+
 
     vk::UniqueCommandPool Core::CreateCommandPool(vk::Device logicalDevice, uint32_t familyIndex)
     {
         auto commandPoolInfo = vk::CommandPoolCreateInfo()
-        .setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer)
-        .setQueueFamilyIndex(familyIndex);
-        
+                               .setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer)
+                               .setQueueFamilyIndex(familyIndex);
+
         return logicalDevice.createCommandPoolUnique(commandPoolInfo);
-        
     }
-    
+
     vk::Queue Core::GetDeviceQueue(vk::Device logicalDevice, uint32_t familyIndex)
     {
-       return logicalDevice.getQueue(familyIndex, 0);
+        return logicalDevice.getQueue(familyIndex, 0);
     }
 
 
-    
     VKAPI_ATTR VkBool32 VKAPI_CALL Core::DebugMessageCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
         VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -224,7 +223,6 @@ namespace ENGINE
 
         return VK_FALSE;
     }
-    
 }
 
 #endif //COREIMPL_HPP

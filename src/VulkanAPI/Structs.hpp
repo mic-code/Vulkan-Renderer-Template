@@ -28,7 +28,7 @@ namespace ENGINE
       std::vector<SubImageInfo> layerInfos;
       glm::uvec3 size;
     };
-    
+   
     //swapChain
     struct SurfaceDetails
     {
@@ -36,16 +36,7 @@ namespace ENGINE
         std::vector<vk::SurfaceFormatKHR> formats;
         std::vector<vk::PresentModeKHR> presentModes;
     };
-    static SurfaceDetails GetSurfaceDetails(vk::PhysicalDevice physicalDevice, vk::SurfaceKHR surfaceKHR)
-    {
-        SurfaceDetails surfaceDetails;
-        surfaceDetails.capabilities = physicalDevice.getSurfaceCapabilitiesKHR(surfaceKHR);
-        surfaceDetails.formats = physicalDevice.getSurfaceFormatsKHR(surfaceKHR);
-        surfaceDetails.presentModes = physicalDevice.getSurfacePresentModesKHR(surfaceKHR);
 
-        return surfaceDetails;
-        
-    }
     
 }
 #define STRUCTS_HPP
