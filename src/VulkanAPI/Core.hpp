@@ -7,11 +7,12 @@
 
 namespace ENGINE
 {
-    
-    class SwapChain; 
+
+    class PresentQueue;
+    class SwapChain;
     class Core
     {
-
+    
     public:
         
         Core(const char** instanceExtensions, uint8_t instanceExtensionsCount, WindowDesc* compatibleWindowDesc,bool enableDebugging);
@@ -47,6 +48,7 @@ namespace ENGINE
           void* pUserData);
 
         friend class Swapchain;
+        friend class PresentQueue;
         
         vk::UniqueInstance instance;
         vk::DispatchLoaderDynamic loader;

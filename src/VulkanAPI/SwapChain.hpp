@@ -59,9 +59,9 @@ namespace ENGINE
                 swapchainCreateInfo
                 .setImageSharingMode(vk::SharingMode::eExclusive);
             }
-            this->swapchain = logicalDevice.createSwapchainKHRUnique(swapchainCreateInfo);
+            this->swapchainHandle = logicalDevice.createSwapchainKHRUnique(swapchainCreateInfo);
 
-            std::vector<vk::Image> swapChainImages = logicalDevice.getSwapchainImagesKHR(swapchain.get());
+            std::vector<vk::Image> swapChainImages = logicalDevice.getSwapchainImagesKHR(swapchainHandle.get());
 
             this->images.clear();
 
@@ -76,6 +76,19 @@ namespace ENGINE
 
                 images.emplace_back(std::move(imageFull));
             }
+        }
+        vk::ResultValue<uint32_t> AcquireNextImage(vk::Semaphore semaphore)
+        {
+            return logicalDevice.acquireNextImageKHR(swapchainHandle.get(), std::numeric_limits<uint64_t>::max(), semaphore, nullptr);
+        }
+        std::vector<ImageView*> GetImageViews()
+        {
+            std::vector<ImageView*> resImageViews;
+            for (auto& image : this->images)
+            {
+                resImageViews.push_back(image.imageView.get());
+            }
+            return resImageViews;
         }
 
         static vk::SurfaceFormatKHR FindSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& avalibleFormats)
@@ -128,6 +141,7 @@ namespace ENGINE
                 return actualExtent;
             }            
         }
+        
 
 
 
@@ -145,7 +159,7 @@ namespace ENGINE
         std::vector<ImageFull> images;
 
         vk::UniqueSurfaceKHR surface;
-        vk::UniqueSwapchainKHR swapchain;
+        vk::UniqueSwapchainKHR swapchainHandle;
         
 
     };
