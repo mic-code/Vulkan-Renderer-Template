@@ -73,7 +73,33 @@ namespace ENGINE
         return swapChain;
     }
 
+    std::vector<vk::UniqueCommandBuffer> Core::AllocateCommandBuffers(size_t count)
+    {
+            auto commandBufferAllocInfo = vk::CommandBufferAllocateInfo()
+            .setCommandPool(commandPool.get())
+            .setLevel(vk::CommandBufferLevel::ePrimary)
+            .setCommandBufferCount(uint32_t(count));
 
+            return logicalDevice->allocateCommandBuffersUnique(commandBufferAllocInfo); 
+    }
+
+    vk::UniqueSemaphore Core::CreateVulkanSemaphore()
+    {
+        auto semaphoreInfo = vk::SemaphoreCreateInfo();
+        return logicalDevice->createSemaphoreUnique(semaphoreInfo);
+        
+    }
+    
+    vk::UniqueFence Core::CreateFence(bool state)
+    {
+        auto fenceInfo = vk::FenceCreateInfo();
+        if (state)
+        {
+            fenceInfo.setFlags(vk::FenceCreateFlagBits::eSignaled);
+        }
+        return logicalDevice->createFenceUnique(fenceInfo);
+        
+    }
 
     vk::UniqueInstance Core::CreateInstance(const std::vector<const char*>& instanceExtensions,
                                             const std::vector<const char*>& validationLayers)

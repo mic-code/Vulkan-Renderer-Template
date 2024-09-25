@@ -20,6 +20,11 @@ namespace ENGINE
         void ClearCaches();
 
         std::unique_ptr<SwapChain> CreateSwapchain(vk::PresentModeKHR presentModeKHR, uint32_t imageCount,WindowDesc windowDesc, glm::uvec2 windowSize);
+
+        std::vector<vk::UniqueCommandBuffer> AllocateCommandBuffers(size_t count);
+        vk::UniqueSemaphore CreateVulkanSemaphore();
+        vk::UniqueFence CreateFence(bool state);
+
         
         
         static int32_t FindMemoryTypeIndex(vk::PhysicalDevice logicalDevice, uint32_t memTypeFlags, vk::MemoryPropertyFlags memFlags);

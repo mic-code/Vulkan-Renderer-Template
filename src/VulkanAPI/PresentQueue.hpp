@@ -1,4 +1,6 @@
 ﻿//
+
+
 // Created by carlo on 2024-09-24.
 //
 
@@ -57,7 +59,17 @@ namespace ENGINE
         InFlightQueue(Core* core, WindowDesc windowDesc, uint32_t inflightCount, vk::PresentModeKHR preferredMode, glm::uvec2 windowSize)
         {
             presentQueue.reset(new PresentQueue(core, windowDesc, inflightCount, preferredMode, windowSize));
-            
+
+            for (int frameIndex = 0; frameIndex < inflightCount; frameIndex++)
+            {
+                FrameResources frame;
+                frame.inflightFence = core->CreateFence(true);
+                frame.imageAcquiredSemaphore = core->CreateVulkanSemaphore();
+                frame.renderingFinishedSemaphore = core->CreateVulkanSemaphore();
+                frame.commandBuffer= std::move(core->AllocateCommandBuffers(1)[0]);
+                frameResources.push_back(std::move(frame)); 
+            }
+            frameIndex = 0;
             
         }
 
