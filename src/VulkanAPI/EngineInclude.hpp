@@ -19,11 +19,12 @@
 #include <vulkan/vulkan.hpp>
 #include "Structs.hpp"
 #include "UtilVk.hpp"
-#include "Buffer.hpp"
-#include "ShaderStage.hpp"
-#include "Surface.hpp"
 #include "Image.hpp"
 #include "ImageView.hpp"
+#include "SyncronizationPatterns.hpp"
+#include "Buffer.hpp"
+#include "ShaderModule.hpp"
+#include "Surface.hpp"
 #include "Sampler.hpp"
 #include "SwapChain.hpp"
 

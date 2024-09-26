@@ -4,6 +4,9 @@
 // Created by carlo on 2024-09-24.
 //
 
+
+
+
 #ifndef PRESENTQUEUE_HPP
 #define PRESENTQUEUE_HPP
 
@@ -18,6 +21,8 @@ namespace ENGINE
             this->core = core;
             this->swapChain = core->CreateSwapchain(preferredMode, imagesCount, windowDesc,  windowSize);
             this->swapchainImageViews = swapChain->GetImageViews();
+            this->swapchainRect = vk::Rect2D(vk::Offset2D(), swapChain->extent);
+            this->imageIndex = -1;
             
         }
         ImageView* AcquireImage(vk::Semaphore signalSemaphore)
@@ -58,7 +63,9 @@ namespace ENGINE
     {
         InFlightQueue(Core* core, WindowDesc windowDesc, uint32_t inflightCount, vk::PresentModeKHR preferredMode, glm::uvec2 windowSize)
         {
-            presentQueue.reset(new PresentQueue(core, windowDesc, inflightCount, preferredMode, windowSize));
+            
+            this->core = core;
+            presentQueue.reset(new PresentQueue(this->core, windowDesc, inflightCount, preferredMode, windowSize));
 
             for (int frameIndex = 0; frameIndex < inflightCount; frameIndex++)
             {
@@ -72,24 +79,100 @@ namespace ENGINE
             frameIndex = 0;
             
         }
-
-        struct FrameResources
+        void BeginFrame()
         {
-            vk::UniqueSemaphore imageAcquiredSemaphore;
-            vk::UniqueSemaphore renderingFinishedSemaphore;
-            vk::UniqueFence inflightFence;
 
-            vk::UniqueCommandBuffer commandBuffer;
-        };
-        
+            auto &currFrame = frameResources[frameIndex];
+            {
+                core->WaitForFence(currFrame.inflightFence.get());
+                core->ResetFence(currFrame.inflightFence.get());
+            }
+
+            {
+                currentSwapchainImageView = presentQueue->AcquireImage(currFrame.imageAcquiredSemaphore.get());
+            }
+
+            //add pass info from my data
+        }
+        void EndFrame()
+        {
+            auto &currFrame = frameResources[frameIndex];
+
+            auto bufferBeginInfo = vk::CommandBufferBeginInfo()
+            .setFlags(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
+            currFrame.commandBuffer->begin(bufferBeginInfo);
+
+            auto range = vk::ImageSubresourceRange();
+            ENGINE::ImageAccessPattern pattern = ENGINE::GetDstPattern(ENGINE::PRESENT);
+            ENGINE::TransitionImage(*currentSwapchainImageView->imageData, pattern, range,
+                                    currFrame.commandBuffer.get());
+            
+            currFrame.commandBuffer->end();
+            {
+                vk::Semaphore waitSemaphores[] = {currFrame.imageAcquiredSemaphore.get()};
+                vk::Semaphore signalSemaphores[] = {currFrame.renderingFinishedSemaphore.get()};
+                vk::PipelineStageFlags waitStages [] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
+
+                auto submitInfo = vk::SubmitInfo()
+                .setWaitSemaphoreCount(1)
+                .setPWaitSemaphores(waitSemaphores)
+                .setPWaitDstStageMask(waitStages)
+                .setCommandBufferCount(1)
+                .setPCommandBuffers(&currFrame.commandBuffer.get())
+                .setSignalSemaphoreCount(1)
+                .setPSignalSemaphores(signalSemaphores);
+
+                core->presentQueue.submit({submitInfo}, currFrame.inflightFence.get());
+            }
+            presentQueue->PresentImage(currFrame.renderingFinishedSemaphore.get());
+            frameIndex = (frameIndex + 1) % frameResources.size();
+            
+        }
+
+       
         std::vector<FrameResources> frameResources;
         size_t frameIndex;
         
         Core* core;
         std::unique_ptr<PresentQueue> presentQueue;
-        ImageView* currentImageView;
-        
+        ImageView* currentSwapchainImageView;
+    };
+    class ExecuteOnceCommand
+    {
+    public:
+        ExecuteOnceCommand(Core* core)
+        {
+            this->core = core;
+            commandBufferHandle = std::move(core->AllocateCommandBuffers(1)[0]);
+        }
 
+        vk::CommandBuffer BeginCommandBuffer()
+        {
+            auto bufferBeginInfo = vk::CommandBufferBeginInfo()
+            .setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+            commandBufferHandle->begin(bufferBeginInfo);
+            return commandBufferHandle.get();
+        }
+
+        void EndCommandBuffer()
+        {
+            commandBufferHandle->end();
+            vk::PipelineStageFlags waitStages[] = {vk::PipelineStageFlagBits::eAllCommands};
+
+            auto submitInfo = vk::SubmitInfo()
+            .setWaitSemaphoreCount(0)
+            .setPWaitDstStageMask(waitStages)
+            .setCommandBufferCount(1)
+            .setPCommandBuffers(&commandBufferHandle.get())
+            .setSignalSemaphoreCount(0);
+
+            core->graphicsQueue.submit({submitInfo}, nullptr);
+            core->graphicsQueue.waitIdle();
+            
+        }
+        Core* core;
+        vk::UniqueCommandBuffer commandBufferHandle;
+        
     };
 }
 

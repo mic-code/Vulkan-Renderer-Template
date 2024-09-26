@@ -24,17 +24,22 @@ namespace ENGINE
         std::vector<vk::UniqueCommandBuffer> AllocateCommandBuffers(size_t count);
         vk::UniqueSemaphore CreateVulkanSemaphore();
         vk::UniqueFence CreateFence(bool state);
+        void WaitForFence(vk::Fence fence);
+        void ResetFence(vk::Fence fence);
 
+        void WaitIdle();
         
-        
+
         static int32_t FindMemoryTypeIndex(vk::PhysicalDevice logicalDevice, uint32_t memTypeFlags, vk::MemoryPropertyFlags memFlags);
+        
+        vk::Queue graphicsQueue;
+        vk::Queue presentQueue;
 
     private:
         
         static vk::UniqueInstance CreateInstance(const std::vector<const char*>& instanceExtensions,
                                                  const std::vector<const char*>& validationLayers);
         
-        static vk::UniqueHandle<vk::DebugUtilsMessengerEXT, vk::DispatchLoaderDynamic> CreateDebugUtilsMessenger(vk::Instance instance, PFN_vkDebugUtilsMessengerCallbackEXT debugCallback, vk::DispatchLoaderDynamic& loader);
         
         static vk::PhysicalDevice FindPhysicalDevice(vk::Instance instance);
         
@@ -45,6 +50,8 @@ namespace ENGINE
         static vk::UniqueDevice CreateLogicalDevice(vk::PhysicalDevice physicalDevice, QueueFamilyIndices familyIndices,std::vector<const char*> deviceExtensions,std::vector<const char*> validationLayers);
        
         static vk::Queue GetDeviceQueue(vk::Device logicalDevice, uint32_t familyIndex);
+
+        static vk::UniqueHandle<vk::DebugUtilsMessengerEXT, vk::DispatchLoaderDynamic> CreateDebugUtilsMessenger(vk::Instance instance,PFN_vkDebugUtilsMessengerCallbackEXT debugCallback, vk::DispatchLoaderDynamic& loader);
  
         static VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessageCallback(
           VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -52,8 +59,8 @@ namespace ENGINE
           const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
           void* pUserData);
 
+
         friend class Swapchain;
-        friend class PresentQueue;
         
         vk::UniqueInstance instance;
         vk::DispatchLoaderDynamic loader;
@@ -61,8 +68,6 @@ namespace ENGINE
         vk::PhysicalDevice physicalDevice;
         vk::UniqueDevice logicalDevice;
         vk::UniqueCommandPool commandPool;
-        vk::Queue graphicsQueue;
-        vk::Queue presentQueue;
         
         QueueFamilyIndices queueFamilyIndices;
         

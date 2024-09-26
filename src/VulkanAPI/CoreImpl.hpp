@@ -2,6 +2,7 @@
 // Created by carlo on 2024-09-22.
 //
 
+
 #ifndef COREIMPL_HPP
 #define COREIMPL_HPP
 
@@ -13,10 +14,8 @@ namespace ENGINE
     Core::Core(const char** instanceExtensions, uint8_t instanceExtensionsCount, WindowDesc* compatibleWindowDesc,
                bool enableDebugging)
     {
-        std::vector<const char*>
-            resInstanceExtensions(instanceExtensions, instanceExtensions + instanceExtensionsCount);
+        std::vector<const char*>resInstanceExtensions(instanceExtensions, instanceExtensions + instanceExtensionsCount);
         std::vector<const char*> validationLayers;
-
         if (enableDebugging)
         {
             validationLayers.push_back("VK_LAYER_KHRONOS_validation");
@@ -25,6 +24,7 @@ namespace ENGINE
         this->instance = CreateInstance(resInstanceExtensions, validationLayers);
 
         loader = vk::DispatchLoaderDynamic(instance.get(), vkGetInstanceProcAddr);
+        loader.init();
 
         auto properties = vk::enumerateInstanceLayerProperties();
 
@@ -33,12 +33,7 @@ namespace ENGINE
             this->debugUtilsMessenger = CreateDebugUtilsMessenger(instance.get(), DebugMessageCallback, loader);
         }
         this->physicalDevice = FindPhysicalDevice(instance.get());
-        // std::cout << "Supported extensions:\n";
-        // auto extensions = physicalDevice.enumerateDeviceExtensionProperties();
-        // for (auto extension : extensions)
-        // {
-        //     std::cout << "  " << extension.extensionName << "\n";
-        // }
+
 
         if (compatibleWindowDesc)
         {
@@ -53,6 +48,18 @@ namespace ENGINE
         this->graphicsQueue = GetDeviceQueue(this->logicalDevice.get(), queueFamilyIndices.graphicsFamilyIndex);
         this->presentQueue = GetDeviceQueue(this->logicalDevice.get(), queueFamilyIndices.presentFamilyIndex);
         this->commandPool = CreateCommandPool(this->logicalDevice.get(), queueFamilyIndices.graphicsFamilyIndex);
+        
+        for (auto& property : properties)
+        {
+            std::cout << "Layer Prop: " << property.layerName << "\n";
+        }
+        
+        // std::cout << "Supported extensions:\n";
+        // auto extensions = physicalDevice.enumerateDeviceExtensionProperties();
+        // for (auto extension : extensions)
+        // {
+        //     std::cout << "  " << extension.extensionName << "\n";
+        // }
     }
 
     Core::~Core()
@@ -98,17 +105,31 @@ namespace ENGINE
             fenceInfo.setFlags(vk::FenceCreateFlagBits::eSignaled);
         }
         return logicalDevice->createFenceUnique(fenceInfo);
-        
     }
+
+    void Core::WaitForFence(vk::Fence fence)
+    {
+       auto res= logicalDevice->waitForFences({fence} , true, std::numeric_limits<uint64_t>::max());
+    }
+    void Core::ResetFence(vk::Fence fence)
+    {
+        logicalDevice->resetFences({fence});
+    }
+
+    void Core::WaitIdle()
+    {
+        logicalDevice->waitIdle();
+    }
+
 
     vk::UniqueInstance Core::CreateInstance(const std::vector<const char*>& instanceExtensions,
                                             const std::vector<const char*>& validationLayers)
     {
         auto appInfo = vk::ApplicationInfo()
                        .setPApplicationName("Vulkan Template App")
-                       .setApplicationVersion(VK_MAKE_VERSION(-1, 0, 0))
+                       .setApplicationVersion(VK_MAKE_VERSION(1, 0, 0))
                        .setPEngineName("Vulkan Template Engine")
-                       .setEngineVersion(VK_MAKE_VERSION(-1, 0, 0))
+                       .setEngineVersion(VK_MAKE_VERSION(1, 0, 0))
                        .setApiVersion(VK_API_VERSION_1_3);
 
         auto instanceCreateInfo = vk::InstanceCreateInfo()
@@ -119,22 +140,6 @@ namespace ENGINE
                                   .setPpEnabledLayerNames(validationLayers.data());
 
         return vk::createInstanceUnique(instanceCreateInfo);
-    }
-
-    vk::UniqueHandle<vk::DebugUtilsMessengerEXT, vk::DispatchLoaderDynamic> Core::CreateDebugUtilsMessenger(
-        vk::Instance instance, PFN_vkDebugUtilsMessengerCallbackEXT debugCallback, vk::DispatchLoaderDynamic& loader)
-    {
-        auto messengerCreateInfo = vk::DebugUtilsMessengerCreateInfoEXT()
-                                   .setMessageSeverity(
-                                       vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-                                       vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning)
-                                   .setMessageType(
-                                       vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
-                                       vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance |
-                                       vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation)
-                                   .setPfnUserCallback(debugCallback)
-                                   .setPUserData(nullptr);
-        return instance.createDebugUtilsMessengerEXTUnique(messengerCreateInfo, nullptr, loader);
     }
 
     vk::PhysicalDevice Core::FindPhysicalDevice(vk::Instance instance)
@@ -236,6 +241,18 @@ namespace ENGINE
     vk::Queue Core::GetDeviceQueue(vk::Device logicalDevice, uint32_t familyIndex)
     {
         return logicalDevice.getQueue(familyIndex, 0);
+    }
+
+    vk::UniqueHandle<vk::DebugUtilsMessengerEXT, vk::DispatchLoaderDynamic> Core::CreateDebugUtilsMessenger(vk::Instance instance, PFN_vkDebugUtilsMessengerCallbackEXT debugCallback, vk::DispatchLoaderDynamic& loader)
+    {
+        auto messengerCreateInfo = vk::DebugUtilsMessengerCreateInfoEXT()
+        .setMessageSeverity(vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning| vk::DebugUtilsMessageSeverityFlagBitsEXT::eError)
+        .setMessageType(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation)
+        .setPfnUserCallback(debugCallback)
+        .setPUserData(nullptr);
+
+        return instance.createDebugUtilsMessengerEXTUnique(messengerCreateInfo, nullptr, loader);
+        
     }
 
 
