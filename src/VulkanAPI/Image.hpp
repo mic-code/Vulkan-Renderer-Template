@@ -45,8 +45,8 @@ namespace ENGINE
             this->arrayLayersCount = arrayLayersCount;
             this->imageType = imageType;
             
-            currentPattern.stage = vk::PipelineStageFlags();
-            currentPattern.accessMask = vk::AccessFlagBits();
+            currentPattern.stage = vk::PipelineStageFlagBits::eTopOfPipe;
+            currentPattern.accessMask = vk::AccessFlagBits::eNone;
             currentPattern.queueFamilyType = QueueFamilyTypes::Undefined; 
             currentPattern.layout = layout;
 

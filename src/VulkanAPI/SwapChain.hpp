@@ -72,7 +72,7 @@ namespace ENGINE
                                                                   glm::vec3(extent.width, extent.height, 1), 1, 1,
                                                                   surfaceFormat.format, vk::ImageLayout::eUndefined);
                 imageFull.imageView = std::make_unique<ImageView>(physicalDevice, logicalDevice,
-                                                                  imageFull.imageData.get(), 1, 0, 0, 1);
+                                                                  imageFull.imageData.get(), 0, 1, 0, 1);
 
                 images.emplace_back(std::move(imageFull));
             }

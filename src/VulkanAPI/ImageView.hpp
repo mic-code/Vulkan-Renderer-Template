@@ -13,13 +13,13 @@ namespace ENGINE
     {
     public:
         ImageView(vk::PhysicalDevice physicalDevice, vk::Device logicalDevice, ImageData* imageData,
-                  uint32_t mipLevelCount, uint32_t baseMipLevel, uint32_t baseArrayLayer, uint32_t arrayLayersCount)
+                  uint32_t baseMipLevel, uint32_t mipLevelCount, uint32_t baseArrayLayer, uint32_t arrayLayersCount)
         {
             this->imageData = imageData;
 
-            this->mipLevelCount = mipLevelCount;
             this->baseMipLevel = baseMipLevel;
-            this->baseArrayLayer = arrayLayersCount;
+            this->mipLevelCount = mipLevelCount;
+            this->baseArrayLayer = baseArrayLayer;
             this->arrayLayersCount = arrayLayersCount;
 
             auto subResourceRange = vk::ImageSubresourceRange()
@@ -53,12 +53,22 @@ namespace ENGINE
 
             this->imageView = logicalDevice.createImageViewUnique(imageViewCreateInfo);
         }
+        vk::ImageSubresourceRange GetSubresourceRange()
+        {
+            auto subResourceRange = vk::ImageSubresourceRange()
+                                    .setLayerCount(this->arrayLayersCount)
+                                    .setLevelCount(this->mipLevelCount)
+                                    .setBaseArrayLayer(this->baseArrayLayer)
+                                    .setBaseMipLevel(this->baseMipLevel)
+                                    .setAspectMask(imageData->aspectFlags);
+            return subResourceRange;
+
+        }
 
         ImageView(vk::PhysicalDevice physicalDevice, vk::Device logicalDevice, ImageData* imageData,
                   uint32_t mipLevelCount, uint32_t baseMipLevel)
         {
             this->imageData = imageData;
-
             this->mipLevelCount = mipLevelCount;
             this->baseMipLevel = baseMipLevel;
             this->baseArrayLayer = 0;

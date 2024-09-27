@@ -7,6 +7,7 @@
 
 
 
+
 #ifndef PRESENTQUEUE_HPP
 #define PRESENTQUEUE_HPP
 
@@ -102,9 +103,8 @@ namespace ENGINE
             .setFlags(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
             currFrame.commandBuffer->begin(bufferBeginInfo);
 
-            auto range = vk::ImageSubresourceRange();
-            ENGINE::ImageAccessPattern pattern = ENGINE::GetDstPattern(ENGINE::PRESENT);
-            ENGINE::TransitionImage(*currentSwapchainImageView->imageData, pattern, range,
+            ImageAccessPattern pattern = GetImageDstPattern(PRESENT);
+            TransitionImage(*currentSwapchainImageView->imageData, pattern, currentSwapchainImageView->GetSubresourceRange(),
                                     currFrame.commandBuffer.get());
             
             currFrame.commandBuffer->end();

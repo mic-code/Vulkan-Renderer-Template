@@ -51,11 +51,11 @@ namespace ENGINE
     //Sync
     enum struct QueueFamilyTypes
     {
-        Graphics,
-        Transfer,
-        Compute,
-        Present,
-        Undefined
+        GRAPHICS,
+        TRANSFER,
+        COMPUTE,
+        PRESENT,
+        UNDEFINED
       };
     struct ImageAccessPattern
     {
@@ -73,6 +73,12 @@ namespace ENGINE
             return *this;
             
         }
+    };
+    struct BufferAccessPattern
+    {
+        vk::PipelineStageFlags stage;
+        vk::AccessFlags accessMask;
+        QueueFamilyTypes queueFamilyType;
     };
 }
 #define STRUCTS_HPP
