@@ -27,7 +27,7 @@ namespace ENGINE
         EMPTY,
         
     };
-    enum struct BufferUsageTypes
+    enum BufferUsageTypes
     {
         B_VERTEX_BUFFER,
         B_GRAPHICS_WRITE,
@@ -43,7 +43,7 @@ namespace ENGINE
         ImageAccessPattern accessPattern;
         switch (pattern)
         {
-        case GRAPHICS:
+        case GRAPHICS_READ:
             accessPattern.stage = vk::PipelineStageFlagBits::eFragmentShader | vk::PipelineStageFlagBits::eVertexShader ;
             accessPattern.accessMask = vk::AccessFlagBits::eShaderRead;
             accessPattern.layout = vk::ImageLayout::eShaderReadOnlyOptimal;
@@ -141,32 +141,32 @@ namespace ENGINE
 
         switch (usageType)
         {
-        case BufferUsageTypes::B_VERTEX_BUFFER:
+        case B_VERTEX_BUFFER:
             bufferAccessPattern.stage = vk::PipelineStageFlagBits::eVertexInput;
             bufferAccessPattern.accessMask = vk::AccessFlags();
             bufferAccessPattern.queueFamilyType = QueueFamilyTypes::GRAPHICS;
             break;
-        case BufferUsageTypes::B_GRAPHICS_WRITE:
+        case B_GRAPHICS_WRITE:
             bufferAccessPattern.stage = vk::PipelineStageFlagBits::eVertexShader | vk::PipelineStageFlagBits::eFragmentShader;
             bufferAccessPattern.accessMask = vk::AccessFlagBits::eShaderWrite;
             bufferAccessPattern.queueFamilyType = QueueFamilyTypes::GRAPHICS;
             break;
-        case BufferUsageTypes::B_COMPUTE_WRITE:
+        case B_COMPUTE_WRITE:
             bufferAccessPattern.stage = vk::PipelineStageFlagBits::eComputeShader;
             bufferAccessPattern.accessMask = vk::AccessFlagBits::eShaderWrite;
             bufferAccessPattern.queueFamilyType = QueueFamilyTypes::GRAPHICS;
             break;
-        case BufferUsageTypes::B_TRANSFER_SRC:
+        case B_TRANSFER_SRC:
             bufferAccessPattern.stage = vk::PipelineStageFlagBits::eTransfer;
             bufferAccessPattern.accessMask = vk::AccessFlagBits::eTransferWrite;
             bufferAccessPattern.queueFamilyType = QueueFamilyTypes::TRANSFER;
             break;
-        case BufferUsageTypes::B_TRANSFER_DST:
+        case B_TRANSFER_DST:
             bufferAccessPattern.stage = vk::PipelineStageFlagBits::eTransfer;
             bufferAccessPattern.accessMask = vk::AccessFlags();
             bufferAccessPattern.queueFamilyType = QueueFamilyTypes::TRANSFER;
             break;
-        case BufferUsageTypes::B_EMPTY:
+        case B_EMPTY:
             bufferAccessPattern.stage = vk::PipelineStageFlagBits::eTopOfPipe;
             bufferAccessPattern.accessMask = vk::AccessFlags();
             bufferAccessPattern.queueFamilyType = QueueFamilyTypes::UNDEFINED;
@@ -185,32 +185,32 @@ namespace ENGINE
 
         switch (usageType)
         {
-        case BufferUsageTypes::B_VERTEX_BUFFER:
+        case B_VERTEX_BUFFER:
             bufferAccessPattern.stage = vk::PipelineStageFlagBits::eVertexInput;
             bufferAccessPattern.accessMask = vk::AccessFlagBits::eVertexAttributeRead;
             bufferAccessPattern.queueFamilyType = QueueFamilyTypes::GRAPHICS;
             break;
-        case BufferUsageTypes::B_GRAPHICS_WRITE:
+        case B_GRAPHICS_WRITE:
             bufferAccessPattern.stage = vk::PipelineStageFlagBits::eVertexShader | vk::PipelineStageFlagBits::eFragmentShader;
             bufferAccessPattern.accessMask = vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite;
             bufferAccessPattern.queueFamilyType = QueueFamilyTypes::GRAPHICS;
             break;
-        case BufferUsageTypes::B_COMPUTE_WRITE:
+        case B_COMPUTE_WRITE:
             bufferAccessPattern.stage = vk::PipelineStageFlagBits::eComputeShader;
             bufferAccessPattern.accessMask = vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite;
             bufferAccessPattern.queueFamilyType = QueueFamilyTypes::GRAPHICS;
             break;
-        case BufferUsageTypes::B_TRANSFER_SRC:
+        case B_TRANSFER_SRC:
             bufferAccessPattern.stage = vk::PipelineStageFlagBits::eTransfer;
             bufferAccessPattern.accessMask = vk::AccessFlagBits::eTransferWrite;
             bufferAccessPattern.queueFamilyType = QueueFamilyTypes::TRANSFER;
             break;
-        case BufferUsageTypes::B_TRANSFER_DST:
+        case B_TRANSFER_DST:
             bufferAccessPattern.stage = vk::PipelineStageFlagBits::eTransfer;
             bufferAccessPattern.accessMask = vk::AccessFlagBits::eTransferRead;
             bufferAccessPattern.queueFamilyType = QueueFamilyTypes::TRANSFER;
             break;
-        case BufferUsageTypes::B_EMPTY:
+        case B_EMPTY:
             bufferAccessPattern.stage = vk::PipelineStageFlagBits::eTopOfPipe;
             bufferAccessPattern.accessMask = vk::AccessFlags();
             bufferAccessPattern.queueFamilyType = QueueFamilyTypes::UNDEFINED;

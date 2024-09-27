@@ -27,6 +27,8 @@
 #include "Surface.hpp"
 #include "Sampler.hpp"
 #include "SwapChain.hpp"
+#include "VertexInput.hpp"
+#include "Pipeline.hpp"
 
 #include "Core.hpp"
 #include "CoreImpl.hpp"
