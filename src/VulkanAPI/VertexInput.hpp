@@ -7,7 +7,10 @@
 
 class VertexInput
 {
-    
+    VertexInput()
+    {
+        
+    }
     
 };
 
