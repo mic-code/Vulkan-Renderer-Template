@@ -28,6 +28,7 @@
 #include "Sampler.hpp"
 #include "SwapChain.hpp"
 #include "VertexInput.hpp"
+#include "DynamicRenderPass.hpp"
 #include "Pipeline.hpp"
 
 #include "Core.hpp"

@@ -47,7 +47,7 @@ namespace ENGINE
             
             currentPattern.stage = vk::PipelineStageFlagBits::eTopOfPipe;
             currentPattern.accessMask = vk::AccessFlagBits::eNone;
-            currentPattern.queueFamilyType = QueueFamilyTypes::Undefined; 
+            currentPattern.queueFamilyType = QueueFamilyTypes::UNDEFINED; 
             currentPattern.layout = layout;
 
             glm::vec3 currSize = size;

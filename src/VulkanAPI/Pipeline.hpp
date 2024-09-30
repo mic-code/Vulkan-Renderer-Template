@@ -9,13 +9,63 @@
 
 namespace ENGINE
 {
-    static vk::PipelineColorBlendStateCreateInfo GetBlendAttachmentState()
+    enum BlendConfigs 
     {
-        auto blendAttachmentState = vk::PipelineColorBlendAttachmentState()
-                                    .setColorWriteMask(
-                                        vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
-                                        vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA)
-                                    .setBlendEnable(VK_FALSE);
+        B_OPAQUE,
+        B_ADD,
+        B_MIX,
+        B_ALPHA_BLEND
+    };
+
+     enum  DepthConfigs
+    {
+         D_ENABLE,
+         D_DISABLE
+    };
+    
+    
+    static vk::PipelineColorBlendStateCreateInfo GetBlendAttachmentState(BlendConfigs configs)
+    {
+        auto blendAttachmentState = vk::PipelineColorBlendAttachmentState();
+        switch (configs)
+        {
+        case B_OPAQUE:
+            blendAttachmentState.setColorWriteMask(
+                                    vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
+                                    vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA)
+                                .setBlendEnable(VK_FALSE);
+            break;
+        case B_ADD:
+            blendAttachmentState.setColorWriteMask(vk::ColorComponentFlagBits::eA | vk::ColorComponentFlagBits::eR |
+                                    vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB)
+                                .setBlendEnable(VK_TRUE)
+            .setAlphaBlendOp(vk::BlendOp::eAdd)
+            .setColorBlendOp(vk::BlendOp::eAdd)
+            .setSrcColorBlendFactor(vk::BlendFactor::eOne)
+            .setDstColorBlendFactor(vk::BlendFactor::eOne);
+            break;
+        case B_MIX:
+            blendAttachmentState.setColorWriteMask(vk::ColorComponentFlagBits::eA | vk::ColorComponentFlagBits::eR |
+                                    vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB)
+                                .setBlendEnable(VK_TRUE)
+            .setAlphaBlendOp(vk::BlendOp::eAdd)
+            .setColorBlendOp(vk::BlendOp::eAdd)
+            .setSrcColorBlendFactor(vk::BlendFactor::eOne)
+            .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha);
+            break;
+        case B_ALPHA_BLEND:
+            blendAttachmentState.setColorWriteMask(vk::ColorComponentFlagBits::eA | vk::ColorComponentFlagBits::eR |
+                                    vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB)
+                                .setBlendEnable(VK_TRUE)
+            .setAlphaBlendOp(vk::BlendOp::eAdd)
+            .setColorBlendOp(vk::BlendOp::eAdd)
+            .setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha)
+            .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha);
+            break;
+        default:
+            assert(false&&"Invalid blend config");
+            break;
+        }
 
         auto blendAttachmentStateCreateInfo = vk::PipelineColorBlendStateCreateInfo()
                                               .setLogicOpEnable(VK_FALSE)
@@ -24,7 +74,7 @@ namespace ENGINE
         return blendAttachmentStateCreateInfo;
     }
 
-    static vk::PipelineDepthStencilStateCreateInfo GetDepthStencil()
+    static vk::PipelineDepthStencilStateCreateInfo GetDepthStencil(DepthConfigs configs)
     {
         auto depthStencilCreateInfo = vk::PipelineDepthStencilStateCreateInfo()
                                       .setDepthTestEnable(VK_TRUE)
@@ -32,6 +82,27 @@ namespace ENGINE
                                       .setDepthCompareOp(vk::CompareOp::eLess)
                                       .setDepthBoundsTestEnable(VK_FALSE)
                                       .setStencilTestEnable(VK_FALSE);
+        switch (configs)
+        {
+        case D_ENABLE:
+            depthStencilCreateInfo
+                .setDepthTestEnable(VK_TRUE)
+                .setDepthWriteEnable(VK_TRUE)
+                .setDepthCompareOp(vk::CompareOp::eLess)
+                .setDepthBoundsTestEnable(VK_FALSE);
+            break;
+        case D_DISABLE:
+            depthStencilCreateInfo
+                .setDepthTestEnable(VK_TRUE)
+                .setDepthWriteEnable(VK_TRUE)
+                .setDepthCompareOp(vk::CompareOp::eAlways)
+                .setDepthBoundsTestEnable(VK_FALSE);
+            break;
+        default:
+            assert(false && "Invalid depth config");
+            break;
+        }
+
         return depthStencilCreateInfo;
     }
 
@@ -39,6 +110,12 @@ namespace ENGINE
     {
         vk::PipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo;
         vk::PipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo;
+
+        DepthBlendInfos(BlendConfigs blendConfig, DepthConfigs depthConfig)
+        {
+            depthStencilStateCreateInfo = GetDepthStencil(depthConfig);
+            pipelineColorBlendStateCreateInfo = GetBlendAttachmentState(blendConfig);
+        }
         
     };
 
