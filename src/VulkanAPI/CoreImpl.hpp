@@ -43,6 +43,7 @@ namespace ENGINE
         }
         std::vector<const char*> deviceExtensions;
         deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+        deviceExtensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
         this->logicalDevice = CreateLogicalDevice(this->physicalDevice, this->queueFamilyIndices, deviceExtensions,
                                                   validationLayers);
         this->graphicsQueue = GetDeviceQueue(this->logicalDevice.get(), queueFamilyIndices.graphicsFamilyIndex);
@@ -53,7 +54,7 @@ namespace ENGINE
         {
             std::cout << "Layer Prop: " << property.layerName << "\n";
         }
-        
+
         // std::cout << "Supported extensions:\n";
         // auto extensions = physicalDevice.enumerateDeviceExtensionProperties();
         // for (auto extension : extensions)
@@ -152,12 +153,17 @@ namespace ENGINE
             vk::PhysicalDeviceProperties deviceProperties = device.getProperties();
             std::cout << "Physical device found: " << deviceProperties.deviceName;
             vk::PhysicalDeviceFeatures physicalDeviceFeatures = device.getFeatures();
-            if (deviceProperties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
+            if (deviceProperties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu &&
+                VK_VERSION_MAJOR(deviceProperties.apiVersion)>= 1 &&
+                VK_VERSION_MINOR(deviceProperties.apiVersion)>= 3)
             {
                 physicalDevice = device;
                 std::cout << "<--- Using this device";
             }
             std::cout << "\n";
+            std::cout << "API Version: " << VK_VERSION_MAJOR(deviceProperties.apiVersion) << "."
+                << VK_VERSION_MINOR(deviceProperties.apiVersion) << "."
+                << VK_VERSION_PATCH(deviceProperties.apiVersion) << std::endl;
         }
         assert((physicalDevice != nullptr) && "Failed to find physical device");
         return physicalDevice;
@@ -222,8 +228,10 @@ namespace ENGINE
         auto deviceFeatures12 = vk::PhysicalDeviceVulkan12Features()
             .setScalarBlockLayout(true);
 
-        vk::StructureChain<vk::DeviceCreateInfo, vk::PhysicalDeviceVulkan12Features> chain = {
-            deviceCreateInfo, deviceFeatures12
+        auto deviceFeatures13 = vk::PhysicalDeviceVulkan13Features()
+        .setDynamicRendering(true);
+        vk::StructureChain<vk::DeviceCreateInfo, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features> chain = {
+            deviceCreateInfo, deviceFeatures12, deviceFeatures13 
         };
         return physicalDevice.createDeviceUnique(chain.get<vk::DeviceCreateInfo>());
     }

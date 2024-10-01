@@ -9,7 +9,7 @@
 
 namespace ENGINE
 {
-    enum BlendConfigs 
+    enum BlendConfigs
     {
         B_OPAQUE,
         B_ADD,
@@ -17,21 +17,20 @@ namespace ENGINE
         B_ALPHA_BLEND
     };
 
-     enum  DepthConfigs
+    enum DepthConfigs
     {
-         D_ENABLE,
-         D_DISABLE
+        D_ENABLE,
+        D_DISABLE
     };
-    
-    
-    static vk::PipelineColorBlendStateCreateInfo GetBlendAttachmentState(BlendConfigs configs)
+
+
+    static vk::PipelineColorBlendAttachmentState GetBlendAttachmentState(BlendConfigs configs)
     {
         auto blendAttachmentState = vk::PipelineColorBlendAttachmentState();
         switch (configs)
         {
         case B_OPAQUE:
-            blendAttachmentState.setColorWriteMask(
-                                    vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
+            blendAttachmentState.setColorWriteMask(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
                                     vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA)
                                 .setBlendEnable(VK_FALSE);
             break;
@@ -39,39 +38,36 @@ namespace ENGINE
             blendAttachmentState.setColorWriteMask(vk::ColorComponentFlagBits::eA | vk::ColorComponentFlagBits::eR |
                                     vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB)
                                 .setBlendEnable(VK_TRUE)
-            .setAlphaBlendOp(vk::BlendOp::eAdd)
-            .setColorBlendOp(vk::BlendOp::eAdd)
-            .setSrcColorBlendFactor(vk::BlendFactor::eOne)
-            .setDstColorBlendFactor(vk::BlendFactor::eOne);
+                                .setAlphaBlendOp(vk::BlendOp::eAdd)
+                                .setColorBlendOp(vk::BlendOp::eAdd)
+                                .setSrcColorBlendFactor(vk::BlendFactor::eOne)
+                                .setDstColorBlendFactor(vk::BlendFactor::eOne);
             break;
         case B_MIX:
             blendAttachmentState.setColorWriteMask(vk::ColorComponentFlagBits::eA | vk::ColorComponentFlagBits::eR |
                                     vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB)
                                 .setBlendEnable(VK_TRUE)
-            .setAlphaBlendOp(vk::BlendOp::eAdd)
-            .setColorBlendOp(vk::BlendOp::eAdd)
-            .setSrcColorBlendFactor(vk::BlendFactor::eOne)
-            .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha);
+                                .setAlphaBlendOp(vk::BlendOp::eAdd)
+                                .setColorBlendOp(vk::BlendOp::eAdd)
+                                .setSrcColorBlendFactor(vk::BlendFactor::eOne)
+                                .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha);
             break;
         case B_ALPHA_BLEND:
             blendAttachmentState.setColorWriteMask(vk::ColorComponentFlagBits::eA | vk::ColorComponentFlagBits::eR |
                                     vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB)
                                 .setBlendEnable(VK_TRUE)
-            .setAlphaBlendOp(vk::BlendOp::eAdd)
-            .setColorBlendOp(vk::BlendOp::eAdd)
-            .setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha)
-            .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha);
+                                .setAlphaBlendOp(vk::BlendOp::eAdd)
+                                .setColorBlendOp(vk::BlendOp::eAdd)
+                                .setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha)
+                                .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha);
             break;
         default:
             assert(false&&"Invalid blend config");
             break;
         }
 
-        auto blendAttachmentStateCreateInfo = vk::PipelineColorBlendStateCreateInfo()
-                                              .setLogicOpEnable(VK_FALSE)
-                                              .setAttachmentCount(1)
-                                              .setPAttachments(&blendAttachmentState);
-        return blendAttachmentStateCreateInfo;
+
+        return blendAttachmentState;
     }
 
     static vk::PipelineDepthStencilStateCreateInfo GetDepthStencil(DepthConfigs configs)
@@ -93,7 +89,7 @@ namespace ENGINE
             break;
         case D_DISABLE:
             depthStencilCreateInfo
-                .setDepthTestEnable(VK_TRUE)
+                .setDepthTestEnable(VK_FALSE)
                 .setDepthWriteEnable(VK_TRUE)
                 .setDepthCompareOp(vk::CompareOp::eAlways)
                 .setDepthBoundsTestEnable(VK_FALSE);
@@ -106,25 +102,13 @@ namespace ENGINE
         return depthStencilCreateInfo;
     }
 
-    struct DepthBlendInfos
-    {
-        vk::PipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo;
-        vk::PipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo;
-
-        DepthBlendInfos(BlendConfigs blendConfig, DepthConfigs depthConfig)
-        {
-            depthStencilStateCreateInfo = GetDepthStencil(depthConfig);
-            pipelineColorBlendStateCreateInfo = GetBlendAttachmentState(blendConfig);
-        }
-        
-    };
-
     class GraphicsPipeline
     {
-        GraphicsPipeline(vk::Device logicalDevice, vk::ShaderModule vertexShader, vk::PipelineLayout pipelineLayout,
-                         vk::PipelineRenderingCreateInfo dynamicRenderPass
-                         , vk::ShaderModule fragmentShader,
-                         DepthBlendInfos depthBlendInfos, VertexInput& vertexInput)
+    public:
+        GraphicsPipeline(vk::Device& logicalDevice, vk::ShaderModule vertexShader, vk::ShaderModule fragmentShader,
+                         vk::PipelineLayout pipelineLayout,
+                         vk::PipelineRenderingCreateInfo dynamicRenderPass,
+                         BlendConfigs blendConfig, DepthConfigs depthConfigs, VertexInput& vertexInput)
         {
             assert(!vertexInput.inputDescription.empty()&&"vertexInput is empty");
             assert((vertexShader != nullptr) &&"vertex shader module is empty");
@@ -140,9 +124,9 @@ namespace ENGINE
                                    .setModule(fragmentShader)
                                    .setStage(vk::ShaderStageFlagBits::eFragment)
                                    .setPName("main");
-            
-            shaderStages[0]=vertShaderStage;
-            shaderStages[1]=fragShaderStage;
+
+            shaderStages[0] = vertShaderStage;
+            shaderStages[1] = fragShaderStage;
 
 
             auto inputAssembly = vk::PipelineInputAssemblyStateCreateInfo()
@@ -154,15 +138,18 @@ namespace ENGINE
                                  .setRasterizerDiscardEnable(VK_FALSE)
                                  .setPolygonMode(vk::PolygonMode::eFill)
                                  .setCullMode(vk::CullModeFlagBits::eBack)
-                                 .setFrontFace(vk::FrontFace::eClockwise);
-            
+                                 .setFrontFace(vk::FrontFace::eClockwise)
+                                 .setLineWidth(1.0f);
+
             vk::DynamicState dynamicStates[] = {vk::DynamicState::eViewport, vk::DynamicState::eScissor};
 
             auto dynamicStateInfo = vk::PipelineDynamicStateCreateInfo()
                                     .setDynamicStateCount(2)
                                     .setPDynamicStates(dynamicStates);
- 
-            auto pipelineViewport = vk::PipelineViewportStateCreateInfo();
+
+            auto pipelineViewport = vk::PipelineViewportStateCreateInfo()
+                                    .setViewportCount(1)
+                                    .setScissorCount(1);
 
             auto multiSample = vk::PipelineMultisampleStateCreateInfo()
                 .setRasterizationSamples(vk::SampleCountFlagBits::e1);
@@ -174,18 +161,26 @@ namespace ENGINE
                                     static_cast<uint32_t>(vertexInput.inputDescription.size()))
                                 .setPVertexAttributeDescriptions(vertexInput.inputDescription.data());
 
-           
+            
+            auto depthStencilStateCreateInfo = GetDepthStencil(depthConfigs);
+            
+            vk::PipelineColorBlendAttachmentState blendState = GetBlendAttachmentState(blendConfig);
+            auto pipelineColorBlendStateCreateInfo = vk::PipelineColorBlendStateCreateInfo()
+                                              .setLogicOpEnable(VK_FALSE)
+                                              .setAttachmentCount(1)
+                                              .setPAttachments(&blendState);
+            
             auto graphicsPipeline = vk::GraphicsPipelineCreateInfo()
                                     .setStageCount(2)
                                     .setPStages(shaderStages.data())
                                     .setPVertexInputState(&_vertexInput)
                                     .setPInputAssemblyState(&inputAssembly)
-                                    .setPViewportState(&pipelineViewport)
                                     .setPDynamicState(&dynamicStateInfo)
+                                    .setPViewportState(&pipelineViewport)
                                     .setPRasterizationState(&rasterization)
                                     .setPMultisampleState(&multiSample)
-                                    .setPColorBlendState(&depthBlendInfos.pipelineColorBlendStateCreateInfo)
-                                    .setPDepthStencilState(&depthBlendInfos.depthStencilStateCreateInfo)
+                                    .setPColorBlendState(&pipelineColorBlendStateCreateInfo)
+                                    .setPDepthStencilState(&depthStencilStateCreateInfo)
                                     .setLayout(pipelineLayout)
                                     .setRenderPass(VK_NULL_HANDLE)
                                     .setPNext(&dynamicRenderPass)
@@ -202,32 +197,30 @@ namespace ENGINE
 
     class ComputePipeline
     {
-
         ComputePipeline(vk::Device logicalDevice, vk::ShaderModule computeModule, vk::PipelineLayout pipelineLayout)
         {
             assert(computeModule != nullptr&& "Compute shader module is empty");
             this->pipelineLayout = pipelineLayout;
             auto computeStage = vk::PipelineShaderStageCreateInfo()
-            .setStage(vk::ShaderStageFlagBits::eCompute)
-            .setModule(computeModule)
-            .setPName("main");
+                                .setStage(vk::ShaderStageFlagBits::eCompute)
+                                .setModule(computeModule)
+                                .setPName("main");
 
             auto viewportSate = vk::PipelineViewportStateCreateInfo();
 
             auto computePipeline = vk::ComputePipelineCreateInfo()
-            .setFlags(vk::PipelineCreateFlags())
-            .setStage(computeStage)
-            .setLayout(pipelineLayout)
-            .setBasePipelineHandle(nullptr)
-            .setBasePipelineIndex(-1);
-            
-            pipelineHandle = logicalDevice.createComputePipelineUnique(nullptr, computePipeline).value;
+                                   .setFlags(vk::PipelineCreateFlags())
+                                   .setStage(computeStage)
+                                   .setLayout(pipelineLayout)
+                                   .setBasePipelineHandle(nullptr)
+                                   .setBasePipelineIndex(-1);
 
+            pipelineHandle = logicalDevice.createComputePipelineUnique(nullptr, computePipeline).value;
         }
+
         vk::PipelineLayout pipelineLayout;
         vk::UniquePipeline pipelineHandle;
     };
-   
 }
 
 

@@ -27,6 +27,7 @@ glm::uvec2 GetWindowSize(GLFWwindow* window)
     return glm::uvec2(widht, height);
     
 }
+
 void run()
 {
     GLFWwindow* window = glfwCreateWindow(WINDOWS_WIDTH, WINDOWS_HEIGHT, "Vulkan Engine Template", nullptr, nullptr);
@@ -51,7 +52,39 @@ void run()
         std::unique_ptr<ENGINE::InFlightQueue> inFlightQueue = std::make_unique<ENGINE::InFlightQueue>(
             core.get(), windowDesc, imageCount, vk::PresentModeKHR::eMailbox,
             GetWindowSize(window));
-        // std::unique_ptr<ENGINE::ExecuteOnceCommand> executeOnceCommand =std::make_unique<ENGINE::ExecuteOnceCommand>(core.get());
+        std::unique_ptr<ENGINE::ExecuteOnceCommand> executeOnceCommand =std::make_unique<ENGINE::ExecuteOnceCommand>(core.get());
+        
+        
+        std::string vertPath =
+            "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.vert.spv";
+        std::string fragPath =
+            "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.frag.spv";
+        ENGINE::ShaderModule vertShaderModule(core->logicalDevice.get(), vertPath);
+        ENGINE::ShaderModule fragShaderModule(core->logicalDevice.get(), fragPath);
+        std::vector<vk::RenderingAttachmentInfo> renderingAttachmentInfos(1);
+
+        ENGINE::DynamicRenderPass dynamicRenderPass;
+        dynamicRenderPass.SetPipelineRenderingInfo(1);
+        struct fastVertx
+        {
+            glm::vec2 pos;
+        };
+        ENGINE::VertexInput vertexInput;
+        vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC2, 0, 0, 0);
+        vertexInput.AddVertexInputBinding(0, sizeof(fastVertx));
+        vk::PipelineLayoutCreateInfo pipelineLayoutInfo = {};
+        pipelineLayoutInfo.setLayoutCount = 0;        // No descriptor sets
+        pipelineLayoutInfo.pushConstantRangeCount = 0;  // No push constants
+
+        auto pipelineLayout = core->logicalDevice.get().createPipelineLayout(pipelineLayoutInfo);
+
+
+        std::unique_ptr<ENGINE::GraphicsPipeline> graphicsPipeline = std::make_unique<ENGINE::GraphicsPipeline>(
+            core->logicalDevice.get(), vertShaderModule.shaderModuleHandle.get(),
+            fragShaderModule.shaderModuleHandle.get(), pipelineLayout, dynamicRenderPass.pipelineRenderingCreateInfo,
+            ENGINE::BlendConfigs::B_OPAQUE, ENGINE::DepthConfigs::D_ENABLE,
+            vertexInput
+        ); 
 
         while (!glfwWindowShouldClose(window))
         {
@@ -67,6 +100,7 @@ void run()
                 try
                 {
                     inFlightQueue->BeginFrame();
+
                     
                     inFlightQueue->EndFrame();    
                 }catch (vk::OutOfDateKHRError err)

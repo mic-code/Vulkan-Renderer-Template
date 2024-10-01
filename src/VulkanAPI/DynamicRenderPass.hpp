@@ -22,10 +22,12 @@ namespace ENGINE
 
     static vk::RenderingAttachmentInfo GetColorAttachment(ImageView& imageView)
     {
-        assert(
-            imageView.imageData->currentPattern.layout == vk::ImageLayout::eColorAttachmentOptimal &&
-            "invalid use of image as color attachment without the valid layout");
-        vk::ClearColorValue colorValue = {{0.0f, 0.0f, 0.0f, 0.0f}};
+        // assert(
+            // imageView.imageData->currentPattern.layout == vk::ImageLayout::eColorAttachmentOptimal &&
+            // "invalid use of image as color attachment without the valid layout");
+        auto colorValue = vk::ClearColorValue()
+        .setFloat32({0.0f, 0.0f, 0.0f, 1.0f});
+        
         auto colorAttachment = vk::RenderingAttachmentInfo()
                                .setImageView(imageView.imageView.get())
                                .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
@@ -52,18 +54,43 @@ namespace ENGINE
     }
 
 
-    class DynamicRenderPass
+    struct DynamicRenderPass
     {
-        DynamicRenderPass(std::vector<vk::RenderingAttachmentInfo> colorAttachments, vk::RenderingAttachmentInfo depthAttachment, glm::uvec2 size)
+    public:
+        vk::PipelineRenderingCreateInfo& SetPipelineRenderingInfo(uint32_t colorAttachmentCount,
+                          vk::Format colorFormat = vk::Format::eB8G8R8A8Unorm,
+                          vk::Format depthFormat = vk::Format::eD32Sfloat)
         {
-            renderInfo = vk::RenderingInfo()
-            .setRenderArea({{0, 0},{size.x, size.y}})
+            this->colorFormat = colorFormat;
+            this->depthFormat = depthFormat;
+            this->expectedColorAttachmentSize = colorAttachmentCount;
+            pipelineRenderingCreateInfo = vk::PipelineRenderingCreateInfo()
+            .setColorAttachmentCount(colorAttachmentCount)
+            .setPColorAttachmentFormats(&this->colorFormat)
+            .setDepthAttachmentFormat(this->depthFormat)
+            .setStencilAttachmentFormat(vk::Format::eUndefined);
+            return pipelineRenderingCreateInfo;
+            
+        }
+        vk::RenderingInfo& SetRenderInfo(std::vector<vk::RenderingAttachmentInfo> colorAttachments,
+                          vk::RenderingAttachmentInfo depthAttachment, ImageView& imageView, glm::uvec2 framebufferSize)
+        {
+            assert(
+                colorAttachments.size() == expectedColorAttachmentSize &&
+                "Color attachment must be the same as the one indicated in the pipeline creation");
+             renderInfo = vk::RenderingInfo()
+            .setRenderArea({{0, 0},{framebufferSize.x, framebufferSize.y}})
             .setLayerCount(1)
             .setColorAttachmentCount(colorAttachments.size())
             .setPColorAttachments(colorAttachments.data())
             .setPDepthAttachment(&depthAttachment);
+            return renderInfo;
         }
+        vk::Format colorFormat;
+        vk::Format depthFormat;
+        uint32_t expectedColorAttachmentSize = 0;
         vk::RenderingInfo renderInfo;
+        vk::PipelineRenderingCreateInfo pipelineRenderingCreateInfo;
         
     };
 }

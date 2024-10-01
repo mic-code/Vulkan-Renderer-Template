@@ -10,7 +10,7 @@ for /r glsl/ %%I in (*.vert) do (
     @echo compiling %%I
     @echo To !outname!
     
-   %CompilerExe% -V "%%I" -l --target-env vulkan1.3 -o "!outname!".spv
+   %CompilerExe% -V "%%I" -l --target-env vulkan1.2 -o "!outname!".spv
 )
 for /r glsl/ %%I in (*.frag) do (
     set outname=%%I
@@ -18,7 +18,7 @@ for /r glsl/ %%I in (*.frag) do (
     @echo compiling %%I
     @echo To !outname!
     
-   %CompilerExe% -V "%%I" -l --target-env vulkan1.3 -o "!outname!".spv
+   %CompilerExe% -V "%%I" -l --target-env vulkan1.2 -o "!outname!".spv
 )
 for /r glsl/ %%I in (*.comp) do (
     set outname=%%I
@@ -26,6 +26,6 @@ for /r glsl/ %%I in (*.comp) do (
     @echo compiling %%I
     @echo To !outname!
     
-   %CompilerExe% -V "%%I" -l --target-env vulkan1.3 -o "!outname!".spv
+   %CompilerExe% -V "%%I" -l --target-env vulkan1.2 -o "!outname!".spv
 )
 pause

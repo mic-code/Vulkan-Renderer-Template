@@ -32,6 +32,7 @@ namespace ENGINE
 
         static int32_t FindMemoryTypeIndex(vk::PhysicalDevice logicalDevice, uint32_t memTypeFlags, vk::MemoryPropertyFlags memFlags);
         
+        vk::UniqueDevice logicalDevice;
         vk::Queue graphicsQueue;
         vk::Queue presentQueue;
 
@@ -66,7 +67,6 @@ namespace ENGINE
         vk::DispatchLoaderDynamic loader;
         vk::UniqueHandle<vk::DebugUtilsMessengerEXT, vk::DispatchLoaderDynamic> debugUtilsMessenger;
         vk::PhysicalDevice physicalDevice;
-        vk::UniqueDevice logicalDevice;
         vk::UniqueCommandPool commandPool;
         
         QueueFamilyIndices queueFamilyIndices;
