@@ -122,7 +122,7 @@ namespace ENGINE
         
     }
 
-    static void TransitionImage(ImageData* imageData, ImageAccessPattern dstPattern, vk::ImageSubresourceRange range, vk::CommandBuffer commandBuffer)
+    static void TransitionImage(ImageData* imageData, ImageAccessPattern& dstPattern, vk::ImageSubresourceRange range, vk::CommandBuffer& commandBuffer)
     {
         auto imageBarrier = vk::ImageMemoryBarrier()
                             .setSrcAccessMask(imageData->currentPattern.accessMask)

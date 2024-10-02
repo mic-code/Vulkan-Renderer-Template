@@ -2,7 +2,10 @@
 // Created by carlo on 2024-09-21.
 //
 
+
 #include "VulkanAPI/EngineInclude.hpp"
+
+#define ENGINE_ENABLE_DEBUGGING
 
 #define GLM_FORCE_RADIANS
 #define GLM_DEPTH_ZERO_TO_ONE
@@ -42,7 +45,7 @@ void run()
         windowDesc.hInstance = GetModuleHandle(NULL);
         windowDesc.hWnd = glfwGetWin32Window(window);
 
-        bool enableDebugging = true;
+        bool enableDebugging = false;
 #if defined ENGINE_ENABLE_DEBUGGING
     enableDebugging = true;
 #endif
@@ -66,14 +69,20 @@ void run()
         ENGINE::DynamicRenderPass dynamicRenderPass;
         dynamicRenderPass.SetPipelineRenderingInfo(1);
         
-        struct fastVertx
+        struct Vertex 
         {
             float pos[2];
+            float uv[2];
         };
         
         ENGINE::VertexInput vertexInput;
-        vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC2, 0, offsetof(fastVertx, pos), 0);
-        vertexInput.AddVertexInputBinding(0, sizeof(fastVertx));
+        vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC2, 0, offsetof(Vertex, pos), 0);
+        vertexInput.AddVertexInputBinding(0, sizeof(Vertex));
+        
+        vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC2, 0, offsetof(Vertex, uv), 1);
+        vertexInput.AddVertexInputBinding(0, sizeof(Vertex));
+        
+        
         vk::PipelineLayoutCreateInfo pipelineLayoutInfo = {};
         pipelineLayoutInfo.setLayoutCount = 0;        // No descriptor sets
         pipelineLayoutInfo.pushConstantRangeCount = 0;  // No push constants
@@ -88,23 +97,27 @@ void run()
             vertexInput
         );
 
-        std::vector<fastVertx> vertices{
-            {-1.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}
-        }; 
+        std::vector<Vertex> vertices{
+            {{-0.5f, -0.5f}, {0.0f, 0.0f}}, // Bottom-left corner, UV (0, 0)
+            {{0.5f, -0.5f}, {1.0f, 0.0f}}, // Bottom-right corner, UV (1, 0)
+            {{0.0f, 0.5f}, {0.5f, 1.0f}}
+        };
+        
         std::unique_ptr<ENGINE::Buffer> buffer = std::make_unique<ENGINE::Buffer>(
             core->physicalDevice, core->logicalDevice.get(), vk::BufferUsageFlagBits::eVertexBuffer,
-            vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, sizeof(fastVertx) * vertices.size());
+            vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, sizeof(Vertex) * vertices.size(), vertices.data());
 
         while (!glfwWindowShouldClose(window))
         {
             glfwPollEvents();
             {
+                glm::uvec2 windowSize = GetWindowSize(window);
                 if (!inFlightQueue)
                 {
                     std::cout << "recreated swapchain";
                     inFlightQueue = std::make_unique<ENGINE::InFlightQueue>(
                         core.get(), windowDesc, imageCount, vk::PresentModeKHR::eMailbox,
-                        GetWindowSize(window));
+                        windowSize);
                 }
                 try
                 {
@@ -112,9 +125,8 @@ void run()
 
                     auto& currFrame = inFlightQueue->frameResources[inFlightQueue->frameIndex];
                     ENGINE::ImageAccessPattern pattern = ENGINE::GetImageDstPattern(ENGINE::LayoutPatterns::COLOR_ATTACHMENT);
-                    ENGINE::TransitionImage(inFlightQueue->currentSwapchainImageView->imageData, pattern, inFlightQueue->currentSwapchainImageView->GetSubresourceRange(), *currFrame.commandBuffer);
+                    ENGINE::TransitionImage(inFlightQueue->currentSwapchainImageView->imageData, pattern, inFlightQueue->currentSwapchainImageView->GetSubresourceRange(), currFrame.commandBuffer.get());
                     
-                    glm::uvec2 windowSize =GetWindowSize(window);
                     
                     std::vector<vk::RenderingAttachmentInfo> attachmentInfo(1);
                     attachmentInfo[0] = ENGINE::GetColorAttachment(inFlightQueue->currentSwapchainImageView);
@@ -137,6 +149,7 @@ void run()
                     currFrame.commandBuffer->endRendering();
                     
                     inFlightQueue->EndFrame();
+                    
                 }catch (vk::OutOfDateKHRError err)
                 {
                     core->WaitIdle();

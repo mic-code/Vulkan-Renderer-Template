@@ -16,26 +16,20 @@ namespace ENGINE
 
          return surfaceDetails;
      }   
-    static int32_t FindMemoryTypeIndex(vk::PhysicalDevice physicalDevice, uint32_t memTypeFlags,
-                                      vk::MemoryPropertyFlags memFlags)
-    {
-        vk::PhysicalDeviceMemoryProperties properties = physicalDevice.getMemoryProperties();
-        const uint32_t memCount = properties.memoryTypeCount;
+	static uint32_t FindMemoryTypeIndex(vk::PhysicalDevice physicalDevice, uint32_t suitableIndices, vk::MemoryPropertyFlags memoryVisibility)
+	{
+		vk::PhysicalDeviceMemoryProperties availableMemProperties = physicalDevice.getMemoryProperties();
 
-        for (int memIndex = 0; memIndex < memCount; ++memIndex)
-        {
-            const uint32_t memTypeBits = (1 << memIndex);
-            const bool isRequiredMemType = memTypeFlags & memTypeBits;
-
-            const vk::MemoryPropertyFlags prop = properties.memoryTypes[memIndex].propertyFlags;
-            const bool hasRequiredProperties = (prop & memFlags) == memFlags;
-
-            if (isRequiredMemType && hasRequiredProperties)
-                return static_cast<int32_t>(memIndex);
-        }
-        std::cout << "Failed to find a memory type\n";
-        return -1;
-    }
+		for (uint32_t i = 0; i < availableMemProperties.memoryTypeCount; i++)
+		{
+			if ((suitableIndices & (1 << i)) && (availableMemProperties.memoryTypes[i].propertyFlags & memoryVisibility)
+				== memoryVisibility)
+			{
+				return i;
+			}
+		}
+		return uint32_t(-1);
+	}
 
     static std::vector<uint32_t> GetByteCode(const std::string filepath)
     {
