@@ -3,6 +3,7 @@
 //
 
 
+
 #ifndef CORE_HPP
 
 namespace ENGINE
@@ -32,7 +33,10 @@ namespace ENGINE
 
         static int32_t FindMemoryTypeIndex(vk::PhysicalDevice logicalDevice, uint32_t memTypeFlags, vk::MemoryPropertyFlags memFlags);
         
+        vk::UniqueInstance instance;
+        vk::PhysicalDevice physicalDevice;
         vk::UniqueDevice logicalDevice;
+        vk::UniqueCommandPool commandPool;
         vk::Queue graphicsQueue;
         vk::Queue presentQueue;
 
@@ -63,12 +67,8 @@ namespace ENGINE
 
         friend class Swapchain;
         
-        vk::UniqueInstance instance;
         vk::DispatchLoaderDynamic loader;
         vk::UniqueHandle<vk::DebugUtilsMessengerEXT, vk::DispatchLoaderDynamic> debugUtilsMessenger;
-        vk::PhysicalDevice physicalDevice;
-        vk::UniqueCommandPool commandPool;
-        
         QueueFamilyIndices queueFamilyIndices;
         
     };

@@ -122,18 +122,18 @@ namespace ENGINE
         
     }
 
-    static void TransitionImage(ImageData& imageData, ImageAccessPattern dstPattern, vk::ImageSubresourceRange range, vk::CommandBuffer commandBuffer)
+    static void TransitionImage(ImageData* imageData, ImageAccessPattern dstPattern, vk::ImageSubresourceRange range, vk::CommandBuffer commandBuffer)
     {
         auto imageBarrier = vk::ImageMemoryBarrier()
-                            .setSrcAccessMask(imageData.currentPattern.accessMask)
-                            .setOldLayout(imageData.currentPattern.layout)
+                            .setSrcAccessMask(imageData->currentPattern.accessMask)
+                            .setOldLayout(imageData->currentPattern.layout)
                             .setDstAccessMask(dstPattern.accessMask)
                             .setNewLayout(dstPattern.layout)
                             .setSubresourceRange(range)
-                            .setImage(imageData.imageHandle);
+                            .setImage(imageData->imageHandle);
 
-        commandBuffer.pipelineBarrier(imageData.currentPattern.stage, dstPattern.stage, vk::DependencyFlags(), {}, nullptr, imageBarrier);
-        imageData.currentPattern = dstPattern;
+        commandBuffer.pipelineBarrier(imageData->currentPattern.stage, dstPattern.stage, vk::DependencyFlags(), {}, nullptr, imageBarrier);
+        imageData->currentPattern = dstPattern;
     }
     static BufferAccessPattern GetSrcBufferAccessPattern(BufferUsageTypes usageType)
     {

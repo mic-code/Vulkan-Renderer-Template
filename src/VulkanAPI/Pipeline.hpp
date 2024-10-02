@@ -157,8 +157,7 @@ namespace ENGINE
             auto _vertexInput = vk::PipelineVertexInputStateCreateInfo()
                                 .setVertexBindingDescriptionCount(1)
                                 .setPVertexBindingDescriptions(vertexInput.bindingDescription.data())
-                                .setVertexAttributeDescriptionCount(
-                                    static_cast<uint32_t>(vertexInput.inputDescription.size()))
+                                .setVertexAttributeDescriptionCount(static_cast<uint32_t>(vertexInput.inputDescription.size()))
                                 .setPVertexAttributeDescriptions(vertexInput.inputDescription.data());
 
             

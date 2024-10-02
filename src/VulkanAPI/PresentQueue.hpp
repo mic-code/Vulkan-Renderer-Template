@@ -93,18 +93,19 @@ namespace ENGINE
                 currentSwapchainImageView = presentQueue->AcquireImage(currFrame.imageAcquiredSemaphore.get());
             }
 
+            auto bufferBeginInfo = vk::CommandBufferBeginInfo()
+                .setFlags(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
+            currFrame.commandBuffer->begin(bufferBeginInfo);
+
             //add pass info from my data
         }
         void EndFrame()
         {
             auto &currFrame = frameResources[frameIndex];
 
-            auto bufferBeginInfo = vk::CommandBufferBeginInfo()
-            .setFlags(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
-            currFrame.commandBuffer->begin(bufferBeginInfo);
 
             ImageAccessPattern pattern = GetImageDstPattern(PRESENT);
-            TransitionImage(*currentSwapchainImageView->imageData, pattern, currentSwapchainImageView->GetSubresourceRange(),
+            TransitionImage(currentSwapchainImageView->imageData, pattern, currentSwapchainImageView->GetSubresourceRange(),
                                     currFrame.commandBuffer.get());
             
             currFrame.commandBuffer->end();

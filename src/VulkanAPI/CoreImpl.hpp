@@ -8,7 +8,6 @@
 
 #include <set>
 
-
 namespace ENGINE
 {
     Core::Core(const char** instanceExtensions, uint8_t instanceExtensionsCount, WindowDesc* compatibleWindowDesc,
@@ -19,13 +18,14 @@ namespace ENGINE
         if (enableDebugging)
         {
             validationLayers.push_back("VK_LAYER_KHRONOS_validation");
+            // validationLayers.push_back("VK_LAYER_LUNARG_api_dump");
             resInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         }
         this->instance = CreateInstance(resInstanceExtensions, validationLayers);
-
+        
         loader = vk::DispatchLoaderDynamic(instance.get(), vkGetInstanceProcAddr);
         loader.init();
-
+        
         auto properties = vk::enumerateInstanceLayerProperties();
 
         if (enableDebugging)
@@ -33,7 +33,6 @@ namespace ENGINE
             this->debugUtilsMessenger = CreateDebugUtilsMessenger(instance.get(), DebugMessageCallback, loader);
         }
         this->physicalDevice = FindPhysicalDevice(instance.get());
-
 
         if (compatibleWindowDesc)
         {
@@ -43,7 +42,6 @@ namespace ENGINE
         }
         std::vector<const char*> deviceExtensions;
         deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-        deviceExtensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
         this->logicalDevice = CreateLogicalDevice(this->physicalDevice, this->queueFamilyIndices, deviceExtensions,
                                                   validationLayers);
         this->graphicsQueue = GetDeviceQueue(this->logicalDevice.get(), queueFamilyIndices.graphicsFamilyIndex);
@@ -61,6 +59,7 @@ namespace ENGINE
         // {
         //     std::cout << "  " << extension.extensionName << "\n";
         // }
+        
     }
 
     Core::~Core()
@@ -119,7 +118,13 @@ namespace ENGINE
 
     void Core::WaitIdle()
     {
-        logicalDevice->waitIdle();
+        if (this->logicalDevice)
+        {
+            this->logicalDevice->waitIdle();
+        }else
+        {
+            std::cout << "Unable to wait idle without a device\n";
+        }
     }
 
 
@@ -139,6 +144,7 @@ namespace ENGINE
                                   .setPpEnabledExtensionNames(instanceExtensions.data())
                                   .setEnabledLayerCount(uint32_t(validationLayers.size()))
                                   .setPpEnabledLayerNames(validationLayers.data());
+        
 
         return vk::createInstanceUnique(instanceCreateInfo);
     }
@@ -188,7 +194,8 @@ namespace ENGINE
                 queueFamilyIndices.presentFamilyIndex = familyIndex;
             }
         }
-        assert(queueFamilyIndices.graphicsFamilyIndex != -1 && "Failed to find appropiate queue families");
+        assert(queueFamilyIndices.graphicsFamilyIndex != uint32_t(-1) && "Failed to find appropiate queue families");
+        assert(queueFamilyIndices.presentFamilyIndex != uint32_t(-1) && "Failed to find appropiate queue families");
 
         return queueFamilyIndices;
     }

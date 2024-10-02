@@ -12,6 +12,7 @@ for /r glsl/ %%I in (*.vert) do (
     
    %CompilerExe% -V "%%I" -l --target-env vulkan1.2 -o "!outname!".spv
 )
+
 for /r glsl/ %%I in (*.frag) do (
     set outname=%%I
     set outname=!outname:\glsl\=\spirv\!
@@ -20,6 +21,7 @@ for /r glsl/ %%I in (*.frag) do (
     
    %CompilerExe% -V "%%I" -l --target-env vulkan1.2 -o "!outname!".spv
 )
+
 for /r glsl/ %%I in (*.comp) do (
     set outname=%%I
     set outname=!outname:\glsl\=\spirv\!

@@ -9,6 +9,7 @@ namespace ENGINE
 {
     class Buffer
     {
+    public:
 
         void* Map()
         {
