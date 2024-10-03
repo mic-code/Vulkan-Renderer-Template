@@ -12,7 +12,7 @@ namespace ENGINE
     class ImageView
     {
     public:
-        ImageView(vk::PhysicalDevice physicalDevice, vk::Device logicalDevice, ImageData* imageData,
+        ImageView(vk::Device logicalDevice, ImageData* imageData,
                   uint32_t baseMipLevel, uint32_t mipLevelCount, uint32_t baseArrayLayer, uint32_t arrayLayersCount)
         {
             this->imageData = imageData;

@@ -98,7 +98,7 @@ namespace ENGINE
     class Image
     {
     public:
-        
+
         static vk::ImageCreateInfo CreateInfo2d(glm::uvec2 size, uint32_t mipsCount, uint32_t arraysLayerCount,
                                                 vk::Format format, vk::ImageUsageFlags usage)
         {
@@ -152,8 +152,8 @@ namespace ENGINE
             
             
         }
-        vk::UniqueImage imageHandle;
         std::unique_ptr<ImageData> imageData;
+        vk::UniqueImage imageHandle;
         vk::UniqueDeviceMemory imageMemory;
     };
 

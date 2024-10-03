@@ -72,7 +72,7 @@ namespace ENGINE
                 imageFull.imageData = std::make_unique<ImageData>(swapChainImages[imageIndex], vk::ImageType::e2D,
                                                                   glm::vec3(extent.width, extent.height, 1), 1, 1,
                                                                   surfaceFormat.format, vk::ImageLayout::eUndefined);
-                imageFull.imageView = std::make_unique<ImageView>(physicalDevice, logicalDevice,
+                imageFull.imageView = std::make_unique<ImageView>(logicalDevice,
                                                                   imageFull.imageData.get(), 0, 1, 0, 1);
 
                 images.emplace_back(std::move(imageFull));
@@ -90,7 +90,7 @@ namespace ENGINE
                 imageFull.imageData = std::make_unique<ImageData>(image->imageHandle.get(), vk::ImageType::e2D,
                                                                   glm::vec3(extent.width, extent.height, 1), 1, 1,
                                                                   depthFormat, vk::ImageLayout::eUndefined);
-                imageFull.imageView = std::make_unique<ImageView>(physicalDevice, logicalDevice,
+                imageFull.imageView = std::make_unique<ImageView>(logicalDevice,
                                                                   imageFull.imageData.get(), 0, 1, 0, 1);
 
                 depthImages.emplace_back(std::move(image));
