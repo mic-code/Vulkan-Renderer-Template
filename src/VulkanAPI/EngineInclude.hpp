@@ -23,6 +23,7 @@
 #include "ImageView.hpp"
 #include "SyncronizationPatterns.hpp"
 #include "Buffer.hpp"
+#include "StagedBuffer.hpp"
 #include "ShaderModule.hpp"
 #include "Surface.hpp"
 #include "Sampler.hpp"
