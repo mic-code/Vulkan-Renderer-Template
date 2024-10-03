@@ -18,16 +18,28 @@ namespace ENGINE
 
         void Unmap()
         {
-            logicalDevice.unmapMemory(deviceMemHandle.get());
+            if(mappedMem)
+            {
+                logicalDevice.unmapMemory(deviceMemHandle.get());
+                mappedMem = nullptr;
+            }
         }
         //whole_size for the whole buffer
-        void flush(vk::DeviceSize offset = 0)
+        void Flush(vk::DeviceSize offset = 0)
         {
             auto mappedMemRange= vk::MappedMemoryRange()
             .setMemory(deviceMemHandle.get())
             .setOffset(offset)
             .setSize(deviceSize);
             logicalDevice.flushMappedMemoryRanges(mappedMemRange);
+        }
+        void Invlidate(vk::DeviceSize offset = 0)
+        {
+             auto mappedMemRange= vk::MappedMemoryRange()
+            .setMemory(deviceMemHandle.get())
+            .setOffset(offset)
+            .setSize(deviceSize);
+            logicalDevice.invalidateMappedMemoryRanges(mappedMemRange);           
         }
         void SetupDescriptor(vk::DeviceSize offset = 0)
         {
@@ -67,7 +79,7 @@ namespace ENGINE
                 memcpy(mappedMem, data, deviceSize);
                 Unmap();
                 if (!(memPropertyFlags & vk::MemoryPropertyFlagBits::eHostCoherent)){
-                    flush();
+                    Flush();
                 }
             }
             
