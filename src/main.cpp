@@ -3,6 +3,7 @@
 //
 
 
+#include "WindowAPI/WindowInclude.hpp"
 #include "VulkanAPI/EngineInclude.hpp"
 
 #define ENGINE_ENABLE_DEBUGGING
@@ -12,164 +13,167 @@
 //#define GLM_FORCE_RIGHT_HANDED
 #define GLM_ENABLE_EXPERIMENTAL
 
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3native.h>
-
 CONST int WINDOWS_WIDTH = 1024;
 CONST int WINDOWS_HEIGHT = 1024;
 
-glm::uvec2 GetWindowSize(GLFWwindow* window)
+
+void run(WindowProvider* windowProvider)
 {
-    int widht = 0;
-    int height = 0;
-
-    glfwGetWindowSize(window, &widht,&height);
-
-    return glm::uvec2(widht, height);
+    int imageCount = 3;
     
-}
+    ENGINE::WindowDesc windowDesc = {};
+    windowDesc.hInstance = GetModuleHandle(NULL);
+    windowDesc.hWnd = glfwGetWin32Window(windowProvider->window);
 
-void run()
-{
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    GLFWwindow* window = glfwCreateWindow(WINDOWS_WIDTH, WINDOWS_HEIGHT, "Vulkan Engine Template", nullptr, nullptr);
-    {
-        int imageCount = 3;
-
-        const char* glfwExtensions[] = {"VK_KHR_surface", "VK_KHR_win32_surface"};
-        uint32_t glfwExtensionCount = sizeof(glfwExtensions) / sizeof(glfwExtensions[0]);
-
-        ENGINE::WindowDesc windowDesc = {};
-        windowDesc.hInstance = GetModuleHandle(NULL);
-        windowDesc.hWnd = glfwGetWin32Window(window);
-
-        bool enableDebugging = false;
+    bool enableDebugging = false;
 #if defined ENGINE_ENABLE_DEBUGGING
     enableDebugging = true;
 #endif
 
-        
-        std::unique_ptr<ENGINE::Core> core = std::make_unique<ENGINE::Core>(
-            glfwExtensions, glfwExtensionCount, &windowDesc, enableDebugging);
-        std::unique_ptr<ENGINE::InFlightQueue> inFlightQueue = std::make_unique<ENGINE::InFlightQueue>(
-            core.get(), windowDesc, imageCount, vk::PresentModeKHR::eMailbox,
-            GetWindowSize(window));
-        std::unique_ptr<ENGINE::ExecuteOnceCommand> executeOnceCommand =std::make_unique<ENGINE::ExecuteOnceCommand>(core.get());
-        
-        
-        std::string vertPath =
-            "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.vert.spv";
-        std::string fragPath =
-            "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.frag.spv";
-        ENGINE::ShaderModule vertShaderModule(core->logicalDevice.get(), vertPath);
-        ENGINE::ShaderModule fragShaderModule(core->logicalDevice.get(), fragPath);
-        std::vector<vk::RenderingAttachmentInfo> renderingAttachmentInfos(1);
-        ENGINE::DynamicRenderPass dynamicRenderPass;
-        dynamicRenderPass.SetPipelineRenderingInfo(1);
-        
-        struct Vertex 
-        {
-            float pos[2];
-            float uv[2];
-        };
-        
-        ENGINE::VertexInput vertexInput;
-        vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC2, 0, offsetof(Vertex, pos), 0);
-        vertexInput.AddVertexInputBinding(0, sizeof(Vertex));
-        
-        vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC2, 0, offsetof(Vertex, uv), 1);
-        vertexInput.AddVertexInputBinding(0, sizeof(Vertex));
-        
-        
-        vk::PipelineLayoutCreateInfo pipelineLayoutInfo = {};
-        pipelineLayoutInfo.setLayoutCount = 0;        // No descriptor sets
-        pipelineLayoutInfo.pushConstantRangeCount = 0;  // No push constants
-        
-        auto pipelineLayout = core->logicalDevice.get().createPipelineLayoutUnique(pipelineLayoutInfo);
+    const char* glfwExtensions[] = {"VK_KHR_surface", "VK_KHR_win32_surface"};
+    uint32_t glfwExtensionCount = sizeof(glfwExtensions) / sizeof(glfwExtensions[0]);
 
-        
-        std::unique_ptr<ENGINE::GraphicsPipeline> graphicsPipeline = std::make_unique<ENGINE::GraphicsPipeline>(
-            core->logicalDevice.get(), vertShaderModule.shaderModuleHandle.get(),
-            fragShaderModule.shaderModuleHandle.get(), pipelineLayout.get(), dynamicRenderPass.pipelineRenderingCreateInfo,
-            ENGINE::BlendConfigs::B_OPAQUE, ENGINE::DepthConfigs::D_ENABLE,
-            vertexInput
-        );
+    std::unique_ptr<ENGINE::Core> core = std::make_unique<ENGINE::Core>(
+        glfwExtensions, glfwExtensionCount, &windowDesc, enableDebugging);
+    std::unique_ptr<ENGINE::InFlightQueue> inFlightQueue = std::make_unique<ENGINE::InFlightQueue>(
+        core.get(), windowDesc, imageCount, vk::PresentModeKHR::eMailbox,
+        windowProvider->GetWindowSize());
+    std::unique_ptr<ENGINE::ExecuteOnceCommand> executeOnceCommand = std::make_unique<
+        ENGINE::ExecuteOnceCommand>(core.get());
 
-        std::vector<Vertex> vertices{
-            {{-0.5f, -0.5f}, {0.0f, 0.0f}}, // Bottom-left corner, UV (0, 0)
-            {{0.5f, -0.5f}, {1.0f, 0.0f}}, // Bottom-right corner, UV (1, 0)
-            {{0.0f, 0.5f}, {0.5f, 1.0f}}
-        };
-        
-        std::unique_ptr<ENGINE::Buffer> buffer = std::make_unique<ENGINE::Buffer>(
-            core->physicalDevice, core->logicalDevice.get(), vk::BufferUsageFlagBits::eVertexBuffer,
-            vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, sizeof(Vertex) * vertices.size(), vertices.data());
 
-        while (!glfwWindowShouldClose(window))
-        {
-            glfwPollEvents();
-            {
-                glm::uvec2 windowSize = GetWindowSize(window);
-                if (!inFlightQueue)
-                {
-                    std::cout << "recreated swapchain";
-                    inFlightQueue = std::make_unique<ENGINE::InFlightQueue>(
-                        core.get(), windowDesc, imageCount, vk::PresentModeKHR::eMailbox,
-                        windowSize);
-                }
-                try
-                {
-                    inFlightQueue->BeginFrame();
+    std::string vertPath =
+        "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.vert.spv";
+    std::string fragPath =
+        "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.frag.spv";
+    ENGINE::ShaderModule vertShaderModule(core->logicalDevice.get(), vertPath);
+    ENGINE::ShaderModule fragShaderModule(core->logicalDevice.get(), fragPath);
+    std::vector<vk::RenderingAttachmentInfo> renderingAttachmentInfos(1);
+    ENGINE::DynamicRenderPass dynamicRenderPass;
+    dynamicRenderPass.SetPipelineRenderingInfo(1);
 
-                    auto& currFrame = inFlightQueue->frameResources[inFlightQueue->frameIndex];
-                    ENGINE::ImageAccessPattern pattern = ENGINE::GetImageDstPattern(ENGINE::LayoutPatterns::COLOR_ATTACHMENT);
-                    ENGINE::TransitionImage(inFlightQueue->currentSwapchainImageView->imageData, pattern, inFlightQueue->currentSwapchainImageView->GetSubresourceRange(), currFrame.commandBuffer.get());
-                    
-                    
-                    std::vector<vk::RenderingAttachmentInfo> attachmentInfo(1);
-                    attachmentInfo[0] = ENGINE::GetColorAttachment(inFlightQueue->currentSwapchainImageView);
-                    dynamicRenderPass.SetRenderInfo(attachmentInfo, windowSize);
-                   
-                    // Set the viewport and scissor in the command buffer
-                    
-                    dynamicRenderPass.SetViewport(windowSize, windowSize);
-                    currFrame.commandBuffer->setViewport(0, dynamicRenderPass.viewport);
-                    currFrame.commandBuffer->setScissor(0, dynamicRenderPass.scissor);
-                    
-                    currFrame.commandBuffer->beginRendering(&dynamicRenderPass.renderInfo);
-                    
-                    currFrame.commandBuffer->bindPipeline(vk::PipelineBindPoint::eGraphics, graphicsPipeline->pipelineHandle.get());
+    struct Vertex
+    {
+        float pos[2];
+        float uv[2];
+    };
 
-                    vk::DeviceSize size = {0};
-                    currFrame.commandBuffer->bindVertexBuffers(0, 1, &buffer->bufferHandle.get(), &size);
-                    currFrame.commandBuffer->draw(static_cast<uint32_t>(vertices.size()), 1, 0, 0);
-                    
-                    currFrame.commandBuffer->endRendering();
-                    
-                    inFlightQueue->EndFrame();
-                    
-                }catch (vk::OutOfDateKHRError err)
-                {
-                    core->WaitIdle();
-                    inFlightQueue.reset();
-                }
-                
-            }
-            core->WaitIdle();
-        }
-        glfwDestroyWindow(window);
+    ENGINE::VertexInput vertexInput;
+    vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC2, 0, offsetof(Vertex, pos), 0);
+    vertexInput.AddVertexInputBinding(0, sizeof(Vertex));
+
+    vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC2, 0, offsetof(Vertex, uv), 1);
+    vertexInput.AddVertexInputBinding(0, sizeof(Vertex));
+
+
+    vk::PipelineLayoutCreateInfo pipelineLayoutInfo = {};
+    pipelineLayoutInfo.setLayoutCount = 0; // No descriptor sets
+    pipelineLayoutInfo.pushConstantRangeCount = 0; // No push constants
+
+    auto pipelineLayout = core->logicalDevice.get().createPipelineLayoutUnique(pipelineLayoutInfo);
+
+
+    std::unique_ptr<ENGINE::GraphicsPipeline> graphicsPipeline = std::make_unique<ENGINE::GraphicsPipeline>(
+        core->logicalDevice.get(), vertShaderModule.shaderModuleHandle.get(),
+        fragShaderModule.shaderModuleHandle.get(), pipelineLayout.get(), dynamicRenderPass.pipelineRenderingCreateInfo,
+        ENGINE::BlendConfigs::B_OPAQUE, ENGINE::DepthConfigs::D_ENABLE,
+        vertexInput
+    );
+
+    std::vector<Vertex> vertices{
+        {{-0.5f, -0.5f}, {0.0f, 0.0f}}, // Bottom-left corner, UV (0, 0)
+        {{0.5f, -0.5f}, {1.0f, 0.0f}}, // Bottom-right corner, UV (1, 0)
+        {{0.0f, 0.5f}, {0.5f, 1.0f}}
+    };
+
+    std::unique_ptr<ENGINE::Buffer> buffer = std::make_unique<ENGINE::Buffer>(
+        core->physicalDevice, core->logicalDevice.get(), vk::BufferUsageFlagBits::eVertexBuffer,
+        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+        sizeof(Vertex) * vertices.size(), vertices.data());
+
+    ENGINE::ImageAccessPattern pattern = ENGINE::GetImageDstPattern(ENGINE::DEPTH_ATTACHMENT);
+     executeOnceCommand->BeginCommandBuffer();
+    for (auto& image : inFlightQueue->presentQueue->swapChain->depthImagesFull)
+    {
+        ENGINE::TransitionImage(image.imageData.get(), pattern, image.imageView->GetSubresourceRange(),
+                                executeOnceCommand->commandBufferHandle.get());
     }
+    
+    executeOnceCommand->EndCommandBuffer();
+    while (!windowProvider->WindowShouldClose())
+    {
+        windowProvider->PollEvents();
+        {
+            glm::uvec2 windowSize = windowProvider->GetWindowSize();
+            if (core->resizeRequested || windowProvider->framebufferResized)
+            {
+                std::cout << "recreated swapchain\n";
+                core->WaitIdle();
+                inFlightQueue.reset();
+                inFlightQueue = std::make_unique<ENGINE::InFlightQueue>(
+                    core.get(), windowDesc, imageCount, vk::PresentModeKHR::eMailbox,
+                    windowSize);
+                windowProvider->framebufferResized = false;
+                core->resizeRequested = false;
+            }
+            try
+            {
+                inFlightQueue->BeginFrame();
+
+                auto& currFrame = inFlightQueue->frameResources[inFlightQueue->frameIndex];
+                ENGINE::ImageAccessPattern pattern = ENGINE::GetImageDstPattern(
+                    ENGINE::LayoutPatterns::COLOR_ATTACHMENT);
+                ENGINE::TransitionImage(inFlightQueue->currentSwapchainImageView->imageData, pattern,
+                                        inFlightQueue->currentSwapchainImageView->GetSubresourceRange(),
+                                        currFrame.commandBuffer.get());
+
+
+                std::vector<vk::RenderingAttachmentInfo> attachmentInfo(1);
+                attachmentInfo[0] = ENGINE::GetColorAttachment(inFlightQueue->currentSwapchainImageView);
+                
+                vk::RenderingAttachmentInfo depthAttachment = ENGINE::GetDepthAttachment(
+                    inFlightQueue->presentQueue->swapChain->depthImagesFull[inFlightQueue->frameIndex].imageView.get());
+                dynamicRenderPass.SetRenderInfo(attachmentInfo, windowSize, &depthAttachment);
+
+                
+
+                // Set the viewport and scissor in the command buffer
+
+                dynamicRenderPass.SetViewport(windowSize, windowSize);
+                currFrame.commandBuffer->setViewport(0, dynamicRenderPass.viewport);
+                currFrame.commandBuffer->setScissor(0, dynamicRenderPass.scissor);
+
+                currFrame.commandBuffer->beginRendering(&dynamicRenderPass.renderInfo);
+
+                currFrame.commandBuffer->bindPipeline(vk::PipelineBindPoint::eGraphics,
+                                                      graphicsPipeline->pipelineHandle.get());
+
+                vk::DeviceSize size = {0};
+                currFrame.commandBuffer->bindVertexBuffers(0, 1, &buffer->bufferHandle.get(), &size);
+                currFrame.commandBuffer->draw(static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+
+                currFrame.commandBuffer->endRendering();
+
+                inFlightQueue->EndFrame();
+            }
+            catch (vk::OutOfDateKHRError err)
+            {
+                core->resizeRequested = true;
+            }
+        }
+        core->WaitIdle();
+    }
+    windowProvider->DestroyWindow();
 }
 
 int main()
 {
-    glfwInit();
+    std::unique_ptr<WindowProvider> windowProvider= std::make_unique<WindowProvider>(WINDOWS_WIDTH, WINDOWS_HEIGHT, "Vulkan Engine Template");
+    windowProvider->InitGlfw();
+    
+    run(windowProvider.get());
 
-    run();
-
-    glfwTerminate();
+    windowProvider->Terminate();
 
     return 0;
 }

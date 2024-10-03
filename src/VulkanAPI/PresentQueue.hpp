@@ -10,6 +10,7 @@
 
 
 
+
 #ifndef PRESENTQUEUE_HPP
 #define PRESENTQUEUE_HPP
 
@@ -30,7 +31,8 @@ namespace ENGINE
         }
         ImageView* AcquireImage(vk::Semaphore signalSemaphore)
         {
-            this->imageIndex = swapChain->AcquireNextImage(signalSemaphore).value;
+            auto res = swapChain->AcquireNextImage(signalSemaphore);
+            this->imageIndex = res.value;
             return swapchainImageViews[imageIndex];
         }
         void PresentImage(vk::Semaphore waitSemaphore)
@@ -66,7 +68,6 @@ namespace ENGINE
     {
         InFlightQueue(Core* core, WindowDesc windowDesc, uint32_t inflightCount, vk::PresentModeKHR preferredMode, glm::uvec2 windowSize)
         {
-            
             this->core = core;
             presentQueue.reset(new PresentQueue(this->core, windowDesc, inflightCount, preferredMode, windowSize));
 
@@ -90,7 +91,7 @@ namespace ENGINE
                 core->WaitForFence(currFrame.inflightFence.get());
                 core->ResetFence(currFrame.inflightFence.get());
             }
-
+            
             {
                 currentSwapchainImageView = presentQueue->AcquireImage(currFrame.imageAcquiredSemaphore.get());
             }
@@ -111,6 +112,7 @@ namespace ENGINE
                                     currFrame.commandBuffer.get());
             
             currFrame.commandBuffer->end();
+            
             {
                 vk::Semaphore waitSemaphores[] = {currFrame.imageAcquiredSemaphore.get()};
                 vk::Semaphore signalSemaphores[] = {currFrame.renderingFinishedSemaphore.get()};

@@ -26,6 +26,7 @@ namespace ENGINE
             this->surfaceFormat = FindSwapchainSurfaceFormat(surfaceDetails.formats);
             this->presentMode = FindSwapchainPresentMode(surfaceDetails.presentModes, prefferedMode);
             this->extent = FindSwapChainExtent(surfaceDetails.capabilities, vk::Extent2D(windowSize.x,windowSize.y));
+            this->depthFormat = FindDepthFormat(physicalDevice);
 
             uint32_t imageCount = std::max(surfaceDetails.capabilities.minImageCount, imagesCount);
             if (surfaceDetails.capabilities.maxImageCount > 0 && imageCount > surfaceDetails.capabilities.maxImageCount)
@@ -76,6 +77,25 @@ namespace ENGINE
 
                 images.emplace_back(std::move(imageFull));
             }
+            
+            this->depthImages.clear();
+            this->depthImagesFull.clear();
+            for (int depthImageIndex = 0; depthImageIndex < imageCount; ++depthImageIndex)
+            {
+                vk::ImageCreateInfo createInfo = Image::CreateInfo2d(glm::uvec2(extent.width, extent.height), 1, 1, depthFormat, depthImageUsage);
+                auto image = std::make_unique<Image>(physicalDevice,logicalDevice,
+                                                      createInfo);
+
+                ImageFull imageFull;
+                imageFull.imageData = std::make_unique<ImageData>(image->imageHandle.get(), vk::ImageType::e2D,
+                                                                  glm::vec3(extent.width, extent.height, 1), 1, 1,
+                                                                  depthFormat, vk::ImageLayout::eUndefined);
+                imageFull.imageView = std::make_unique<ImageView>(physicalDevice, logicalDevice,
+                                                                  imageFull.imageData.get(), 0, 1, 0, 1);
+
+                depthImages.emplace_back(std::move(image));
+                depthImagesFull.emplace_back(std::move(imageFull));
+            }
         }
         vk::ResultValue<uint32_t> AcquireNextImage(vk::Semaphore semaphore)
         {
@@ -90,6 +110,7 @@ namespace ENGINE
             }
             return resImageViews;
         }
+        
 
         static vk::SurfaceFormatKHR FindSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& avalibleFormats)
         {
@@ -125,6 +146,33 @@ namespace ENGINE
             return vk::PresentModeKHR::eFifo;
         }
 
+        static vk::Format FindDepthFormat(vk::PhysicalDevice physicalDevice)
+        {
+            std::vector<vk::Format> depthFormats = {
+                vk::Format::eD32Sfloat,           
+                vk::Format::eD32SfloatS8Uint,      
+                vk::Format::eD24UnormS8Uint        
+            };
+
+            for (vk::Format format : depthFormats)
+            {
+                if (IsDepthFormat(format))
+                {
+                    vk::FormatProperties formatProperties = physicalDevice.getFormatProperties(format);
+
+                    if (formatProperties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eDepthStencilAttachment)
+                    {
+                        return format;
+                    }                   
+                }else
+                {
+                    std::cout<<"Invalid depth format\n";
+                }
+
+            }
+
+            throw std::runtime_error("Failed to find a supported depth format!");
+        }
         static vk::Extent2D FindSwapChainExtent(const vk::SurfaceCapabilitiesKHR& surfaceCapabilitiesKHR,
                                                            vk::Extent2D windowSize)
         {
@@ -148,6 +196,7 @@ namespace ENGINE
         SurfaceDetails surfaceDetails;
         vk::Device logicalDevice;
         vk::SurfaceFormatKHR surfaceFormat;
+        vk::Format depthFormat; 
         vk::PresentModeKHR presentMode;
         vk::Extent2D extent;
         struct ImageFull
@@ -157,6 +206,9 @@ namespace ENGINE
         };
 
         std::vector<ImageFull> images;
+        
+        std::vector<std::unique_ptr<Image>> depthImages;
+        std::vector<ImageFull> depthImagesFull;
 
         vk::UniqueSurfaceKHR surface;
         vk::UniqueSwapchainKHR swapchainHandle;

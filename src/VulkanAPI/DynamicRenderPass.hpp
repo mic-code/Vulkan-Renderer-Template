@@ -41,7 +41,7 @@ namespace ENGINE
     {
         assert(
             imageView->imageData->currentPattern.layout == vk::ImageLayout::eDepthAttachmentOptimal &&
-            "invalid use of image as color attachment without the valid layout");
+            "current layout is invalid");
         vk::ClearDepthStencilValue depthStencilValue = {1.0f, 0};
         auto dephtAttachment = vk::RenderingAttachmentInfo()
                                .setImageView(imageView->imageView.get())

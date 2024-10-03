@@ -32,6 +32,7 @@ namespace ENGINE
         
 
         static int32_t FindMemoryTypeIndex(vk::PhysicalDevice logicalDevice, uint32_t memTypeFlags, vk::MemoryPropertyFlags memFlags);
+
         
         vk::UniqueInstance instance;
         vk::PhysicalDevice physicalDevice;
@@ -39,6 +40,7 @@ namespace ENGINE
         vk::UniqueCommandPool commandPool;
         vk::Queue graphicsQueue;
         vk::Queue presentQueue;
+        bool resizeRequested = false;
 
     private:
         
