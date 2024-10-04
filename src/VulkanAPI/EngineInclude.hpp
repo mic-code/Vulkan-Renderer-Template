@@ -12,6 +12,9 @@
 #include <algorithm>
 #include <list>
 #include <fstream>
+#include <map>
+#include<functional>
+#include <set>
 
 #include <glm/glm.hpp>
 
@@ -33,6 +36,7 @@
 #include "Pipeline.hpp"
 
 #include "Core.hpp"
+#include "RenderGraph.hpp"
 #include "CoreImpl.hpp"
 
 #include "PresentQueue.hpp"

@@ -66,7 +66,7 @@ namespace ENGINE
 
     struct InFlightQueue
     {
-        InFlightQueue(Core* core, WindowDesc windowDesc, uint32_t inflightCount, vk::PresentModeKHR preferredMode, glm::uvec2 windowSize)
+        InFlightQueue(Core* core,RenderGraph* renderGraph, WindowDesc windowDesc, uint32_t inflightCount, vk::PresentModeKHR preferredMode, glm::uvec2 windowSize)
         {
             this->core = core;
             presentQueue.reset(new PresentQueue(this->core, windowDesc, inflightCount, preferredMode, windowSize));

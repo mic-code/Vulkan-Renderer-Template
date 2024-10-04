@@ -35,9 +35,13 @@ void run(WindowProvider* windowProvider)
 
     std::unique_ptr<ENGINE::Core> core = std::make_unique<ENGINE::Core>(
         glfwExtensions, glfwExtensionCount, &windowDesc, enableDebugging);
+    
+    std::unique_ptr<ENGINE::RenderGraph> renderGraph = core->CreateRenderGraph();
+    
     std::unique_ptr<ENGINE::InFlightQueue> inFlightQueue = std::make_unique<ENGINE::InFlightQueue>(
-        core.get(), windowDesc, imageCount, vk::PresentModeKHR::eMailbox,
+        core.get(),renderGraph.get(), windowDesc, imageCount, vk::PresentModeKHR::eMailbox,
         windowProvider->GetWindowSize());
+    
     std::unique_ptr<ENGINE::ExecuteOnceCommand> executeOnceCommand = std::make_unique<
         ENGINE::ExecuteOnceCommand>(core.get());
 
@@ -49,8 +53,6 @@ void run(WindowProvider* windowProvider)
     ENGINE::ShaderModule vertShaderModule(core->logicalDevice.get(), vertPath);
     ENGINE::ShaderModule fragShaderModule(core->logicalDevice.get(), fragPath);
     std::vector<vk::RenderingAttachmentInfo> renderingAttachmentInfos(1);
-    ENGINE::DynamicRenderPass dynamicRenderPass;
-    dynamicRenderPass.SetPipelineRenderingInfo(1);
 
     struct Vertex
     {
@@ -72,14 +74,6 @@ void run(WindowProvider* windowProvider)
 
     auto pipelineLayout = core->logicalDevice.get().createPipelineLayoutUnique(pipelineLayoutInfo);
 
-
-    std::unique_ptr<ENGINE::GraphicsPipeline> graphicsPipeline = std::make_unique<ENGINE::GraphicsPipeline>(
-        core->logicalDevice.get(), vertShaderModule.shaderModuleHandle.get(),
-        fragShaderModule.shaderModuleHandle.get(), pipelineLayout.get(), dynamicRenderPass.pipelineRenderingCreateInfo,
-        ENGINE::BlendConfigs::B_OPAQUE, ENGINE::DepthConfigs::D_ENABLE,
-        vertexInput
-    );
-
     std::vector<Vertex> vertices{
         {{-0.5f, -0.5f}, {0.0f, 0.0f}}, // Bottom-left corner, UV (0, 0)
         {{0.5f, -0.5f}, {1.0f, 0.0f}}, // Bottom-right corner, UV (1, 0)
@@ -91,15 +85,20 @@ void run(WindowProvider* windowProvider)
         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
         sizeof(Vertex) * vertices.size(), vertices.data());
 
-    ENGINE::ImageAccessPattern pattern = ENGINE::GetImageDstPattern(ENGINE::DEPTH_ATTACHMENT);
-     executeOnceCommand->BeginCommandBuffer();
-    for (auto& image : inFlightQueue->presentQueue->swapChain->depthImagesFull)
-    {
-        ENGINE::TransitionImage(image.imageData.get(), pattern, image.imageView->GetSubresourceRange(),
-                                executeOnceCommand->commandBufferHandle.get());
-    }
+    ENGINE::AttachmentInfo colInfo = ENGINE::GetColorAttachmentInfo();
+    ENGINE::AttachmentInfo depthInfo = ENGINE::GetDepthAttachmentInfo();
+    auto renderNode = renderGraph->AddPass("test");
+    renderNode->AddShaderModule(fragShaderModule.shaderModuleHandle.get());
+    renderNode->AddShaderModule(vertShaderModule.shaderModuleHandle.get());
+    renderNode->SetFramebufferSize(windowProvider->GetWindowSize());
+    renderNode->SetPipelineLayout(pipelineLayout.get());
+    renderNode->SetVertexInput(vertexInput);
+    renderNode->AddColorAttachmentOutput("color",colInfo);
+    renderNode->SetDepthAttachmentOutput("depth", depthInfo);
+    renderNode->AddColorBlendConfig(ENGINE::BlendConfigs::B_OPAQUE);
+    renderNode->SetDepthConfig(ENGINE::DepthConfigs::D_ENABLE);
     
-    executeOnceCommand->EndCommandBuffer();
+
     while (!windowProvider->WindowShouldClose())
     {
         windowProvider->PollEvents();
@@ -111,7 +110,7 @@ void run(WindowProvider* windowProvider)
                 core->WaitIdle();
                 inFlightQueue.reset();
                 inFlightQueue = std::make_unique<ENGINE::InFlightQueue>(
-                    core.get(), windowDesc, imageCount, vk::PresentModeKHR::eMailbox,
+                    core.get(), renderGraph.get(),windowDesc, imageCount, vk::PresentModeKHR::eMailbox,
                     windowSize);
                 windowProvider->framebufferResized = false;
                 core->resizeRequested = false;
@@ -120,39 +119,11 @@ void run(WindowProvider* windowProvider)
             {
                 inFlightQueue->BeginFrame();
 
-                auto& currFrame = inFlightQueue->frameResources[inFlightQueue->frameIndex];
-                ENGINE::ImageAccessPattern pattern = ENGINE::GetImageDstPattern(
-                    ENGINE::LayoutPatterns::COLOR_ATTACHMENT);
-                ENGINE::TransitionImage(inFlightQueue->currentSwapchainImageView->imageData, pattern,
-                                        inFlightQueue->currentSwapchainImageView->GetSubresourceRange(),
-                                        currFrame.commandBuffer.get());
-
-
-                std::vector<vk::RenderingAttachmentInfo> attachmentInfo(1);
-                attachmentInfo[0] = ENGINE::GetColorAttachment(inFlightQueue->currentSwapchainImageView);
-                
-                vk::RenderingAttachmentInfo depthAttachment = ENGINE::GetDepthAttachment(
-                    inFlightQueue->presentQueue->swapChain->depthImagesFull[inFlightQueue->frameIndex].imageView.get());
-                dynamicRenderPass.SetRenderInfo(attachmentInfo, windowSize, &depthAttachment);
-
-                
-
-                // Set the viewport and scissor in the command buffer
-
-                dynamicRenderPass.SetViewport(windowSize, windowSize);
-                currFrame.commandBuffer->setViewport(0, dynamicRenderPass.viewport);
-                currFrame.commandBuffer->setScissor(0, dynamicRenderPass.scissor);
-
-                currFrame.commandBuffer->beginRendering(&dynamicRenderPass.renderInfo);
-
-                currFrame.commandBuffer->bindPipeline(vk::PipelineBindPoint::eGraphics,
-                                                      graphicsPipeline->pipelineHandle.get());
 
                 vk::DeviceSize size = {0};
-                currFrame.commandBuffer->bindVertexBuffers(0, 1, &buffer->bufferHandle.get(), &size);
-                currFrame.commandBuffer->draw(static_cast<uint32_t>(vertices.size()), 1, 0, 0);
-
-                currFrame.commandBuffer->endRendering();
+                
+                // currFrame.commandBuffer->bindVertexBuffers(0, 1, &buffer->bufferHandle.get(), &size);
+                // currFrame.commandBuffer->draw(static_cast<uint32_t>(vertices.size()), 1, 0, 0);
 
                 inFlightQueue->EndFrame();
             }

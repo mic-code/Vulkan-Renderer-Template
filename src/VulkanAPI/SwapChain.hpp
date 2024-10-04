@@ -78,24 +78,7 @@ namespace ENGINE
                 images.emplace_back(std::move(imageFull));
             }
             
-            this->depthImages.clear();
-            this->depthImagesFull.clear();
-            for (int depthImageIndex = 0; depthImageIndex < imageCount; ++depthImageIndex)
-            {
-                vk::ImageCreateInfo createInfo = Image::CreateInfo2d(glm::uvec2(extent.width, extent.height), 1, 1, depthFormat, depthImageUsage);
-                auto image = std::make_unique<Image>(physicalDevice,logicalDevice,
-                                                      createInfo);
-
-                ImageFull imageFull;
-                imageFull.imageData = std::make_unique<ImageData>(image->imageHandle.get(), vk::ImageType::e2D,
-                                                                  glm::vec3(extent.width, extent.height, 1), 1, 1,
-                                                                  depthFormat, vk::ImageLayout::eUndefined);
-                imageFull.imageView = std::make_unique<ImageView>(logicalDevice,
-                                                                  imageFull.imageData.get(), 0, 1, 0, 1);
-
-                depthImages.emplace_back(std::move(image));
-                depthImagesFull.emplace_back(std::move(imageFull));
-            }
+            
         }
         vk::ResultValue<uint32_t> AcquireNextImage(vk::Semaphore semaphore)
         {
@@ -206,9 +189,6 @@ namespace ENGINE
         };
 
         std::vector<ImageFull> images;
-        
-        std::vector<std::unique_ptr<Image>> depthImages;
-        std::vector<ImageFull> depthImagesFull;
 
         vk::UniqueSurfaceKHR surface;
         vk::UniqueSwapchainKHR swapchainHandle;

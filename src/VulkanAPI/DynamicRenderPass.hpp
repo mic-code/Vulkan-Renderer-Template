@@ -7,50 +7,44 @@
 
 namespace ENGINE
 {
-    enum LoadOperation 
-    {
-        L_CLEAR,
-        L_STORE
-    };
 
-    enum StoreOperation 
-    {
-        S_CLEAR,
-        S_STORE
-    };
     //TODO: set base configs 
 
-    static vk::RenderingAttachmentInfo GetColorAttachment(ImageView* imageView)
+    struct AttachmentInfo
     {
-        // assert(
-            // imageView.imageData->currentPattern.layout == vk::ImageLayout::eColorAttachmentOptimal &&
-            // "invalid use of image as color attachment without the valid layout");
-        
-        auto colorAttachment = vk::RenderingAttachmentInfo()
-                               .setImageView(imageView->imageView.get())
-                               .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
-                               .setLoadOp(vk::AttachmentLoadOp::eClear)
-                               .setStoreOp(vk::AttachmentStoreOp::eStore)
-                               .setClearValue(
-                                   vk::ClearValue(vk::ClearColorValue(std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f})));
+        vk::RenderingAttachmentInfo attachmentInfo;
+        vk::Format format;
+    };
+    static AttachmentInfo GetColorAttachmentInfo(vk::Format format = vk::Format::eB8G8R8A8Srgb, vk::AttachmentLoadOp loadOp = vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp storeOp = vk::AttachmentStoreOp::eStore)
+    {
+        AttachmentInfo attachmentInfo;
+        attachmentInfo.attachmentInfo = vk::RenderingAttachmentInfo()
+                                        .setImageView(nullptr)
+                                        .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
+                                        .setLoadOp(loadOp)
+                                        .setStoreOp(storeOp)
+                                        .setClearValue(
+                                            vk::ClearValue(vk::ClearColorValue(std::array<float, 4>{
+                                                0.0f, 0.0f, 0.0f, 1.0f
+                                            })));
 
-        return colorAttachment;
+        attachmentInfo.format = format;
+        
+        return attachmentInfo;
     }
 
-    static vk::RenderingAttachmentInfo GetDepthAttachment(ImageView* imageView)
+    static AttachmentInfo GetDepthAttachmentInfo(vk::Format format = vk::Format::eD32Sfloat)
     {
-        assert(
-            imageView->imageData->currentPattern.layout == vk::ImageLayout::eDepthAttachmentOptimal &&
-            "current layout is invalid");
-        vk::ClearDepthStencilValue depthStencilValue = {1.0f, 0};
-        auto dephtAttachment = vk::RenderingAttachmentInfo()
-                               .setImageView(imageView->imageView.get())
+        AttachmentInfo attachmentInfo;
+        attachmentInfo.attachmentInfo = vk::RenderingAttachmentInfo()
+                               .setImageView(nullptr)
                                .setImageLayout(vk::ImageLayout::eDepthAttachmentOptimal)
                                .setLoadOp(vk::AttachmentLoadOp::eClear)
                                .setStoreOp(vk::AttachmentStoreOp::eStore)
                                .setClearValue(vk::ClearValue(vk::ClearDepthStencilValue(1.0f, 0)));
+        attachmentInfo.format = format;
         
-        return dephtAttachment;
+        return attachmentInfo;
     }
 
 
@@ -58,15 +52,19 @@ namespace ENGINE
     {
     public:
         void SetPipelineRenderingInfo(uint32_t colorAttachmentCount,
-                          vk::Format colorFormat = vk::Format::eB8G8R8A8Srgb,
+                          std::vector<vk::Format> colorFormats,
                           vk::Format depthFormat = vk::Format::eD32Sfloat)
         {
+            if (colorFormats.empty())
+            {
+                colorFormats.push_back(vk::Format::eB8G8R8A8Srgb);
+            }
             this->colorFormat = colorFormat;
             this->depthFormat = depthFormat;
             this->expectedColorAttachmentSize = colorAttachmentCount;
             pipelineRenderingCreateInfo = vk::PipelineRenderingCreateInfo()
             .setColorAttachmentCount(colorAttachmentCount)
-            .setPColorAttachmentFormats(&this->colorFormat)
+            .setPColorAttachmentFormats(colorFormats.data())
             .setDepthAttachmentFormat(this->depthFormat)
             .setStencilAttachmentFormat(vk::Format::eUndefined);
             
@@ -74,6 +72,10 @@ namespace ENGINE
         void SetRenderInfo(std::vector<vk::RenderingAttachmentInfo>& colorAttachments,
                            glm::uvec2 framebufferSize, vk::RenderingAttachmentInfo* depthAttachment = nullptr)
         {
+            for (auto& element : colorAttachments)
+            {
+                assert(element.imageView != nullptr && "Image view was not set before setting the render info");
+            }
             assert(
                 colorAttachments.size() == expectedColorAttachmentSize &&
                 "Color attachment must be the same as the one indicated in the pipeline creation");

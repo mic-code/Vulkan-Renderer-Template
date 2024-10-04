@@ -108,7 +108,7 @@ namespace ENGINE
         GraphicsPipeline(vk::Device& logicalDevice, vk::ShaderModule vertexShader, vk::ShaderModule fragmentShader,
                          vk::PipelineLayout pipelineLayout,
                          vk::PipelineRenderingCreateInfo dynamicRenderPass,
-                         BlendConfigs blendConfig, DepthConfigs depthConfigs, VertexInput& vertexInput)
+                         std::vector<BlendConfigs>& blendConfigs, DepthConfigs depthConfigs, VertexInput& vertexInput)
         {
             assert(!vertexInput.inputDescription.empty()&&"vertexInput is empty");
             assert((vertexShader != nullptr) &&"vertex shader module is empty");
@@ -162,12 +162,18 @@ namespace ENGINE
 
             
             auto depthStencilStateCreateInfo = GetDepthStencil(depthConfigs);
-            
-            vk::PipelineColorBlendAttachmentState blendState = GetBlendAttachmentState(blendConfig);
+
+            std::vector<vk::PipelineColorBlendAttachmentState> blendStates;
+            for (auto blendConfig : blendConfigs)
+            {
+                vk::PipelineColorBlendAttachmentState blendState = GetBlendAttachmentState(blendConfig);
+                blendStates.push_back(blendState);
+                
+            }
             auto pipelineColorBlendStateCreateInfo = vk::PipelineColorBlendStateCreateInfo()
                                               .setLogicOpEnable(VK_FALSE)
-                                              .setAttachmentCount(1)
-                                              .setPAttachments(&blendState);
+                                              .setAttachmentCount(static_cast<uint32_t>(blendStates.size()))
+                                              .setPAttachments(blendStates.data());
             
             auto graphicsPipeline = vk::GraphicsPipelineCreateInfo()
                                     .setStageCount(2)
@@ -196,6 +202,7 @@ namespace ENGINE
 
     class ComputePipeline
     {
+    public:
         ComputePipeline(vk::Device logicalDevice, vk::ShaderModule computeModule, vk::PipelineLayout pipelineLayout)
         {
             assert(computeModule != nullptr&& "Compute shader module is empty");

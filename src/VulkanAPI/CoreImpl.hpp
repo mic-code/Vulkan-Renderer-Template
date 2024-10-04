@@ -3,6 +3,7 @@
 //
 
 
+
 #ifndef COREIMPL_HPP
 #define COREIMPL_HPP
 
@@ -79,6 +80,16 @@ namespace ENGINE
                                                                   presentModeKHR, windowSize));
         return swapChain;
     }
+
+    std::unique_ptr<RenderGraph> Core::CreateRenderGraph()
+    {
+        auto renderGraph = std::make_unique<RenderGraph>(this);
+
+        this->renderGraph = renderGraph.get();
+
+        return renderGraph;
+    }
+
 
     std::vector<vk::UniqueCommandBuffer> Core::AllocateCommandBuffers(size_t count)
     {

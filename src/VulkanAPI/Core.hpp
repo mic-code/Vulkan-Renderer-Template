@@ -11,6 +11,7 @@ namespace ENGINE
 
     class PresentQueue;
     class SwapChain;
+    class RenderGraph;
     class Core
     {
     
@@ -21,6 +22,7 @@ namespace ENGINE
         void ClearCaches();
 
         std::unique_ptr<SwapChain> CreateSwapchain(vk::PresentModeKHR presentModeKHR, uint32_t imageCount,WindowDesc windowDesc, glm::uvec2 windowSize);
+        std::unique_ptr<RenderGraph> CreateRenderGraph();
 
         std::vector<vk::UniqueCommandBuffer> AllocateCommandBuffers(size_t count);
         vk::UniqueSemaphore CreateVulkanSemaphore();
@@ -41,6 +43,7 @@ namespace ENGINE
         vk::Queue graphicsQueue;
         vk::Queue presentQueue;
         bool resizeRequested = false;
+        RenderGraph* renderGraph;
 
     private:
         
@@ -68,6 +71,8 @@ namespace ENGINE
 
 
         friend class Swapchain;
+        friend class RenderGraph;
+        
         
         vk::DispatchLoaderDynamic loader;
         vk::UniqueHandle<vk::DebugUtilsMessengerEXT, vk::DispatchLoaderDynamic> debugUtilsMessenger;
