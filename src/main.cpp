@@ -1,4 +1,5 @@
 ﻿//
+
 // Created by carlo on 2024-09-21.
 //
 
@@ -98,18 +99,27 @@ void run(WindowProvider* windowProvider)
     renderNode->AddColorBlendConfig(ENGINE::BlendConfigs::B_OPAQUE);
     renderNode->SetDepthConfig(ENGINE::DepthConfigs::D_ENABLE);
     renderNode->BuildRenderGraphNode();
+    
+    auto SetViewTask = std::function<void()>([&renderGraph,&renderNode, &inFlightQueue, &windowProvider]()
+    {
 
-    // ENGINE::DynamicRenderPass dynamicRenderPass;
-    // std::vector<vk::Format> formats;
+        auto& currImage = inFlightQueue->currentSwapchainImageView;
+        renderGraph->AddImageResource("test","color", currImage);
+        renderNode->SetFramebufferSize(windowProvider->GetWindowSize());
+        
+    });
     
-    // dynamicRenderPass.SetPipelineRenderingInfo(1, formats);
-    // std::vector<ENGINE::BlendConfigs> blendConfigses;
-    // blendConfigses.push_back(ENGINE::BlendConfigs::B_OPAQUE);
-    
-    // std::unique_ptr<ENGINE::GraphicsPipeline> pipeline = std::make_unique<ENGINE::GraphicsPipeline>(
-    // core->logicalDevice.get(), vertShaderModule.shaderModuleHandle.get(), fragShaderModule.shaderModuleHandle.get(), pipelineLayout.get(),
-    // dynamicRenderPass.pipelineRenderingCreateInfo, blendConfigses, ENGINE::DepthConfigs::D_ENABLE, vertexInput);
-    
+    auto renderOp = std::function<void(vk::CommandBuffer& command_buffer)>([&renderNode, &buffer, &vertices](vk::CommandBuffer& commandBuffer)
+    {
+        commandBuffer.bindPipeline( renderNode->pipelineType, renderNode->pipeline.get());
+        vk::DeviceSize offset= {0};
+        commandBuffer.bindVertexBuffers(0, 1, &buffer->bufferHandle.get(), &offset);
+        commandBuffer.draw(vertices.size(), 1, 0, 0);
+    });
+
+    renderNode->AddTask(&SetViewTask);
+    renderNode->SetRenderOperation(&renderOp);
+
 
     while (!windowProvider->WindowShouldClose())
     {
@@ -130,13 +140,12 @@ void run(WindowProvider* windowProvider)
             try
             {
                 inFlightQueue->BeginFrame();
-
-
                 vk::DeviceSize size = {0};
-                
+                auto& currFrame = inFlightQueue->frameResources[inFlightQueue->frameIndex];
                 // currFrame.commandBuffer->bindVertexBuffers(0, 1, &buffer->bufferHandle.get(), &size);
                 // currFrame.commandBuffer->draw(static_cast<uint32_t>(vertices.size()), 1, 0, 0);
-
+                renderGraph->ExecuteAll(currFrame.commandBuffer.get());
+                
                 inFlightQueue->EndFrame();
             }
             catch (vk::OutOfDateKHRError err)
