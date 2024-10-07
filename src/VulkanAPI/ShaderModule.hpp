@@ -20,7 +20,6 @@ namespace ENGINE
             .setCodeSize(sizeof(uint32_t) * code.size())
             .setPCode(code.data());
             this->shaderModuleHandle = device.createShaderModuleUnique(shaderModuleCreateInfo);
-
         }
         vk::UniqueShaderModule shaderModuleHandle;
     };

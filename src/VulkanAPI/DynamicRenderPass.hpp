@@ -52,7 +52,7 @@ namespace ENGINE
     {
     public:
         void SetPipelineRenderingInfo(uint32_t colorAttachmentCount,
-                          std::vector<vk::Format> colorFormats,
+                          std::vector<vk::Format>& colorFormats,
                           vk::Format depthFormat = vk::Format::eD32Sfloat)
         {
             if (colorFormats.empty())

@@ -24,21 +24,22 @@ namespace ENGINE
         {
             // assert(!shaderModules.empty() && "It must be at least one shader module")
             assert(pipelineLayout != nullptr && "Pipeline layout is null");
-            std::vector<vk::Format> formats;
+            std::vector<vk::Format> colorFormats;
+            colorFormats.reserve(colAttachments.size());
             std::vector<vk::RenderingAttachmentInfo> renderingAttachmentInfos;
             for (auto& colAttachment : colAttachments)
             {
-                formats.push_back(colAttachment.format);
+                colorFormats.push_back(colAttachment.format);
                 renderingAttachmentInfos.push_back(colAttachment.attachmentInfo);
             }
-            dynamicRenderPass.SetPipelineRenderingInfo(colAttachments.size(), formats, depthAttachment.format);
+            dynamicRenderPass.SetPipelineRenderingInfo(colAttachments.size(), colorFormats, depthAttachment.format);
             
-            dynamicRenderPass.SetRenderInfo(renderingAttachmentInfos, frameBufferSize, &depthAttachment.attachmentInfo);
-            if (shaderModules.size() == 1)
+            // dynamicRenderPass.SetRenderInfo(renderingAttachmentInfos, frameBufferSize, &depthAttachment.attachmentInfo);
+            if (fragShaderModule && vertShaderModule)
             {
                 std::unique_ptr<GraphicsPipeline> graphicsPipeline = std::make_unique<ENGINE::GraphicsPipeline>(
-                    core->logicalDevice.get(), shaderModules[0],
-                    shaderModules[1], pipelineLayout,
+                    core->logicalDevice.get(), vertShaderModule->shaderModuleHandle.get(),
+                    fragShaderModule->shaderModuleHandle.get(), pipelineLayout,
                     dynamicRenderPass.pipelineRenderingCreateInfo,
                     colorBlendConfigs, depthConfig,
                     vertexInput
@@ -46,24 +47,25 @@ namespace ENGINE
                 pipeline = std::move(graphicsPipeline->pipelineHandle);
                 pipelineType = vk::PipelineBindPoint::eGraphics;
                 std::cout << "Graphics pipeline created\n";
-            }else if(shaderModules.size() == 2)
+            }else if(compShaderModule)
             {
                 std::unique_ptr<ComputePipeline> computePipeline;
                 std::unique_ptr<ComputePipeline> graphicsPipeline = std::make_unique<ENGINE::ComputePipeline>(
-                    core->logicalDevice.get(), shaderModules[0], pipelineLayout);
+                    core->logicalDevice.get(), compShaderModule->shaderModuleHandle.get(), pipelineLayout);
                 pipeline = std::move(computePipeline->pipelineHandle);
                 pipelineType = vk::PipelineBindPoint::eCompute;
                 std::cout << "Compute pipeline created\n";
+            }else
+            {
+                std::cout << "No compute or graphics shaders were set\n";
             }
             
         }
         void ExecuteRenderOperations(vk::CommandBuffer commandBuffer)
         {
-            commandBuffer.bindPipeline(pipelineType,
-                                       pipeline.get());
-            
+            commandBuffer.bindPipeline(pipelineType, pipeline.get());
             commandBuffer.beginRendering(dynamicRenderPass.renderInfo);
-            // renderOperations(commandBuffer);
+            (*renderOperations)(commandBuffer);
             commandBuffer.endRendering();
             
         }
@@ -95,9 +97,20 @@ namespace ENGINE
         {
             colorBlendConfigs.push_back(blendConfig);
         }
-        void AddShaderModule(vk::ShaderModule& shaderModule)
+
+        void SetFragModule(ShaderModule* fragShaderModule)
         {
-            shaderModules.push_back(shaderModule); 
+            this->fragShaderModule = fragShaderModule;
+        }
+
+        void SetVertModule(ShaderModule* fragShaderModule)
+        {
+            this->vertShaderModule = fragShaderModule;
+        }
+
+        void SetCompModule(ShaderModule* fragShaderModule)
+        {
+            this->compShaderModule = fragShaderModule;
         }
         void AddColorAttachmentInput(std::string name)
         {
@@ -120,7 +133,7 @@ namespace ENGINE
             else
             {
                 outColAttachmentsProxyRef->at(name) = attachmentInfo;
-                std::cout << "Attachment: " << "\"" << name << "\"" << " changing the curr";
+                std::cout << "Attachment: " << "\"" << name << "\"" << " changing the current attachment value";
             }
             
         }
@@ -141,7 +154,7 @@ namespace ENGINE
             if (!outDepthAttachmentProxyRef->contains(name))
             {
                 outDepthAttachmentProxyRef->try_emplace(name, depth);
-                colAttachments.push_back(outColAttachmentsProxyRef->at(name));
+                depthAttachment = outColAttachmentsProxyRef->at(name);
             }
             else
             {
@@ -174,7 +187,9 @@ namespace ENGINE
         vk::UniquePipeline pipeline;
 
         vk::PipelineLayout pipelineLayout;
-        std::vector<vk::ShaderModule> shaderModules;
+        ShaderModule* vertShaderModule = nullptr;
+        ShaderModule* fragShaderModule = nullptr;
+        ShaderModule* compShaderModule = nullptr;
         std::vector<BlendConfigs> colorBlendConfigs;
         DepthConfigs depthConfig;
         VertexInput vertexInput;
@@ -186,9 +201,7 @@ namespace ENGINE
         std::map<std::string,ImageView*>imagesAttachment;
         
         
-        
         std::function<void(vk::CommandBuffer& commandBuffer)>* renderOperations;
-        
         Core* core;
         std::map<std::string, ImageView*>* imagesProxyRef;
         std::map<std::string, AttachmentInfo>* outColAttachmentsProxyRef;
@@ -221,6 +234,9 @@ namespace ENGINE
             if (!renderNodes.contains(name))
             {
                 auto renderGraphNode = std::make_unique<RenderGraphNode>();
+                renderGraphNode->imagesProxyRef = &imagesProxy;
+                renderGraphNode->outColAttachmentsProxyRef = &outColAttachmentsProxy;
+                renderGraphNode->outDepthAttachmentProxyRef = &outColAttachmentsProxy;
                 renderGraphNode->core = core;
                 
                 renderNodes.try_emplace(name,std::move(renderGraphNode));

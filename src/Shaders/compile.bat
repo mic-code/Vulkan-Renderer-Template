@@ -11,6 +11,7 @@ for /r glsl/ %%I in (*.vert) do (
     @echo To !outname!
     
    %CompilerExe% -V "%%I" -l --target-env vulkan1.2 -o "!outname!".spv
+   
 )
 
 for /r glsl/ %%I in (*.frag) do (

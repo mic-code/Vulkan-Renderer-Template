@@ -88,15 +88,27 @@ void run(WindowProvider* windowProvider)
     ENGINE::AttachmentInfo colInfo = ENGINE::GetColorAttachmentInfo();
     ENGINE::AttachmentInfo depthInfo = ENGINE::GetDepthAttachmentInfo();
     auto renderNode = renderGraph->AddPass("test");
-    renderNode->AddShaderModule(fragShaderModule.shaderModuleHandle.get());
-    renderNode->AddShaderModule(vertShaderModule.shaderModuleHandle.get());
+    renderNode->SetVertModule(&vertShaderModule);
+    renderNode->SetFragModule(&fragShaderModule);
     renderNode->SetFramebufferSize(windowProvider->GetWindowSize());
     renderNode->SetPipelineLayout(pipelineLayout.get());
     renderNode->SetVertexInput(vertexInput);
-    renderNode->AddColorAttachmentOutput("color",colInfo);
+    renderNode->AddColorAttachmentOutput("color", colInfo);
     renderNode->SetDepthAttachmentOutput("depth", depthInfo);
     renderNode->AddColorBlendConfig(ENGINE::BlendConfigs::B_OPAQUE);
     renderNode->SetDepthConfig(ENGINE::DepthConfigs::D_ENABLE);
+    renderNode->BuildRenderGraphNode();
+
+    // ENGINE::DynamicRenderPass dynamicRenderPass;
+    // std::vector<vk::Format> formats;
+    
+    // dynamicRenderPass.SetPipelineRenderingInfo(1, formats);
+    // std::vector<ENGINE::BlendConfigs> blendConfigses;
+    // blendConfigses.push_back(ENGINE::BlendConfigs::B_OPAQUE);
+    
+    // std::unique_ptr<ENGINE::GraphicsPipeline> pipeline = std::make_unique<ENGINE::GraphicsPipeline>(
+    // core->logicalDevice.get(), vertShaderModule.shaderModuleHandle.get(), fragShaderModule.shaderModuleHandle.get(), pipelineLayout.get(),
+    // dynamicRenderPass.pipelineRenderingCreateInfo, blendConfigses, ENGINE::DepthConfigs::D_ENABLE, vertexInput);
     
 
     while (!windowProvider->WindowShouldClose())
