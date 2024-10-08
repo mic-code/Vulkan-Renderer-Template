@@ -47,7 +47,11 @@ void run(WindowProvider* windowProvider)
     std::unique_ptr<ENGINE::ExecuteOnceCommand> executeOnceCommand = std::make_unique<
         ENGINE::ExecuteOnceCommand>(core.get());
 
-    std::unique_ptr<RENDERERS::ForwardRenderer>fRenderer = std::make_unique<RENDERERS::ForwardRenderer>(renderGraph.get(), windowProvider);
+    std::unique_ptr<ENGINE::DescriptorAllocator> descriptorAllocator;
+
+
+    std::unique_ptr<RENDERERS::ForwardRenderer> fRenderer = std::make_unique<RENDERERS::ForwardRenderer>(
+        renderGraph.get(), windowProvider, descriptorAllocator.get());
 
     fRenderer->SetRenderOperation(inFlightQueue.get());
     

@@ -14,10 +14,11 @@ namespace RENDERERS
     class ForwardRenderer : BaseRenderer
     {
     public:
-        ForwardRenderer(ENGINE::RenderGraph* renderGraph, WindowProvider* windowProvider)
+        ForwardRenderer(ENGINE::RenderGraph* renderGraph, WindowProvider* windowProvider, ENGINE::DescriptorAllocator* descriptorAllocator)
         {
             this->renderGraphRef = renderGraph;
             this->windowProvider = windowProvider;
+            this->descriptorAllocatorRef = descriptorAllocator;
             vk::Device& device = renderGraphRef->core->logicalDevice.get();
             vk::PhysicalDevice& physicalDevice = renderGraphRef->core->physicalDevice;
             ENGINE::VertexInput vertexInput;
@@ -116,6 +117,7 @@ namespace RENDERERS
         std::string forwardPassName;
         std::vector<Vertex> vertices;
         std::unique_ptr<ENGINE::Buffer> buffer;
+        ENGINE::DescriptorAllocator* descriptorAllocatorRef;
         WindowProvider* windowProvider;
         ENGINE::RenderGraph* renderGraphRef;
     };

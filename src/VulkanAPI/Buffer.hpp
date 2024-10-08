@@ -91,6 +91,7 @@ namespace ENGINE
         vk::UniqueDeviceMemory deviceMemHandle;
         vk::DeviceSize deviceSize;
         vk::DeviceSize alignment;
+        vk::DeviceSize offset = 0;
         vk::BufferUsageFlags usageFlags;
         vk::MemoryPropertyFlags memPropertyFlags;
         vk::Device logicalDevice;
