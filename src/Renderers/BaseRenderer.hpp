@@ -12,7 +12,8 @@ namespace RENDERERS
     public:
         virtual ~BaseRenderer() = default;
         virtual void RecreateSwapChainResources() = 0;
-        virtual void RenderFrame(ENGINE::InFlightQueue* inflightQueue) = 0;
+        virtual void SetRenderOperation(ENGINE::InFlightQueue* inflightQueue) = 0;
+        virtual void RenderFrame() = 0;
         virtual void ReloadShaders() = 0;
     };
 }

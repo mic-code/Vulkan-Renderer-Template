@@ -88,8 +88,12 @@ namespace ENGINE
                 attachmentInfos.push_back(colAttachments[index].attachmentInfo);
                 index++;
             }
+            if (depthImage != nullptr)
+            {
+                depthAttachment.attachmentInfo.imageView = depthImage->imageView.get();
+            }
             
-            dynamicRenderPass.SetRenderInfo(attachmentInfos, frameBufferSize);
+            dynamicRenderPass.SetRenderInfo(attachmentInfos, frameBufferSize, &depthAttachment.attachmentInfo);
             commandBuffer.bindPipeline(pipelineType, pipeline.get());
             commandBuffer.beginRendering(dynamicRenderPass.renderInfo);
             (*renderOperations)(commandBuffer);
@@ -256,6 +260,7 @@ namespace ENGINE
         
         ImageView* depthImage = nullptr;
         std::map<std::string,ImageView*>imagesAttachment;
+        std::map<std::string,ImageView*>storageImages;
         
         std::function<void(vk::CommandBuffer& commandBuffer)>* renderOperations = nullptr;
         std::vector<std::function<void()>*> tasks;

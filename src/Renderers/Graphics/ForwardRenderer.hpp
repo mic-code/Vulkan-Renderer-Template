@@ -80,7 +80,7 @@ namespace RENDERERS
         {
         }
 
-        void RenderFrame(ENGINE::InFlightQueue* inflightQueue) override
+        void SetRenderOperation(ENGINE::InFlightQueue* inflightQueue) override
         {
             auto setViewTask = new std::function<void()>([this, inflightQueue]()
             {
@@ -100,8 +100,11 @@ namespace RENDERERS
 
             renderGraphRef->GetNode(forwardPassName)->AddTask(setViewTask);
             renderGraphRef->GetNode(forwardPassName)->SetRenderOperation(renderOp);
-            
+        }
 
+        void RenderFrame() override
+        {
+            
         }
 
         void ReloadShaders() override

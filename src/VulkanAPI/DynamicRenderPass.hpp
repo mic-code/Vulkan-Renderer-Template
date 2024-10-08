@@ -70,7 +70,7 @@ namespace ENGINE
             
         }
         void SetRenderInfo(std::vector<vk::RenderingAttachmentInfo>& colorAttachments,
-                           glm::uvec2 framebufferSize, vk::RenderingAttachmentInfo* depthAttachment = nullptr)
+                           glm::uvec2 framebufferSize, vk::RenderingAttachmentInfo* depthAttachment)
         {
             for (auto& element : colorAttachments)
             {
@@ -84,7 +84,7 @@ namespace ENGINE
             .setLayerCount(1)
             .setColorAttachmentCount(colorAttachments.size())
             .setPColorAttachments(colorAttachments.data());
-            if (depthAttachment != nullptr)
+            if (depthAttachment->imageView != nullptr)
             {
                 renderInfo.setPDepthAttachment(depthAttachment);
             }
