@@ -9,7 +9,8 @@
 
 #include "RendererStructs.hpp"
 #include "BaseRenderer.hpp"
-#include "Graphics/ForwardRenderer.hpp"
+#include "Examples/ForwardRenderer.hpp"
+#include "Examples/ComputeRenderer.hpp"
 
 
 

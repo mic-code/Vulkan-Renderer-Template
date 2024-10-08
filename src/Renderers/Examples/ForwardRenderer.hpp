@@ -112,6 +112,8 @@ namespace RENDERERS
         {
         }
 
+
+        ENGINE::DescriptorWriterBuilder writerBuilder;
         
         
         std::string forwardPassName;

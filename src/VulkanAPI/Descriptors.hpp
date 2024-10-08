@@ -43,7 +43,7 @@ namespace ENGINE
         
     };
 
-    struct DescriptorWriter
+    struct DescriptorWriterBuilder
     {
         void AddWriteImage(int binding, ImageView* imageView, vk::Sampler sampler,vk::ImageLayout layout, vk::DescriptorType type)
         {
