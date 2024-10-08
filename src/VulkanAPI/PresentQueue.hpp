@@ -107,8 +107,7 @@ namespace ENGINE
             auto &currFrame = frameResources[frameIndex];
 
 
-            ImageAccessPattern pattern = GetImageDstPattern(PRESENT);
-            TransitionImage(currentSwapchainImageView->imageData, pattern, currentSwapchainImageView->GetSubresourceRange(),
+            TransitionImage(currentSwapchainImageView->imageData, PRESENT, currentSwapchainImageView->GetSubresourceRange(),
                                     currFrame.commandBuffer.get());
             
             currFrame.commandBuffer->end();

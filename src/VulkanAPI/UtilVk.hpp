@@ -49,6 +49,12 @@ namespace ENGINE
      	
      	return bytecode;
     }
+
+    static void PrintInvalidResource(std::string type, std::string resourceName)
+    {
+	    std::string message = type + " with name \"" + resourceName + "\" does not exist\n";
+     	std::cout <<message;
+    } 
     
 }
 

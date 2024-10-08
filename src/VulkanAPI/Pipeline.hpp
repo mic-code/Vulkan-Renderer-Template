@@ -11,6 +11,7 @@ namespace ENGINE
 {
     enum BlendConfigs
     {
+        B_NONE,
         B_OPAQUE,
         B_ADD,
         B_MIX,
@@ -19,6 +20,7 @@ namespace ENGINE
 
     enum DepthConfigs
     {
+        D_NONE,
         D_ENABLE,
         D_DISABLE
     };

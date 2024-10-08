@@ -2,6 +2,7 @@
 // Created by carlo on 2024-09-22.
 //
 
+
 #ifndef STRUCTS_HPP
 namespace ENGINE
 {
@@ -57,6 +58,31 @@ namespace ENGINE
         PRESENT,
         UNDEFINED
       };
+
+    enum LayoutPatterns
+    {
+        GRAPHICS_READ,
+        GRAPHICS_WRITE,
+        COMPUTE,
+        COMPUTE_WRITE,
+        TRANSFER_SRC,
+        TRANSFER_DST,
+        COLOR_ATTACHMENT,
+        DEPTH_ATTACHMENT,
+        PRESENT,
+        EMPTY,
+    };
+
+    enum BufferUsageTypes
+    {
+        B_VERTEX_BUFFER,
+        B_GRAPHICS_WRITE,
+        B_COMPUTE_WRITE,
+        B_TRANSFER_DST,
+        B_TRANSFER_SRC,
+        B_EMPTY
+    };
+
     struct ImageAccessPattern
     {
         vk::PipelineStageFlags stage;

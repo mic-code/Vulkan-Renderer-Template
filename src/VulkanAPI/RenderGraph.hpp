@@ -69,26 +69,21 @@ namespace ENGINE
                     (*tasks[i])();
                 }
             }
-            vk::Viewport viewport = {};
-            viewport.x = 0.0f;
-            viewport.y = 0.0f;
-            viewport.width = static_cast<float>(frameBufferSize.x);
-            viewport.height = static_cast<float>(frameBufferSize.y); 
-            viewport.minDepth = 0.0f;
-            viewport.maxDepth = 1.0f;
-            commandBuffer.setViewport(0, 1, &viewport);
-            
-            vk::Rect2D scissor = {};
-            scissor.setOffset(0); // Start at top-left corner
-            scissor.setExtent(vk::Extent2D(static_cast<uint32_t>(frameBufferSize.x), static_cast<uint32_t>(frameBufferSize.y)));  // Set to swapchain extent or appropriate size
 
-            commandBuffer.setScissor(0, 1, &scissor);
+            dynamicRenderPass.SetViewport(frameBufferSize, frameBufferSize);
+            commandBuffer.setViewport(0,1,&dynamicRenderPass.viewport);
+            commandBuffer.setScissor(0, 1, &dynamicRenderPass.scissor);
+            
             assert(imagesAttachment.size()== colAttachments.size()&& "Not all color attachments were set");
             int index = 0;
             std::vector<vk::RenderingAttachmentInfo> attachmentInfos;
             attachmentInfos.reserve(colAttachments.size());
             for (auto& imagePair : imagesAttachment)
             {
+                if (IsImageTransitionNeeded(imagePair.second->imageData->currentLayout, COLOR_ATTACHMENT))
+                {
+                    TransitionImage(imagePair.second->imageData, COLOR_ATTACHMENT, imagePair.second->GetSubresourceRange(), commandBuffer);
+                }
                 colAttachments[index].attachmentInfo.setImageView(imagePair.second->imageView.get());
                 attachmentInfos.push_back(colAttachments[index].attachmentInfo);
                 index++;
@@ -196,7 +191,7 @@ namespace ENGINE
                 std::cout << "Attachment: " << "\"" << name << "\"" << " already exist";
             }
         }
-        void AddImageResourceInternal(std::string name, ImageView* imageView)
+        void AddNodeImageResource(std::string name, ImageView* imageView)
         {
 
             if (!imagesAttachment.contains(name))
@@ -204,21 +199,50 @@ namespace ENGINE
                 imagesAttachment.try_emplace(name, imageView);
             }else
             {
-                
                 imagesAttachment.at(name)= imageView;
-                std::cout << "Image name: "<< name << " already exist";
             }
         }
-        
+        void DependsOn(std::string dependency)
+        {
+            if (!dependencies.contains(dependency))
+            {
+                dependencies.insert(dependency);
+            }else
+            {
+                std::cout << "Renderpass \""<<this->passName<<" Already depends on \"" <<dependency <<"\" \n";
+            }
+        }
+        //this resources wiil be invalid at runtime
+        void ClearUnusedResources()
+        {
+            vertShaderModule = nullptr;
+            fragShaderModule = nullptr;
+            compShaderModule = nullptr;
+            colorBlendConfigs.clear();
+            depthConfig = D_NONE;
+            colAttachments.clear();
+            tasks.clear();
+            renderOperations = nullptr;
+        }
+         void ClearOperations()
+        {
+            delete renderOperations;
+            for (auto& task : tasks)
+            {
+                delete task;
+            }
+            renderOperations = nullptr;
+            tasks.clear();
+        }       
         
         
         vk::UniquePipeline pipeline;
         vk::PipelineLayout pipelineLayout;
         vk::PipelineBindPoint pipelineType;
         DynamicRenderPass dynamicRenderPass;
+        
     private:
         friend class RenderGraph;
-
         ShaderModule* vertShaderModule = nullptr;
         ShaderModule* fragShaderModule = nullptr;
         ShaderModule* compShaderModule = nullptr;
@@ -227,16 +251,18 @@ namespace ENGINE
         VertexInput vertexInput;
         glm::uvec2 frameBufferSize;
         
-        
         std::vector<AttachmentInfo> colAttachments;
         AttachmentInfo depthAttachment;
         
         ImageView* depthImage = nullptr;
         std::map<std::string,ImageView*>imagesAttachment;
         
-        
         std::function<void(vk::CommandBuffer& commandBuffer)>* renderOperations = nullptr;
         std::vector<std::function<void()>*> tasks;
+
+        std::string passName;
+        std::set<std::string> dependencies;
+        
         Core* core;
         std::map<std::string, ImageView*>* imagesProxyRef;
         std::map<std::string, AttachmentInfo>* outColAttachmentsProxyRef;
@@ -249,6 +275,7 @@ namespace ENGINE
     {
     public:
         std::map<std::string, std::unique_ptr<RenderGraphNode>> renderNodes;
+        std::vector<RenderGraphNode*> renderNodesSorted;
         std::map<std::string, ImageView*> imagesProxy;
         
         std::map<std::string, AttachmentInfo> outColAttachmentsProxy;
@@ -262,6 +289,17 @@ namespace ENGINE
         ~RenderGraph()
         {
             
+        }
+        RenderGraphNode* GetNode(std::string name)
+        {
+            if (renderNodes.contains(name))
+            {
+                return renderNodes.at(name).get();
+            }else
+            {
+                PrintInvalidResource("Renderpass", name);
+                return nullptr;
+            }
         }
 
         RenderGraphNode* AddPass(std::string name)
@@ -281,15 +319,15 @@ namespace ENGINE
                 return nullptr;
             }
         }
-        
         ImageView* AddImageResource(std::string passName,std::string name, ImageView* imageView)
         {
+            assert(imageView && "ImageView is null");
             if (!imagesProxy.contains(name))
             {
                 imagesProxy.try_emplace(name, imageView);
                 if (renderNodes.contains(passName))
                 {
-                    renderNodes.at(passName)->AddImageResourceInternal(name, imageView);
+                    renderNodes.at(passName)->AddNodeImageResource(name, imageView);
                 }
                 else
                 {
@@ -300,24 +338,32 @@ namespace ENGINE
                 imagesProxy.at(name) = imageView;
                 if (renderNodes.contains(passName))
                 {
-                    renderNodes.at(passName)->AddImageResourceInternal(name, imageView);
+                    renderNodes.at(passName)->AddNodeImageResource(name, imageView);
                 }else
                 {
                     std::cout << "Renderpass: " << passName << " does not exist, saving the image anyways. \n";
                 }
-                std::cout << "Image with name: \"" << name << "\" has changed \n";
+                // std::cout << "Image with name: \"" << name << "\" has changed \n";
             }
 
             return imageView;
             
         }
-        void ExecuteAll(vk::CommandBuffer& commandBuffer)
+        void SortDependencies()
         {
+            for (auto& element : renderNodes)
+            {
+                
+            }
+            
+        }
+        void ExecuteAll(FrameResources* currentFrame)
+        {
+            assert(currentFrame && "Current frame reference is null");
             for (auto& renderNode : renderNodes)
             {
                 RenderGraphNode* node = renderNode.second.get();
-                node->ExecutePass(commandBuffer);
-                
+                node->ExecutePass(currentFrame->commandBuffer.get());
             }
             
         }

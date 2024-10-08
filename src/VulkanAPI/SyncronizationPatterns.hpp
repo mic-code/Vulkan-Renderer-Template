@@ -13,29 +13,6 @@
 namespace ENGINE
 {
 
-    enum LayoutPatterns
-    {
-        GRAPHICS_READ,
-        GRAPHICS_WRITE,
-        COMPUTE,
-        COMPUTE_WRITE,
-        TRANSFER_SRC,
-        TRANSFER_DST,
-        COLOR_ATTACHMENT,
-        DEPTH_ATTACHMENT,
-        PRESENT,
-        EMPTY,
-        
-    };
-    enum BufferUsageTypes
-    {
-        B_VERTEX_BUFFER,
-        B_GRAPHICS_WRITE,
-        B_COMPUTE_WRITE,
-        B_TRANSFER_DST,
-        B_TRANSFER_SRC,
-        B_EMPTY
-    };
 
     //maybe is worst to only use the dst instead of also getting the source
     static ImageAccessPattern GetImageDstPattern(LayoutPatterns pattern)
@@ -99,7 +76,7 @@ namespace ENGINE
             break;
         case EMPTY:
             accessPattern.stage = vk::PipelineStageFlagBits::eTopOfPipe;
-            accessPattern.accessMask = vk::AccessFlags();
+            accessPattern.accessMask = vk::AccessFlagBits::eNone;
             accessPattern.layout = vk::ImageLayout::eUndefined;
             accessPattern.queueFamilyType = QueueFamilyTypes::UNDEFINED;
             break;
@@ -122,18 +99,21 @@ namespace ENGINE
         
     }
 
-    static void TransitionImage(ImageData* imageData, ImageAccessPattern& dstPattern, vk::ImageSubresourceRange range, vk::CommandBuffer& commandBuffer)
+    static void TransitionImage(ImageData* imageData, LayoutPatterns dstLayout, vk::ImageSubresourceRange range, vk::CommandBuffer& commandBuffer)
     {
+        ImageAccessPattern imagePattern = GetImageDstPattern(imageData->currentLayout);
+        ImageAccessPattern dstPattern = GetImageDstPattern(dstLayout);
+        
         auto imageBarrier = vk::ImageMemoryBarrier()
-                            .setSrcAccessMask(imageData->currentPattern.accessMask)
-                            .setOldLayout(imageData->currentPattern.layout)
+                            .setSrcAccessMask(imagePattern.accessMask)
+                            .setOldLayout(imagePattern.layout)
                             .setDstAccessMask(dstPattern.accessMask)
                             .setNewLayout(dstPattern.layout)
                             .setSubresourceRange(range)
                             .setImage(imageData->imageHandle);
 
-        commandBuffer.pipelineBarrier(imageData->currentPattern.stage, dstPattern.stage, vk::DependencyFlags(), {}, nullptr, imageBarrier);
-        imageData->currentPattern = dstPattern;
+        commandBuffer.pipelineBarrier(imagePattern.stage, dstPattern.stage, vk::DependencyFlags(), {}, nullptr, imageBarrier);
+        imageData->currentLayout = dstLayout;
     }
     static BufferAccessPattern GetSrcBufferAccessPattern(BufferUsageTypes usageType)
     {
