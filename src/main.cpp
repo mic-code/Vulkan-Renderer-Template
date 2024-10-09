@@ -50,13 +50,11 @@ void run(WindowProvider* windowProvider)
     std::unique_ptr<ENGINE::DescriptorAllocator> descriptorAllocator;
 
 
-    std::unique_ptr<RENDERERS::ForwardRenderer> fRenderer = std::make_unique<RENDERERS::ForwardRenderer>(
-        renderGraph.get(), windowProvider, descriptorAllocator.get());
-
+    std::unique_ptr<RENDERERS::ForwardRenderer> fRenderer = std::make_unique<RENDERERS::ForwardRenderer>(core.get(), windowProvider, descriptorAllocator.get());
+    fRenderer->CreateResources();
     fRenderer->SetRenderOperation(inFlightQueue.get());
     
     
-    fRenderer->CreateResources(executeOnceCommand.get());
     
     
     while (!windowProvider->WindowShouldClose())
@@ -74,6 +72,8 @@ void run(WindowProvider* windowProvider)
                     windowSize);
                 windowProvider->framebufferResized = false;
                 core->resizeRequested = false;
+                
+                fRenderer->SetRenderOperation(inFlightQueue.get());
             }
             try
             {

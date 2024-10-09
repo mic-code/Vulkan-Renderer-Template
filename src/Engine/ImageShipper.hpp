@@ -25,23 +25,22 @@ namespace ENGINE
             imageSize = {width, height};
             this->size =size;
         }
-        
-        void BuildImage(vk::PhysicalDevice physicalDevice, vk::Device logicalDevice,
-                        uint32_t arrayLayersCount, uint32_t mipsCount, vk::Format format, LayoutPatterns dstPattern,
-                        ExecuteOnceCommand* commandExecutor)
+
+        void BuildImage(Core* core, uint32_t arrayLayersCount, uint32_t mipsCount, vk::Format format, LayoutPatterns dstPattern)
         {
             assert(this->data && "variable \"data\" is not set or is invalid");
             vk::ImageUsageFlags usage = GetGeneralUsageFlags(format);
             vk::ImageCreateInfo createInfo = Image::CreateInfo2d(imageSize, mipsCount, arrayLayersCount, format, usage);
 
             
-            image = std::make_unique<Image>(physicalDevice, logicalDevice, createInfo);
+            image = std::make_unique<Image>(core->physicalDevice, core->logicalDevice.get(), createInfo);
 
-            imageView = std::make_unique<ImageView>(logicalDevice, image->imageData.get(),
+            imageView = std::make_unique<ImageView>(core->logicalDevice.get(), image->imageData.get(),
                                                     0, mipsCount, 0, arrayLayersCount);
 
+            auto commandExecutor = std::make_unique<ExecuteOnceCommand>(core);
             auto commandBuffer = commandExecutor->BeginCommandBuffer();
-            std::unique_ptr<Buffer> stagedBuffer = std::make_unique<Buffer>(physicalDevice, logicalDevice, vk::BufferUsageFlagBits::eTransferSrc,
+            std::unique_ptr<Buffer> stagedBuffer = std::make_unique<Buffer>(core->physicalDevice, core->logicalDevice.get(), vk::BufferUsageFlagBits::eTransferSrc,
                                                     vk::MemoryPropertyFlagBits::eHostVisible |
                                                     vk::MemoryPropertyFlagBits::eHostCoherent, size);
             

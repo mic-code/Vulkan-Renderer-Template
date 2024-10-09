@@ -1,6 +1,7 @@
 ﻿//
 
 
+
 // Created by carlo on 2024-10-07.
 //
 
@@ -15,14 +16,15 @@ namespace RENDERERS
     class ForwardRenderer : BaseRenderer
     {
     public:
-        ForwardRenderer(ENGINE::RenderGraph* renderGraph, WindowProvider* windowProvider,
+        ForwardRenderer(ENGINE::Core* core, WindowProvider* windowProvider,
                         ENGINE::DescriptorAllocator* descriptorAllocator)
         {
-            this->renderGraphRef = renderGraph;
+            this->core = core;
+            this->renderGraphRef = core->renderGraphRef;
             this->windowProvider = windowProvider;
             this->descriptorAllocatorRef = descriptorAllocator;
-            this->logicalDevice = renderGraphRef->core->logicalDevice.get();
-            this->physicalDevice = renderGraphRef->core->physicalDevice;
+            auto logicalDevice = core->logicalDevice.get();
+            auto physicalDevice = core->physicalDevice;
 
 
             std::string vertPath =
@@ -59,7 +61,7 @@ namespace RENDERERS
             ENGINE::AttachmentInfo colInfo = ENGINE::GetColorAttachmentInfo();
             ENGINE::AttachmentInfo depthInfo = ENGINE::GetDepthAttachmentInfo();
             forwardPassName = "ForwardPass";
-            auto renderNode = renderGraph->AddPass(forwardPassName);
+            auto renderNode = renderGraphRef->AddPass(forwardPassName);
             
             renderNode->SetVertModule(&vertShaderModule);
             renderNode->SetFragModule(&fragShaderModule);
@@ -73,14 +75,11 @@ namespace RENDERERS
             renderNode->BuildRenderGraphNode();
 
             
-            
         }
-        void CreateResources(ENGINE::ExecuteOnceCommand* commandExecutor)
+        void CreateResources()
         {
             imageShipper.SetDataFromPath("C:\\Users\\carlo\\OneDrive\\Pictures\\Screenshots\\Screenshot 2024-09-19 172847.png");
-            imageShipper.BuildImage(physicalDevice, logicalDevice, 1, 1,
-                                    renderGraphRef->core->swapchainRef->GetFormat(), ENGINE::GRAPHICS_READ,
-                                    commandExecutor);
+            imageShipper.BuildImage(core, 1, 1 ,renderGraphRef->core->swapchainRef->GetFormat(), ENGINE::GRAPHICS_READ);
         }
 
         ~ForwardRenderer() override
@@ -130,10 +129,9 @@ namespace RENDERERS
         std::string forwardPassName;
         std::vector<Vertex> vertices;
         std::unique_ptr<ENGINE::Buffer> buffer;
-        vk::Device logicalDevice;
-        vk::PhysicalDevice physicalDevice;
         ENGINE::DescriptorAllocator* descriptorAllocatorRef;
         WindowProvider* windowProvider;
+        ENGINE::Core* core;
         ENGINE::RenderGraph* renderGraphRef;
     };
 }
