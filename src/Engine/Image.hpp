@@ -152,8 +152,8 @@ namespace ENGINE
             
             logicalDevice.bindImageMemory(imageHandle.get(), imageMemory.get(), 0);
             
-            
         }
+
         std::unique_ptr<ImageData> imageData;
         vk::UniqueImage imageHandle;
         vk::UniqueDeviceMemory imageMemory;
