@@ -19,15 +19,15 @@ set(GLFW3_INCLUDE_DIR "${SOLUTION_DIR}/dependencies/glfw/include")
 set(GLFW3_LIBRARIES "${SOLUTION_DIR}/dependencies/glfw/lib-vc2022/glfw3.lib")
 set(GLM_INCLUDE_DIR "${SOLUTION_DIR}/dependencies/glm-master/glm")
 set(STB_INCLUDE_DIR "${SOLUTION_DIR}/dependencies/stb-master")
-set(SPIRV_CROSS_INCLUDE_DIR "${SOLUTION_DIR}/dependencies/spirv_cross")
+set(SPIRVCROSS_INCLUDE_DIR "${SOLUTION_DIR}/dependencies/spirv-cross")
 
 include_directories("${Vulkan_INCLUDE_DIRS}")
 include_directories("${GLFW3_INCLUDE_DIR}")
 include_directories("${GLM_INCLUDE_DIR}")
 include_directories("${STB_INCLUDE_DIR}")
-include_directories("${SPIRV_CROSS_INCLUDE_DIR}")
+include_directories("${SPIRVCROSS_INCLUDE_DIR}")
 
-file(GLOB_RECURSE dep_sources "${SPIRV_CROSS_INCLUDE_DIR}/*.cpp")
+file(GLOB_RECURSE dep_sources "${SPIRVCROSS_INCLUDE_DIR}/*.cpp")
 file(GLOB_RECURSE engine_sources "${SOLUTION_DIR}/src/*.cpp")
 file(GLOB_RECURSE engine_headers "${SOLUTION_DIR}/src/*.hpp")
 

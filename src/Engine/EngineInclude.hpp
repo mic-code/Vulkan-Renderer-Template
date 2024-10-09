@@ -20,7 +20,8 @@
 #include <glm/glm.hpp>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#include <spirv_cross/spirv_glsl.hpp>
+
+#include <spirv_glsl.hpp>
 
 
 #include <vulkan/vulkan.hpp>

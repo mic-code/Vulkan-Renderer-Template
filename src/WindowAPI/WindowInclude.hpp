@@ -2,9 +2,8 @@
 // Created by carlo on 2024-10-02.
 //
 
-#ifndef WINDOWINCLUDE_HPP
-#define WINDOWINCLUDE_HPP
 
+#pragma once
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -15,4 +14,3 @@
 
 
 
-#endif //WINDOWINCLUDE_HPP

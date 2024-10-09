@@ -29,7 +29,7 @@ namespace ENGINE
         ShaderParser(std::string path)
         {
             spirvBinaries = GetByteCode(path);
-            spirv_cross::CompilerGLSL glsl(std::move(spirvBinaries));
+            spirv_cross::CompilerGLSL glsl((spirvBinaries));
 
             spirv_cross::ShaderResources resources = glsl.get_shader_resources();
 
