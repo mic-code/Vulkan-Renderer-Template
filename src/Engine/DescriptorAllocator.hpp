@@ -32,8 +32,9 @@ namespace ENGINE
             auto poolInfo = vk::DescriptorPoolCreateInfo()
             .setFlags(vk::DescriptorPoolCreateFlags())
             .setMaxSets(maxSets)
+            .setPPoolSizes(poolSizes.data())
             .setPoolSizeCount(static_cast<uint32_t>(poolSizes.size()));
-
+                
             pool = device.createDescriptorPoolUnique(poolInfo);
             
         }

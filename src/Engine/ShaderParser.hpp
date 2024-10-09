@@ -119,6 +119,27 @@ namespace ENGINE
             
         }
 
+        static void GetBinding(std::vector<ShaderResource>& resources, DescriptorLayoutBuilder& builder, std::set <uint32_t>& bindings)
+        {
+            for (auto& resource : resources)
+            {
+                if (bindings.contains(resource.binding))
+                {
+                    continue;
+                }
+                builder.AddBinding(resource.binding, vk::DescriptorType::eSampledImage);
+                bindings.insert(resource.binding);
+            }
+            
+        }
+        static void GetLayout(ShaderParser& parser, DescriptorLayoutBuilder& builder)
+        {
+            std::set<uint32_t> repeatedBindings;
+            GetBinding(parser.sampledImages, builder, repeatedBindings);
+            GetBinding(parser.storageImages, builder, repeatedBindings);
+            GetBinding(parser.uniformBuffers, builder, repeatedBindings);
+            GetBinding(parser.storageBuffers, builder, repeatedBindings);
+        }
         ShaderStage stage;
         
         std::vector<ShaderResource> uniformBuffers;

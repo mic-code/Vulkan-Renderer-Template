@@ -7,6 +7,8 @@
 //
 
 
+
+
 #ifndef FORWARDRENDERER_HPP
 #define FORWARDRENDERER_HPP
 
@@ -32,7 +34,10 @@ namespace RenderingStructs
                 "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.vert.spv";
             std::string fragPath =
                 "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.frag.spv";
-            ENGINE::ShaderParser parser(vertPath);
+            ENGINE::ShaderParser vertParser(vertPath);
+            ENGINE::ShaderParser fragParser(vertPath);
+
+            
             
             ENGINE::ShaderModule vertShaderModule(logicalDevice, vertPath);
             ENGINE::ShaderModule fragShaderModule(logicalDevice, fragPath);
@@ -77,7 +82,21 @@ namespace RenderingStructs
             renderNode->SetDepthConfig(ENGINE::DepthConfigs::D_ENABLE);
             renderNode->BuildRenderGraphNode();
 
-            
+        }
+        void BuildLayout()
+        {
+            std::string vertPath =
+                "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.vert.spv";
+            std::string fragPath =
+                "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.frag.spv";
+            ENGINE::ShaderParser vertParser(vertPath);
+            ENGINE::ShaderParser fragParser(vertPath);
+
+            ENGINE::DescriptorLayoutBuilder builder;
+
+            ENGINE::ShaderParser::GetLayout(vertParser, builder);
+            ENGINE::ShaderParser::GetLayout(fragParser, builder);
+            builder.BuildBindings(core->logicalDevice.get(), vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
         }
         void CreateResources()
         {

@@ -23,7 +23,6 @@
 
 #include <spirv_glsl.hpp>
 
-
 #include <vulkan/vulkan.hpp>
 #include "Structs.hpp"
 #include "UtilVk.hpp"

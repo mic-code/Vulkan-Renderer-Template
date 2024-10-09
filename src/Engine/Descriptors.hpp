@@ -22,7 +22,7 @@ namespace ENGINE
             bindings.clear();
         }
 
-        vk::UniqueDescriptorSetLayout BuildBindings(vk::Device device, vk::ShaderStageFlags stageFlags, void* pNext = nullptr,
+            vk::UniqueDescriptorSetLayout BuildBindings(vk::Device device, vk::ShaderStageFlags stageFlags, void* pNext = nullptr,
                                               vk::DescriptorSetLayoutCreateFlags flags =
                                                   vk::DescriptorSetLayoutCreateFlags())
         {

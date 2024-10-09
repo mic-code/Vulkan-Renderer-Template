@@ -1,9 +1,14 @@
 ﻿#version 450
 
 layout(location = 0) out vec4 outColor;
-
 layout(location = 0) in vec2 textCoord;
 
+
+layout(set=0, binding = 1) uniform sampler2D testImage;
+
+
 void main() {
-    outColor = vec4(textCoord, 0.0f, 1.0f);
+    vec4 text = texture(testImage, textCoord);
+    
+    outColor = text;
 }
