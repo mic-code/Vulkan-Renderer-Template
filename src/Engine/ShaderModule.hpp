@@ -12,13 +12,12 @@ namespace ENGINE
     {
         
     public:
-        ShaderModule(vk::Device device, std::string path)
+        ShaderModule(vk::Device device, std::vector<uint32_t>& byteCode)
         {
             
-            std::vector<uint32_t> code = GetByteCode(path);
             auto shaderModuleCreateInfo = vk::ShaderModuleCreateInfo()
-            .setCodeSize(sizeof(uint32_t) * code.size())
-            .setPCode(code.data());
+            .setCodeSize(sizeof(uint32_t) * byteCode.size())
+            .setPCode(byteCode.data());
             this->shaderModuleHandle = device.createShaderModuleUnique(shaderModuleCreateInfo);
         }
         vk::UniqueShaderModule shaderModuleHandle;

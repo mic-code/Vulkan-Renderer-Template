@@ -3,6 +3,8 @@
 
 
 
+
+
 // Created by carlo on 2024-10-07.
 //
 
@@ -14,7 +16,7 @@
 
 
 
-namespace RenderingStructs
+namespace Rendering
 {
     class ForwardRenderer : BaseRenderer
     {
@@ -29,19 +31,31 @@ namespace RenderingStructs
             auto logicalDevice = core->logicalDevice.get();
             auto physicalDevice = core->physicalDevice;
 
-
-            std::string vertPath =
-                "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.vert.spv";
-            std::string fragPath =
-                "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.frag.spv";
-            ENGINE::ShaderParser vertParser(vertPath);
-            ENGINE::ShaderParser fragParser(vertPath);
-
+            std::vector<uint32_t> vertCode = ENGINE::GetByteCode(
+                "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.vert.spv");
+            std::vector<uint32_t> fragCode = ENGINE::GetByteCode(
+                    "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.frag.spv");
             
             
-            ENGINE::ShaderModule vertShaderModule(logicalDevice, vertPath);
-            ENGINE::ShaderModule fragShaderModule(logicalDevice, fragPath);
+            ENGINE::ShaderParser vertParser(vertCode);
+            ENGINE::ShaderParser fragParser(fragCode);
+            
+            ENGINE::ShaderModule vertShaderModule(logicalDevice, vertCode);
+            ENGINE::ShaderModule fragShaderModule(logicalDevice, fragCode);
 
+            ENGINE::DescriptorLayoutBuilder builder;
+
+            ENGINE::ShaderParser::GetLayout(vertParser, builder);
+            ENGINE::ShaderParser::GetLayout(fragParser, builder);
+            vk::UniqueDescriptorSetLayout setLayout = builder.BuildBindings(
+                core->logicalDevice.get(), vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
+
+            auto layoutCreateInfo = vk::PipelineLayoutCreateInfo()
+                                    .setSetLayoutCount(static_cast<uint32_t>(builder.bindings.size()))
+                                    .setPSetLayouts(&setLayout.get());
+            
+            auto pipelineLayout = logicalDevice.createPipelineLayoutUnique(layoutCreateInfo);
+ 
             ENGINE::VertexInput vertexInput;
             vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC2, 0, offsetof(Vertex, pos), 0);
             vertexInput.AddVertexInputBinding(0, sizeof(Vertex));
@@ -49,12 +63,7 @@ namespace RenderingStructs
             vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC2, 0, offsetof(Vertex, uv), 1);
             vertexInput.AddVertexInputBinding(0, sizeof(Vertex));
             
-            vk::PipelineLayoutCreateInfo pipelineLayoutInfo = {};
-            pipelineLayoutInfo.setLayoutCount = 0; // No descriptor sets
-            pipelineLayoutInfo.pushConstantRangeCount = 0; // No push constants
-
-            auto pipelineLayout = logicalDevice.createPipelineLayoutUnique(pipelineLayoutInfo);
-
+           
             vertices= {
                 {{-0.5f, -0.5f}, {0.0f, 0.0f}}, // Bottom-left corner, UV (0, 0)
                 {{0.5f, -0.5f}, {1.0f, 0.0f}}, // Bottom-right corner, UV (1, 0)
@@ -74,7 +83,7 @@ namespace RenderingStructs
             renderNode->SetVertModule(&vertShaderModule);
             renderNode->SetFragModule(&fragShaderModule);
             renderNode->SetFramebufferSize(windowProvider->GetWindowSize());
-            renderNode->SetPipelineLayout(pipelineLayout.get());
+            renderNode->SetPipelineLayout(std::move(pipelineLayout.get()));
             renderNode->SetVertexInput(vertexInput);
             renderNode->AddColorAttachmentOutput("color", colInfo);
             renderNode->SetDepthAttachmentOutput("depth", depthInfo);
@@ -82,22 +91,9 @@ namespace RenderingStructs
             renderNode->SetDepthConfig(ENGINE::DepthConfigs::D_ENABLE);
             renderNode->BuildRenderGraphNode();
 
+            
         }
-        void BuildLayout()
-        {
-            std::string vertPath =
-                "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.vert.spv";
-            std::string fragPath =
-                "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.frag.spv";
-            ENGINE::ShaderParser vertParser(vertPath);
-            ENGINE::ShaderParser fragParser(vertPath);
-
-            ENGINE::DescriptorLayoutBuilder builder;
-
-            ENGINE::ShaderParser::GetLayout(vertParser, builder);
-            ENGINE::ShaderParser::GetLayout(fragParser, builder);
-            builder.BuildBindings(core->logicalDevice.get(), vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
-        }
+        
         void CreateResources()
         {
             imageShipper.SetDataFromPath("C:\\Users\\carlo\\OneDrive\\Pictures\\Screenshots\\Screenshot 2024-09-19 172847.png");

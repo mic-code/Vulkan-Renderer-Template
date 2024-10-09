@@ -26,10 +26,9 @@ namespace ENGINE
             
             bool array = false;
         };
-        ShaderParser(std::string path)
+        ShaderParser(std::vector<uint32_t>& byteCode)
         {
-            spirvBinaries = GetByteCode(path);
-            spirv_cross::CompilerGLSL glsl((spirvBinaries));
+            spirv_cross::CompilerGLSL glsl((byteCode));
 
             spirv_cross::ShaderResources resources = glsl.get_shader_resources();
 
@@ -146,7 +145,6 @@ namespace ENGINE
         std::vector<ShaderResource> storageBuffers;
         std::vector<ShaderResource> sampledImages;
         std::vector<ShaderResource> storageImages;
-        std::vector<uint32_t> spirvBinaries;
     };
 }
 

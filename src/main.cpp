@@ -56,7 +56,7 @@ void run(WindowProvider* windowProvider)
     // descriptorAllocator->BeginPool(core->logicalDevice.get(), 100, poolSizeRatios);
 
 
-    std::unique_ptr<RenderingStructs::ForwardRenderer> fRenderer = std::make_unique<RenderingStructs::ForwardRenderer>(core.get(), windowProvider, descriptorAllocator.get());
+    std::unique_ptr<Rendering::ForwardRenderer> fRenderer = std::make_unique<Rendering::ForwardRenderer>(core.get(), windowProvider, descriptorAllocator.get());
     fRenderer->CreateResources();
     fRenderer->SetRenderOperation(inFlightQueue.get());
     

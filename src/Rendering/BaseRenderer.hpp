@@ -5,7 +5,7 @@
 #ifndef BASERENDERER_HPP
 #define BASERENDERER_HPP
 
-namespace RenderingStructs
+namespace Rendering
 {
     class BaseRenderer
     {

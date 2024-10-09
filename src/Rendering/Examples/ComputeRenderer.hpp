@@ -6,7 +6,7 @@
 #ifndef COMPUTERENDERER_HPP
 #define COMPUTERENDERER_HPP
 
-namespace RenderingStructs
+namespace Rendering
 {
     class ComputeRenderer : BaseRenderer
     {
