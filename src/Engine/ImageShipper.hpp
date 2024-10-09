@@ -5,4 +5,19 @@
 #ifndef IMAGESHIPPER_HPP
 #define IMAGESHIPPER_HPP
 
+namespace ENGINE
+{
+    struct ImageShipper
+    {
+        void CreateData(std::string path)
+        {
+            
+            
+        }
+        
+        Buffer stagedBuffer;
+    };
+}
+
+
 #endif //IMAGESHIPPER_HPP

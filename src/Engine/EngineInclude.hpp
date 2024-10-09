@@ -28,6 +28,7 @@
 #include "Image.hpp"
 #include "ImageView.hpp"
 #include "Sampler.hpp"
+#include "ImageShipper.hpp"
 #include "SyncronizationPatterns.hpp"
 #include "DescriptorAllocator.hpp"
 #include "Descriptors.hpp"
