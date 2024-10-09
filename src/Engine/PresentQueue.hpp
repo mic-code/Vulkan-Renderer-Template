@@ -108,7 +108,7 @@ namespace ENGINE
             
             currFrame.commandBuffer->begin(bufferBeginInfo);
             
-            core->renderGraph->ExecuteAll(&currFrame);
+            core->renderGraphRef->ExecuteAll(&currFrame);
                 
 
             TransitionImage(currentSwapchainImageView->imageData, PRESENT, currentSwapchainImageView->GetSubresourceRange(),

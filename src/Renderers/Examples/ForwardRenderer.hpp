@@ -4,6 +4,7 @@
 // Created by carlo on 2024-10-07.
 //
 
+
 #ifndef FORWARDRENDERER_HPP
 #define FORWARDRENDERER_HPP
 
@@ -14,23 +15,24 @@ namespace RENDERERS
     class ForwardRenderer : BaseRenderer
     {
     public:
-        ForwardRenderer(ENGINE::RenderGraph* renderGraph, WindowProvider* windowProvider, ENGINE::DescriptorAllocator* descriptorAllocator)
+        ForwardRenderer(ENGINE::RenderGraph* renderGraph, WindowProvider* windowProvider,
+                        ENGINE::DescriptorAllocator* descriptorAllocator)
         {
             this->renderGraphRef = renderGraph;
             this->windowProvider = windowProvider;
             this->descriptorAllocatorRef = descriptorAllocator;
-            vk::Device& device = renderGraphRef->core->logicalDevice.get();
-            vk::PhysicalDevice& physicalDevice = renderGraphRef->core->physicalDevice;
-            ENGINE::VertexInput vertexInput;
+            this->logicalDevice = renderGraphRef->core->logicalDevice.get();
+            this->physicalDevice = renderGraphRef->core->physicalDevice;
 
 
             std::string vertPath =
                 "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.vert.spv";
             std::string fragPath =
                 "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.frag.spv";
-            ENGINE::ShaderModule vertShaderModule(device, vertPath);
-            ENGINE::ShaderModule fragShaderModule(device, fragPath);
+            ENGINE::ShaderModule vertShaderModule(logicalDevice, vertPath);
+            ENGINE::ShaderModule fragShaderModule(logicalDevice, fragPath);
 
+            ENGINE::VertexInput vertexInput;
             vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC2, 0, offsetof(Vertex, pos), 0);
             vertexInput.AddVertexInputBinding(0, sizeof(Vertex));
 
@@ -41,7 +43,7 @@ namespace RENDERERS
             pipelineLayoutInfo.setLayoutCount = 0; // No descriptor sets
             pipelineLayoutInfo.pushConstantRangeCount = 0; // No push constants
 
-            auto pipelineLayout = device.createPipelineLayoutUnique(pipelineLayoutInfo);
+            auto pipelineLayout = logicalDevice.createPipelineLayoutUnique(pipelineLayoutInfo);
 
             vertices= {
                 {{-0.5f, -0.5f}, {0.0f, 0.0f}}, // Bottom-left corner, UV (0, 0)
@@ -50,7 +52,7 @@ namespace RENDERERS
             };
 
             buffer = std::make_unique<ENGINE::Buffer>(
-                physicalDevice, device, vk::BufferUsageFlagBits::eVertexBuffer,
+                physicalDevice, logicalDevice, vk::BufferUsageFlagBits::eVertexBuffer,
                 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
                 sizeof(Vertex) * vertices.size(), vertices.data());
 
@@ -71,6 +73,14 @@ namespace RENDERERS
             renderNode->BuildRenderGraphNode();
 
             
+            
+        }
+        void CreateResources(ENGINE::ExecuteOnceCommand* commandExecutor)
+        {
+            imageShipper.SetDataFromPath("C:\\Users\\carlo\\OneDrive\\Pictures\\Screenshots\\Screenshot 2024-09-19 172847.png");
+            imageShipper.BuildImage(physicalDevice, logicalDevice, 1, 1,
+                                    renderGraphRef->core->swapchainRef->GetFormat(), ENGINE::GRAPHICS_READ,
+                                    commandExecutor);
         }
 
         ~ForwardRenderer() override
@@ -114,11 +124,14 @@ namespace RENDERERS
 
 
         ENGINE::DescriptorWriterBuilder writerBuilder;
-        
-        
+
+
+        ENGINE::ImageShipper imageShipper;
         std::string forwardPassName;
         std::vector<Vertex> vertices;
         std::unique_ptr<ENGINE::Buffer> buffer;
+        vk::Device logicalDevice;
+        vk::PhysicalDevice physicalDevice;
         ENGINE::DescriptorAllocator* descriptorAllocatorRef;
         WindowProvider* windowProvider;
         ENGINE::RenderGraph* renderGraphRef;

@@ -7,7 +7,7 @@
 
 namespace ENGINE
 {
-    struct ImageShipperBuilder
+    struct ImageShipper 
     {
         void SetDataFromPath(std::string path)
         {
@@ -26,21 +26,22 @@ namespace ENGINE
             this->size =size;
         }
         
-        void BuildImage(vk::PhysicalDevice physicalDevice, vk::Device device,
+        void BuildImage(vk::PhysicalDevice physicalDevice, vk::Device logicalDevice,
                         uint32_t arrayLayersCount, uint32_t mipsCount, vk::Format format, LayoutPatterns dstPattern,
-                        vk::CommandBuffer commandBuffer)
+                        ExecuteOnceCommand* commandExecutor)
         {
             assert(this->data && "variable \"data\" is not set or is invalid");
             vk::ImageUsageFlags usage = GetGeneralUsageFlags(format);
             vk::ImageCreateInfo createInfo = Image::CreateInfo2d(imageSize, mipsCount, arrayLayersCount, format, usage);
 
             
-            image = std::make_unique<Image>(physicalDevice, device, createInfo);
+            image = std::make_unique<Image>(physicalDevice, logicalDevice, createInfo);
 
-            imageView = std::make_unique<ImageView>(device, image->imageData.get(),
+            imageView = std::make_unique<ImageView>(logicalDevice, image->imageData.get(),
                                                     0, mipsCount, 0, arrayLayersCount);
-            
-            std::unique_ptr<Buffer> stagedBuffer = std::make_unique<Buffer>(physicalDevice, device, vk::BufferUsageFlagBits::eTransferSrc,
+
+            auto commandBuffer = commandExecutor->BeginCommandBuffer();
+            std::unique_ptr<Buffer> stagedBuffer = std::make_unique<Buffer>(physicalDevice, logicalDevice, vk::BufferUsageFlagBits::eTransferSrc,
                                                     vk::MemoryPropertyFlagBits::eHostVisible |
                                                     vk::MemoryPropertyFlagBits::eHostCoherent, size);
             
@@ -53,6 +54,7 @@ namespace ENGINE
                               imageSize);
             
             TransitionImage(imageView->imageData, dstPattern, imageView->GetSubresourceRange(), commandBuffer);
+            commandExecutor->EndCommandBuffer();
 
             if (data)
             {
@@ -60,6 +62,16 @@ namespace ENGINE
                 data = nullptr;
             }
         }
+
+        std::unique_ptr<Image> ShipImage()
+        {
+            return std::move(image);
+        }
+        std::unique_ptr<ImageView> ShipImageView()
+        {
+            return std::move(imageView);
+        }
+
 
         std::unique_ptr<Image> image;
         std::unique_ptr<ImageView> imageView;

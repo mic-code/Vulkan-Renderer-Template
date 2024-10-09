@@ -55,6 +55,10 @@ void run(WindowProvider* windowProvider)
 
     fRenderer->SetRenderOperation(inFlightQueue.get());
     
+    
+    fRenderer->CreateResources(executeOnceCommand.get());
+    
+    
     while (!windowProvider->WindowShouldClose())
     {
         windowProvider->PollEvents();

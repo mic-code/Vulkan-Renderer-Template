@@ -80,10 +80,10 @@ namespace ENGINE
             attachmentInfos.reserve(colAttachments.size());
             for (auto& imagePair : imagesAttachment)
             {
-                if (IsImageTransitionNeeded(imagePair.second->imageData->currentLayout, COLOR_ATTACHMENT))
-                {
-                    TransitionImage(imagePair.second->imageData, COLOR_ATTACHMENT, imagePair.second->GetSubresourceRange(), commandBuffer);
-                }
+                // if (IsImageTransitionNeeded(imagePair.second->imageData->currentLayout, COLOR_ATTACHMENT))
+                // {
+                //     TransitionImage(imagePair.second->imageData, COLOR_ATTACHMENT, imagePair.second->GetSubresourceRange(), commandBuffer);
+                // }
                 colAttachments[index].attachmentInfo.setImageView(imagePair.second->imageView.get());
                 attachmentInfos.push_back(colAttachments[index].attachmentInfo);
                 index++;

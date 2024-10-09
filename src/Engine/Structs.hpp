@@ -29,7 +29,7 @@ namespace ENGINE
       std::vector<SubImageInfo> layerInfos;
       glm::uvec3 size;
     };
-   
+
     //swapChain
     struct SurfaceDetails
     {
@@ -37,7 +37,6 @@ namespace ENGINE
         std::vector<vk::SurfaceFormatKHR> formats;
         std::vector<vk::PresentModeKHR> presentModes;
     };
-
 
     //presentQueue
     struct FrameResources

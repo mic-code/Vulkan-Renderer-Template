@@ -35,7 +35,7 @@ namespace ENGINE
 
         static int32_t FindMemoryTypeIndex(vk::PhysicalDevice logicalDevice, uint32_t memTypeFlags, vk::MemoryPropertyFlags memFlags);
 
-        
+
         vk::UniqueInstance instance;
         vk::PhysicalDevice physicalDevice;
         vk::UniqueDevice logicalDevice;
@@ -43,7 +43,8 @@ namespace ENGINE
         vk::Queue graphicsQueue;
         vk::Queue presentQueue;
         bool resizeRequested = false;
-        RenderGraph* renderGraph;
+        RenderGraph* renderGraphRef;
+        SwapChain* swapchainRef;
 
     private:
         

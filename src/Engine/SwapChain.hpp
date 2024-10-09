@@ -68,7 +68,7 @@ namespace ENGINE
 
             for (int imageIndex = 0; imageIndex < swapChainImages.size(); ++imageIndex)
             {
-                ImageFull imageFull;
+                ImageSwapchain imageFull;
                 imageFull.imageData = std::make_unique<ImageData>(swapChainImages[imageIndex], vk::ImageType::e2D,
                                                                   glm::vec3(extent.width, extent.height, 1), 1, 1,
                                                                   surfaceFormat.format, vk::ImageLayout::eUndefined);
@@ -92,6 +92,11 @@ namespace ENGINE
                 resImageViews.push_back(image.imageView.get());
             }
             return resImageViews;
+        }
+
+        vk::Format GetFormat()
+        {
+            return surfaceFormat.format;
         }
         
 
@@ -173,6 +178,7 @@ namespace ENGINE
             }            
         }
         
+        
 
 
 
@@ -182,13 +188,13 @@ namespace ENGINE
         vk::Format depthFormat; 
         vk::PresentModeKHR presentMode;
         vk::Extent2D extent;
-        struct ImageFull
+        struct ImageSwapchain
         {
             std::unique_ptr<ImageData> imageData;
             std::unique_ptr<ImageView> imageView;
         };
 
-        std::vector<ImageFull> images;
+        std::vector<ImageSwapchain> images;
 
         vk::UniqueSurfaceKHR surface;
         vk::UniqueSwapchainKHR swapchainHandle;

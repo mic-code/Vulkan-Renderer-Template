@@ -25,7 +25,7 @@ include_directories("${GLFW3_INCLUDE_DIR}")
 include_directories("${GLM_INCLUDE_DIR}")
 include_directories("${STB_INCLUDE_DIR}")
 
-file(GLOB_RECURSE dep_sources "${STB_INCLUDE_DIR}/*.h")
+#file(GLOB_RECURSE dep_sources "${STB_INCLUDE_DIR}/*.h")
 file(GLOB_RECURSE engine_sources "${SOLUTION_DIR}/src/*.cpp")
 file(GLOB_RECURSE engine_headers "${SOLUTION_DIR}/src/*.hpp")
 
@@ -35,6 +35,7 @@ set(CMAKE_BUILD_TYPE Debug)
 add_executable(Engine "${SOLUTION_DIR}/src/main.cpp")
 
 target_sources(Engine PRIVATE 
+        ${dep_sources}
         ${engine_headers}
         ${engine_sources})
 

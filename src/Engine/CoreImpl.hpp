@@ -4,6 +4,8 @@
 
 
 
+
+
 #ifndef COREIMPL_HPP
 #define COREIMPL_HPP
 
@@ -78,6 +80,7 @@ namespace ENGINE
                                                                   this->logicalDevice.get(), windowDesc
                                                                   , imageCount, this->queueFamilyIndices,
                                                                   presentModeKHR, windowSize));
+        this->swapchainRef = swapChain.get();
         return swapChain;
     }
 
@@ -85,7 +88,7 @@ namespace ENGINE
     {
         auto renderGraph = std::make_unique<RenderGraph>(this);
 
-        this->renderGraph = renderGraph.get();
+        this->renderGraphRef = renderGraph.get();
 
         return renderGraph;
     }

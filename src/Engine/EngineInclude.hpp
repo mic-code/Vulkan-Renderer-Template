@@ -18,8 +18,8 @@
 #include<deque>
 
 #include <glm/glm.hpp>
-#include <stb_image.h>
 #define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 
 #include <vulkan/vulkan.hpp>
@@ -31,7 +31,6 @@
 #include "ImageView.hpp"
 #include "Sampler.hpp"
 #include "SyncronizationPatterns.hpp"
-#include "ImageShipper.hpp"
 #include "DescriptorAllocator.hpp"
 #include "Descriptors.hpp"
 #include "ShaderModule.hpp"
@@ -46,3 +45,4 @@
 #include "CoreImpl.hpp"
 
 #include "PresentQueue.hpp"
+#include "ImageShipper.hpp"
