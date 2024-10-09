@@ -49,24 +49,7 @@ namespace ENGINE
         std::unique_ptr<ENGINE::Buffer> deviceBuffer;
         vk::DeviceSize size;
     };
-    //
-    // static void CopyBufferToImage(vk::Device logicalDevice, vk::CommandBuffer commandBuffer, ENGINE::Buffer buffer,
-    //                               Image* image)
-    // {
-    //     auto imageSubresource = vk::ImageSubresourceLayers()
-    //                             .setAspectMask(vk::ImageAspectFlagBits::eColor)
-    //                             .setMipLevel(0)
-    //                             .setBaseArrayLayer(0)
-    //                             .setLayerCount(1);
-    //     auto imageCopyRegion = vk::BufferImageCopy()
-    //     .setBufferOffset(0)
-    //     .setImageExtent(0)
-    //     .setBufferImageHeight(0)
-    //     .setBufferRowLength(0)
-    //     .setImageSubresource(imageSubresource)
-    //     .setImageOffset(vk::Offset3D(0));
-    //     // .setImageExtent(vk::Extent3D(image->imageData.))
-    // }
+    
     
 }
 #endif //STAGEDBUFFER_HPP

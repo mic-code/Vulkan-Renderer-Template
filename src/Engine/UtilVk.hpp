@@ -49,12 +49,32 @@ namespace ENGINE
      	
      	return bytecode;
     }
+	static void CopyBufferToImage(vk::CommandBuffer commandBuffer, vk::Buffer srcBuffer,
+                                  vk::Image* image, glm::uvec2 size)
+    {
+        auto imageSubresource = vk::ImageSubresourceLayers()
+                                .setAspectMask(vk::ImageAspectFlagBits::eColor)
+                                .setMipLevel(0)
+                                .setBaseArrayLayer(0)
+                                .setLayerCount(1);
+        auto imageCopyRegion = vk::BufferImageCopy()
+        .setBufferOffset(0)
+        .setImageExtent(0)
+        .setBufferImageHeight(0)
+        .setBufferRowLength(0)
+        .setImageSubresource(imageSubresource)
+        .setImageOffset(vk::Offset3D(0))
+        .setImageExtent(vk::Extent3D(size.x, size.y, 1));
+        commandBuffer.copyBufferToImage(srcBuffer, *image, vk::ImageLayout::eTransferDstOptimal, 1, &imageCopyRegion);
+    }
+    
 
     static void PrintInvalidResource(std::string type, std::string resourceName)
     {
 	    std::string message = type + " with name \"" + resourceName + "\" does not exist\n";
      	std::cout <<message;
-    } 
+    }
+	
     
 }
 

@@ -18,11 +18,8 @@ namespace ENGINE
 
         void Unmap()
         {
-            if(mappedMem)
-            {
-                logicalDevice.unmapMemory(deviceMemHandle.get());
-                mappedMem = nullptr;
-            }
+            logicalDevice.unmapMemory(deviceMemHandle.get());
+            mappedMem = nullptr;
         }
         //whole_size for the whole buffer
         void Flush(vk::DeviceSize offset = 0)

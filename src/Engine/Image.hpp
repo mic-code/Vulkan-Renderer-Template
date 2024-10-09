@@ -37,7 +37,9 @@ namespace ENGINE
         {
             return mipInfos[mipLevel].size;
         }
-        ImageData(vk::Image imageHandle, vk::ImageType imageType, glm::uvec3 size, uint32_t mipCount, uint32_t arrayLayersCount, vk::Format format, vk::ImageLayout layout)
+
+        ImageData(vk::Image imageHandle, vk::ImageType imageType, glm::uvec3 size, uint32_t mipCount,
+                  uint32_t arrayLayersCount, vk::Format format, vk::ImageLayout layout)
         {
             this->imageHandle = imageHandle;
             this->format = format;
