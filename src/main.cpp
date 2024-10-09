@@ -6,7 +6,7 @@
 
 #include "WindowAPI/WindowInclude.hpp"
 #include "Engine/EngineInclude.hpp"
-#include "Renderers/RenderersInclude.hpp"
+#include "Rendering/RenderingInclude.hpp"
 
 #define ENGINE_ENABLE_DEBUGGING
 
@@ -50,7 +50,7 @@ void run(WindowProvider* windowProvider)
     std::unique_ptr<ENGINE::DescriptorAllocator> descriptorAllocator;
 
 
-    std::unique_ptr<RENDERERS::ForwardRenderer> fRenderer = std::make_unique<RENDERERS::ForwardRenderer>(core.get(), windowProvider, descriptorAllocator.get());
+    std::unique_ptr<RenderingStructs::ForwardRenderer> fRenderer = std::make_unique<RenderingStructs::ForwardRenderer>(core.get(), windowProvider, descriptorAllocator.get());
     fRenderer->CreateResources();
     fRenderer->SetRenderOperation(inFlightQueue.get());
     

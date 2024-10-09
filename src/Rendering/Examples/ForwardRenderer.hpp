@@ -2,6 +2,7 @@
 
 
 
+
 // Created by carlo on 2024-10-07.
 //
 
@@ -11,7 +12,7 @@
 
 
 
-namespace RENDERERS
+namespace RenderingStructs
 {
     class ForwardRenderer : BaseRenderer
     {
@@ -31,6 +32,8 @@ namespace RENDERERS
                 "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.vert.spv";
             std::string fragPath =
                 "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.frag.spv";
+            ENGINE::ShaderParser parser(vertPath);
+            
             ENGINE::ShaderModule vertShaderModule(logicalDevice, vertPath);
             ENGINE::ShaderModule fragShaderModule(logicalDevice, fragPath);
 

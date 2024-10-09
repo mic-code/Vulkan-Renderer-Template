@@ -2,9 +2,10 @@
 // Created by carlo on 2024-10-08.
 //
 
-#ifndef RENDERERSTRUCTS_HPP
-#define RENDERERSTRUCTS_HPP
-namespace RENDERERS
+#ifndef RENDERINGSTRUCTS_HPP
+#define RENDERINGSTRUCTS_HPP
+
+namespace RenderingStructs
 {
     struct Vertex
     {
@@ -14,4 +15,4 @@ namespace RENDERERS
 }
 
 
-#endif //RENDERERSTRUCTS_HPP
+#endif //RENDERINGSTRUCTS_HPP

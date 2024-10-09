@@ -12,7 +12,7 @@ namespace ENGINE
     {
         
     public:
-        ShaderModule(vk::Device device , std::string path)
+        ShaderModule(vk::Device device, std::string path)
         {
             
             std::vector<uint32_t> code = GetByteCode(path);

@@ -3,8 +3,8 @@
 // Created by carlo on 2024-10-07.
 //
 
-#ifndef RENDERERSINCLUDE_HPP
-#define RENDERERSINCLUDE_HPP
+#ifndef RENDERINGINCLUDE_HPP
+#define RENDERINGINCLUDE_HPP
 
 
 #include "RendererStructs.hpp"
@@ -14,4 +14,4 @@
 
 
 
-#endif //RENDERERSINCLUDE_HPP
+#endif //RENDERINGINCLUDE_HPP

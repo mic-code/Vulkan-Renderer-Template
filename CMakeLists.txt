@@ -16,16 +16,18 @@ message(STATUS "Found Vulkan libs in ${Vulkan_LIBRARIES}")
 
 
 set(GLFW3_INCLUDE_DIR "${SOLUTION_DIR}/dependencies/glfw/include")
-set(GLF3_LIBRARIES "${SOLUTION_DIR}/dependencies/glfw/lib-vc2022/glfw3.lib")
+set(GLFW3_LIBRARIES "${SOLUTION_DIR}/dependencies/glfw/lib-vc2022/glfw3.lib")
 set(GLM_INCLUDE_DIR "${SOLUTION_DIR}/dependencies/glm-master/glm")
 set(STB_INCLUDE_DIR "${SOLUTION_DIR}/dependencies/stb-master")
+set(SPIRV_CROSS_INCLUDE_DIR "${SOLUTION_DIR}/dependencies/spirv_cross")
 
 include_directories("${Vulkan_INCLUDE_DIRS}")
 include_directories("${GLFW3_INCLUDE_DIR}")
 include_directories("${GLM_INCLUDE_DIR}")
 include_directories("${STB_INCLUDE_DIR}")
+include_directories("${SPIRV_CROSS_INCLUDE_DIR}")
 
-#file(GLOB_RECURSE dep_sources "${STB_INCLUDE_DIR}/*.h")
+file(GLOB_RECURSE dep_sources "${SPIRV_CROSS_INCLUDE_DIR}/*.cpp")
 file(GLOB_RECURSE engine_sources "${SOLUTION_DIR}/src/*.cpp")
 file(GLOB_RECURSE engine_headers "${SOLUTION_DIR}/src/*.hpp")
 
@@ -39,7 +41,7 @@ target_sources(Engine PRIVATE
         ${engine_headers}
         ${engine_sources})
 
-target_link_libraries(Engine ${Vulkan_LIBRARIES} ${GLF3_LIBRARIES})
+target_link_libraries(Engine ${Vulkan_LIBRARIES} ${GLFW3_LIBRARIES})
 
 set_target_properties(Engine PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"

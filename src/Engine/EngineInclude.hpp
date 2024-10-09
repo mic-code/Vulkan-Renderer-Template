@@ -20,6 +20,7 @@
 #include <glm/glm.hpp>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include <spirv_cross/spirv_glsl.hpp>
 
 
 #include <vulkan/vulkan.hpp>
@@ -34,6 +35,7 @@
 #include "DescriptorAllocator.hpp"
 #include "Descriptors.hpp"
 #include "ShaderModule.hpp"
+#include "ShaderParser.hpp"
 #include "VertexInput.hpp"
 #include "Surface.hpp"
 #include "SwapChain.hpp"
