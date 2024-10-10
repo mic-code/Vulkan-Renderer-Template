@@ -82,18 +82,61 @@ namespace ENGINE
             attachmentInfos.reserve(colAttachments.size());
             for (auto& imagePair : imagesAttachment)
             {
-                // if (IsImageTransitionNeeded(imagePair.second->imageData->currentLayout, COLOR_ATTACHMENT))
-                // {
-                //     TransitionImage(imagePair.second->imageData, COLOR_ATTACHMENT, imagePair.second->GetSubresourceRange(), commandBuffer);
-                // }
+                if (IsImageTransitionNeeded(imagePair.second->imageData->currentLayout, COLOR_ATTACHMENT))
+                {
+                    TransitionImage(imagePair.second->imageData, COLOR_ATTACHMENT, imagePair.second->GetSubresourceRange(), commandBuffer);
+                }
                 colAttachments[index].attachmentInfo.setImageView(imagePair.second->imageView.get());
                 attachmentInfos.push_back(colAttachments[index].attachmentInfo);
                 index++;
             }
+            index =0;
+            for (auto& storageImage : storageImages)
+            {
+                LayoutPatterns dstPattern = EMPTY;
+                switch (pipelineType)
+                {
+                case vk::PipelineBindPoint::eGraphics:
+                    dstPattern = GRAPHICS_WRITE;
+                    break;
+                case vk::PipelineBindPoint::eCompute:
+                    dstPattern = COMPUTE_WRITE;
+                    break;
+                default:
+                    assert(false && "pipeline type is unknown");
+                }
+                if (IsImageTransitionNeeded(storageImage.second->imageData->currentLayout, dstPattern))
+                {
+                    TransitionImage(storageImage.second->imageData, dstPattern, storageImage.second->GetSubresourceRange(),
+                                    commandBuffer);
+                }
+            }
+            for (auto& sampler : sampledImages)
+            {
+                LayoutPatterns dstPattern = EMPTY;
+                switch (pipelineType)
+                {
+                case vk::PipelineBindPoint::eGraphics:
+                    dstPattern = GRAPHICS_READ;
+                    break;
+                case vk::PipelineBindPoint::eCompute:
+                    dstPattern = GRAPHICS_READ;
+                    break;
+                default:
+                    assert(false && "pipeline type is unknown");
+                }
+                if (IsImageTransitionNeeded(sampler.second->imageData->currentLayout, dstPattern))
+                {
+                    TransitionImage(sampler.second->imageData, dstPattern, sampler.second->GetSubresourceRange(),
+                                    commandBuffer);
+                }
+            }
+                       
             if (depthImage != nullptr)
             {
                 depthAttachment.attachmentInfo.imageView = depthImage->imageView.get();
             }
+            
             
             dynamicRenderPass.SetRenderInfo(attachmentInfos, frameBufferSize, &depthAttachment.attachmentInfo);
             commandBuffer.bindPipeline(pipelineType, pipeline.get());
@@ -197,15 +240,36 @@ namespace ENGINE
                 std::cout << "Attachment: " << "\"" << name << "\"" << " already exist";
             }
         }
-        void AddNodeImageResource(std::string name, ImageView* imageView)
+        void AddNodeColAttachmentImg(std::string name, ImageView* imageView)
         {
-
             if (!imagesAttachment.contains(name))
             {
                 imagesAttachment.try_emplace(name, imageView);
             }else
             {
                 imagesAttachment.at(name)= imageView;
+            }
+        }
+        void AddNodeSampler(std::string name, ImageView* imageView)
+        {
+            if (!sampledImages.contains(name))
+            {
+                sampledImages.try_emplace(name, imageView);
+            }else
+            {
+                sampledImages.at(name)= imageView;
+            }
+        }
+
+        void AddNodeStorageImg(std::string name, ImageView* imageView)
+        {
+            if (!storageImages.contains(name))
+            {
+                storageImages.try_emplace(name, imageView);
+            }
+            else
+            {
+                storageImages.at(name) = imageView;
             }
         }
         void DependsOn(std::string dependency)
@@ -262,8 +326,9 @@ namespace ENGINE
         AttachmentInfo depthAttachment;
         
         ImageView* depthImage = nullptr;
-        std::map<std::string,ImageView*>imagesAttachment;
-        std::map<std::string,ImageView*>storageImages;
+        std::map<std::string,ImageView*> imagesAttachment;
+        std::map<std::string,ImageView*> storageImages;
+        std::map<std::string,ImageView*> sampledImages;
         
         std::function<void(vk::CommandBuffer& commandBuffer)>* renderOperations = nullptr;
         std::vector<std::function<void()>*> tasks;
@@ -335,7 +400,7 @@ namespace ENGINE
                 imagesProxy.try_emplace(name, imageView);
                 if (renderNodes.contains(passName))
                 {
-                    renderNodes.at(passName)->AddNodeImageResource(name, imageView);
+                    renderNodes.at(passName)->AddNodeColAttachmentImg(name, imageView);
                 }
                 else
                 {
@@ -346,25 +411,73 @@ namespace ENGINE
                 imagesProxy.at(name) = imageView;
                 if (renderNodes.contains(passName))
                 {
-                    renderNodes.at(passName)->AddNodeImageResource(name, imageView);
+                    renderNodes.at(passName)->AddNodeColAttachmentImg(name, imageView);
                 }else
                 {
                     std::cout << "Renderpass: " << passName << " does not exist, saving the image anyways. \n";
                 }
                 // std::cout << "Image with name: \"" << name << "\" has changed \n";
             }
-
             return imageView;
-            
         }
-        void SortDependencies()
+        ImageView* AddSamplerResource(std::string passName,std::string name, ImageView* imageView)
         {
-            for (auto& element : renderNodes)
+            assert(imageView && "ImageView is null");
+            if (!imagesProxy.contains(name))
             {
-                
+                imagesProxy.try_emplace(name, imageView);
+                if (renderNodes.contains(passName))
+                {
+                    renderNodes.at(passName)->AddNodeSampler(name, imageView);
+                }
+                else
+                {
+                    std::cout << "Renderpass: " << passName << " does not exist, saving the image anyways. \n";
+                }
+            }else
+            {
+                imagesProxy.at(name) = imageView;
+                if (renderNodes.contains(passName))
+                {
+                    renderNodes.at(passName)->AddNodeSampler(name, imageView);
+                }else
+                {
+                    std::cout << "Renderpass: " << passName << " does not exist, saving the image anyways. \n";
+                }
+                // std::cout << "Image with name: \"" << name << "\" has changed \n";
             }
-            
+            return imageView;
         }
+
+        ImageView* AddStorageResource(std::string passName, std::string name, ImageView* imageView)
+        {
+            assert(imageView && "ImageView is null");
+            if (!imagesProxy.contains(name))
+            {
+                imagesProxy.try_emplace(name, imageView);
+                if (renderNodes.contains(passName))
+                {
+                    renderNodes.at(passName)->AddNodeStorageImg(name, imageView);
+                }
+                else
+                {
+                    std::cout << "Renderpass: " << passName << " does not exist, saving the image anyways. \n";
+                }
+            }else
+            {
+                imagesProxy.at(name) = imageView;
+                if (renderNodes.contains(passName))
+                {
+                    renderNodes.at(passName)->AddNodeStorageImg(name, imageView);
+                }else
+                {
+                    std::cout << "Renderpass: " << passName << " does not exist, saving the image anyways. \n";
+                }
+                // std::cout << "Image with name: \"" << name << "\" has changed \n";
+            }
+            return imageView;
+        }
+
         void ExecuteAll(FrameResources* currentFrame)
         {
             assert(currentFrame && "Current frame reference is null");

@@ -13,9 +13,10 @@
 
 
 
+
+
 #ifndef FORWARDRENDERER_HPP
 #define FORWARDRENDERER_HPP
-
 
 
 namespace Rendering
@@ -50,6 +51,7 @@ namespace Rendering
             ENGINE::ShaderParser::GetLayout(vertParser, builder);
             ENGINE::ShaderParser::GetLayout(fragParser, builder);
             
+            
              dstLayout = builder.BuildBindings(
                 core->logicalDevice.get(), vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
 
@@ -57,8 +59,7 @@ namespace Rendering
                                     .setSetLayoutCount(1)
                                     .setPSetLayouts(&dstLayout.get());
             
-            imageShipper.SetDataFromPath(
-                "C:\\Users\\carlo\\OneDrive\\Pictures\\Screenshots\\Screenshot 2024-09-19 172847.png");
+            imageShipper.SetDataFromPath("C:\\Users\\carlo\\OneDrive\\Pictures\\Screenshots\\Screenshot 2024-09-19 172847.png");
             imageShipper.BuildImage(core, 1, 1, renderGraphRef->core->swapchainRef->GetFormat(), ENGINE::GRAPHICS_READ);
 
             dstSet = descriptorAllocatorRef->Allocate(core->logicalDevice.get(), dstLayout.get());
@@ -75,11 +76,10 @@ namespace Rendering
 
             vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC2, 0, offsetof(Vertex, uv), 1);
             vertexInput.AddVertexInputBinding(0, sizeof(Vertex));
-            
            
             vertices= {
-                {{-0.5f, -0.5f}, {0.0f, 0.0f}}, // Bottom-left corner, UV (0, 0)
-                {{0.5f, -0.5f}, {1.0f, 0.0f}}, // Bottom-right corner, UV (1, 0)
+                {{-0.5f, -0.5f}, {0.0f, 0.0f}},
+                {{0.5f, -0.5f}, {1.0f, 0.0f}}, 
                 {{0.0f, 0.5f}, {0.5f, 1.0f}}
             };
 
@@ -102,16 +102,13 @@ namespace Rendering
             renderNode->SetDepthAttachmentOutput("depth", depthInfo);
             renderNode->AddColorBlendConfig(ENGINE::BlendConfigs::B_OPAQUE);
             renderNode->SetDepthConfig(ENGINE::DepthConfigs::D_ENABLE);
+            renderNode->AddNodeSampler("sampler", imageShipper.imageView.get());
             renderNode->BuildRenderGraphNode();
-
             
         }
         
         void CreateResources()
         {
-
-            
-           
         }
 
         ~ForwardRenderer() override
@@ -164,7 +161,6 @@ namespace Rendering
 
 
         ENGINE::ImageShipper imageShipper;
-        
         std::string forwardPassName;
         std::vector<Vertex> vertices;
         std::unique_ptr<ENGINE::Buffer> buffer;

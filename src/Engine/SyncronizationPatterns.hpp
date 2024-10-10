@@ -91,7 +91,7 @@ namespace ENGINE
     }
     static bool IsImageTransitionNeeded(LayoutPatterns srcPattern, LayoutPatterns dstPattern)
     {
-        if ((srcPattern == LayoutPatterns::GRAPHICS_READ) && (srcPattern == LayoutPatterns::GRAPHICS_READ))
+        if ((srcPattern == GRAPHICS_READ) && (dstPattern == GRAPHICS_READ))
         {
             return false;
         }

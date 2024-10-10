@@ -77,7 +77,6 @@ namespace ENGINE
 
             writes.push_back(dstWrite);
         }
-
         
         void Clear()
         {
@@ -95,7 +94,7 @@ namespace ENGINE
             device.updateDescriptorSets(static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
         }
         
-        
+        std::map<std::string, vk::DescriptorBufferInfo*> bufferInfosRef;
         std::deque<vk::DescriptorImageInfo> imageInfos;
         std::deque<vk::DescriptorBufferInfo> bufferInfos;
         std::vector<vk::WriteDescriptorSet> writes;
