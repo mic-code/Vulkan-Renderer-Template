@@ -22,7 +22,7 @@ namespace ENGINE
         void BuildRenderGraphNode()
         {
             // assert(!shaderModules.empty() && "It must be at least one shader module")
-            assert(pipelineLayout != nullptr && "Pipeline layout is null");
+            assert(&pipelineLayoutCI != nullptr && "Pipeline layout is null");
             std::vector<vk::Format> colorFormats;
             colorFormats.reserve(colAttachments.size());
             std::vector<vk::RenderingAttachmentInfo> renderingAttachmentInfos;
@@ -36,9 +36,10 @@ namespace ENGINE
             // dynamicRenderPass.SetRenderInfo(renderingAttachmentInfos, frameBufferSize, &depthAttachment.attachmentInfo);
             if (fragShaderModule && vertShaderModule)
             {
+                pipelineLayout = core->logicalDevice->createPipelineLayoutUnique(pipelineLayoutCI);
                 std::unique_ptr<GraphicsPipeline> graphicsPipeline = std::make_unique<ENGINE::GraphicsPipeline>(
                     core->logicalDevice.get(), vertShaderModule->shaderModuleHandle.get(),
-                    fragShaderModule->shaderModuleHandle.get(), pipelineLayout,
+                    fragShaderModule->shaderModuleHandle.get(), pipelineLayout.get(),
                     dynamicRenderPass.pipelineRenderingCreateInfo,
                     colorBlendConfigs, depthConfig,
                     vertexInput
@@ -48,9 +49,10 @@ namespace ENGINE
                 std::cout << "Graphics pipeline created\n";
             }else if(compShaderModule)
             {
+                pipelineLayout = core->logicalDevice->createPipelineLayoutUnique(pipelineLayoutCI);
                 std::unique_ptr<ComputePipeline> computePipeline;
                 std::unique_ptr<ComputePipeline> graphicsPipeline = std::make_unique<ENGINE::ComputePipeline>(
-                    core->logicalDevice.get(), compShaderModule->shaderModuleHandle.get(), pipelineLayout);
+                    core->logicalDevice.get(), compShaderModule->shaderModuleHandle.get(), pipelineLayout.get());
                 pipeline = std::move(computePipeline->pipelineHandle);
                 pipelineType = vk::PipelineBindPoint::eCompute;
                 std::cout << "Compute pipeline created\n";
@@ -119,9 +121,9 @@ namespace ENGINE
             this->tasks.push_back(task);
         }
         
-        void SetPipelineLayout(vk::PipelineLayout pipelineLayout)
+        void SetPipelineLayoutCI(vk::PipelineLayoutCreateInfo createInfo)
         {
-            this->pipelineLayout = pipelineLayout;
+            this->pipelineLayoutCI = createInfo;
             
         }
         void SetDepthConfig(DepthConfigs dephtConfig)
@@ -241,7 +243,8 @@ namespace ENGINE
         
         
         vk::UniquePipeline pipeline;
-        vk::PipelineLayout pipelineLayout;
+        vk::UniquePipelineLayout pipelineLayout;
+        vk::PipelineLayoutCreateInfo pipelineLayoutCI;
         vk::PipelineBindPoint pipelineType;
         DynamicRenderPass dynamicRenderPass;
         

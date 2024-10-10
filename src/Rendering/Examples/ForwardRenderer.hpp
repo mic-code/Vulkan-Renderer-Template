@@ -11,6 +11,8 @@
 
 
 
+
+
 #ifndef FORWARDRENDERER_HPP
 #define FORWARDRENDERER_HPP
 
@@ -47,15 +49,26 @@ namespace Rendering
 
             ENGINE::ShaderParser::GetLayout(vertParser, builder);
             ENGINE::ShaderParser::GetLayout(fragParser, builder);
-            vk::UniqueDescriptorSetLayout setLayout = builder.BuildBindings(
+            
+             dstLayout = builder.BuildBindings(
                 core->logicalDevice.get(), vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
 
             auto layoutCreateInfo = vk::PipelineLayoutCreateInfo()
-                                    .setSetLayoutCount(static_cast<uint32_t>(builder.bindings.size()))
-                                    .setPSetLayouts(&setLayout.get());
+                                    .setSetLayoutCount(1)
+                                    .setPSetLayouts(&dstLayout.get());
             
-            auto pipelineLayout = logicalDevice.createPipelineLayoutUnique(layoutCreateInfo);
+            imageShipper.SetDataFromPath(
+                "C:\\Users\\carlo\\OneDrive\\Pictures\\Screenshots\\Screenshot 2024-09-19 172847.png");
+            imageShipper.BuildImage(core, 1, 1, renderGraphRef->core->swapchainRef->GetFormat(), ENGINE::GRAPHICS_READ);
+
+            dstSet = descriptorAllocatorRef->Allocate(core->logicalDevice.get(), dstLayout.get());
+
+            writerBuilder.AddWriteImage(0, imageShipper.imageView.get(), imageShipper.sampler->samplerHandle.get(),
+                                        vk::ImageLayout::eShaderReadOnlyOptimal, vk::DescriptorType::eCombinedImageSampler);
+            
+            writerBuilder.UpdateSet(core->logicalDevice.get(), dstSet.get());
  
+            
             ENGINE::VertexInput vertexInput;
             vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC2, 0, offsetof(Vertex, pos), 0);
             vertexInput.AddVertexInputBinding(0, sizeof(Vertex));
@@ -83,7 +96,7 @@ namespace Rendering
             renderNode->SetVertModule(&vertShaderModule);
             renderNode->SetFragModule(&fragShaderModule);
             renderNode->SetFramebufferSize(windowProvider->GetWindowSize());
-            renderNode->SetPipelineLayout(std::move(pipelineLayout.get()));
+            renderNode->SetPipelineLayoutCI(layoutCreateInfo);
             renderNode->SetVertexInput(vertexInput);
             renderNode->AddColorAttachmentOutput("color", colInfo);
             renderNode->SetDepthAttachmentOutput("depth", depthInfo);
@@ -96,8 +109,9 @@ namespace Rendering
         
         void CreateResources()
         {
-            imageShipper.SetDataFromPath("C:\\Users\\carlo\\OneDrive\\Pictures\\Screenshots\\Screenshot 2024-09-19 172847.png");
-            imageShipper.BuildImage(core, 1, 1 ,renderGraphRef->core->swapchainRef->GetFormat(), ENGINE::GRAPHICS_READ);
+
+            
+           
         }
 
         ~ForwardRenderer() override
@@ -122,10 +136,14 @@ namespace Rendering
                 {
                     commandBuffer.bindPipeline(renderGraphRef->GetNode(forwardPassName)->pipelineType, renderGraphRef->GetNode(forwardPassName)->pipeline.get());
                     vk::DeviceSize offset = {0};
+                    commandBuffer.bindDescriptorSets(renderGraphRef->GetNode(forwardPassName)->pipelineType,
+                                                     renderGraphRef->GetNode(forwardPassName)->pipelineLayout.get(), 0, 1,
+                                                     &dstSet.get(), 0 , nullptr);
+                                                     
                     commandBuffer.bindVertexBuffers(0, 1, &buffer->bufferHandle.get(), &offset);
                     commandBuffer.draw(vertices.size(), 1, 0, 0);
                 });
-
+            
             renderGraphRef->GetNode(forwardPassName)->AddTask(setViewTask);
             renderGraphRef->GetNode(forwardPassName)->SetRenderOperation(renderOp);
         }
@@ -141,9 +159,12 @@ namespace Rendering
 
 
         ENGINE::DescriptorWriterBuilder writerBuilder;
+        vk::UniqueDescriptorSetLayout dstLayout;
+        vk::UniqueDescriptorSet dstSet;
 
 
         ENGINE::ImageShipper imageShipper;
+        
         std::string forwardPassName;
         std::vector<Vertex> vertices;
         std::unique_ptr<ENGINE::Buffer> buffer;

@@ -23,9 +23,10 @@ namespace ENGINE
             std::string name;
             uint32_t binding;
             uint32_t set;
-            
             bool array = false;
+            vk::DescriptorType type;
         };
+
         ShaderParser(std::vector<uint32_t>& byteCode)
         {
             spirv_cross::CompilerGLSL glsl((byteCode));
@@ -67,7 +68,7 @@ namespace ENGINE
                 {
                     array = true;
                 }
-                uniformBuffers.emplace_back(ShaderResource{name, binding, set, array});
+                uniformBuffers.emplace_back(ShaderResource{name, binding, set, array, vk::DescriptorType::eUniformBuffer});
 
 
             }
@@ -83,7 +84,7 @@ namespace ENGINE
                 {
                     array = true;
                 }
-                storageBuffers.emplace_back(ShaderResource{name, binding, set, array});
+                storageBuffers.emplace_back(ShaderResource{name, binding, set, array, vk::DescriptorType::eStorageBuffer});
             }
             for (auto& resource : resources.sampled_images)
             {
@@ -98,7 +99,7 @@ namespace ENGINE
                     array = true;
                 }
                 
-                sampledImages.emplace_back(ShaderResource{name, binding, set, array});
+                sampledImages.emplace_back(ShaderResource{name, binding, set, array, vk::DescriptorType::eCombinedImageSampler});
             }
             
             for (auto& resource : resources.storage_images)
@@ -113,7 +114,7 @@ namespace ENGINE
                     array = true;
                 }
                 
-                storageImages.emplace_back(ShaderResource{name, binding, set, array});
+                storageImages.emplace_back(ShaderResource{name, binding, set, array, vk::DescriptorType::eStorageImage});
             }
             
         }
@@ -126,7 +127,7 @@ namespace ENGINE
                 {
                     continue;
                 }
-                builder.AddBinding(resource.binding, vk::DescriptorType::eSampledImage);
+                builder.AddBinding(resource.binding, resource.type);
                 bindings.insert(resource.binding);
             }
             

@@ -33,6 +33,7 @@ namespace ENGINE
             vk::ImageCreateInfo createInfo = Image::CreateInfo2d(imageSize, mipsCount, arrayLayersCount, format, usage);
 
             
+
             image = std::make_unique<Image>(core->physicalDevice, core->logicalDevice.get(), createInfo);
 
             imageView = std::make_unique<ImageView>(core->logicalDevice.get(), image->imageData.get(),
@@ -60,8 +61,15 @@ namespace ENGINE
                 free(this->data);
                 data = nullptr;
             }
+            sampler = std::make_unique<Sampler>(core->logicalDevice.get(), vk::SamplerAddressMode::eRepeat,
+                                                vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear);
         }
 
+        std::unique_ptr<Sampler> ShipSampler()
+        {
+            return std::move(sampler);
+        }
+        
         std::unique_ptr<Image> ShipImage()
         {
             return std::move(image);
@@ -70,9 +78,20 @@ namespace ENGINE
         {
             return std::move(imageView);
         }
+        void Clear()
+        {
+            if (imageView){imageView.release();}
+            if (sampler){sampler.release();}
+            if (image){image.release();}
+            if (data)
+            {
+                free(this->data);
+            }
+        }
 
 
         std::unique_ptr<Image> image;
+        std::unique_ptr<Sampler> sampler;
         std::unique_ptr<ImageView> imageView;
         void* data;
         glm::vec2 imageSize;

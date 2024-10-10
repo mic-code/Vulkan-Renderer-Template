@@ -16,13 +16,16 @@ namespace ENGINE
             float ratio;
         };
 
-        void BeginPool(vk::Device device, uint32_t maxSets, std::span<PoolSizeRatio> poolRatios)
+        DescriptorAllocator()
+        {
+            
+        }
+        
+        void BeginPool(vk::Device logicalDevice, uint32_t maxSets, std::span<PoolSizeRatio> poolRatios)
         {
             std::vector<vk::DescriptorPoolSize> poolSizes;
-
             for (auto& ratio : poolRatios)
             {
-
                 auto poolSize= vk::DescriptorPoolSize()
                 .setType(ratio.type)
                 .setDescriptorCount(static_cast<uint32_t>(maxSets * ratio.ratio));
@@ -30,22 +33,23 @@ namespace ENGINE
             }
 
             auto poolInfo = vk::DescriptorPoolCreateInfo()
-            .setFlags(vk::DescriptorPoolCreateFlags())
+            .setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
             .setMaxSets(maxSets)
             .setPPoolSizes(poolSizes.data())
             .setPoolSizeCount(static_cast<uint32_t>(poolSizes.size()));
                 
-            pool = device.createDescriptorPoolUnique(poolInfo);
-            
+             pool =  logicalDevice.createDescriptorPoolUnique(poolInfo);
+
+
         }
-        vk::UniqueDescriptorSet Allocate(vk::Device device, vk::DescriptorSetLayout dstSetLayout)
+        vk::UniqueDescriptorSet Allocate(vk::Device logicalDevice, vk::DescriptorSetLayout dstSetLayout)
         {
             auto dstSetCreateInfo = vk::DescriptorSetAllocateInfo()
             .setDescriptorPool(pool.get())
             .setPNext(nullptr)
             .setDescriptorSetCount(1)
             .setPSetLayouts(&dstSetLayout);
-            auto sets = device.allocateDescriptorSetsUnique(dstSetCreateInfo);
+            auto sets = logicalDevice.allocateDescriptorSetsUnique(dstSetCreateInfo);
             assert(!sets.empty()&&"Descriptor sets are empty");
             return std::move(sets.front());
         }
@@ -54,6 +58,7 @@ namespace ENGINE
         {
             device.resetDescriptorPool(this->pool.get()); 
         }
+        
         
         vk::UniqueDescriptorPool pool;
     };

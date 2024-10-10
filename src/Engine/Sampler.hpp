@@ -32,7 +32,6 @@ namespace ENGINE
             samplerHandle = logicalDevice.createSamplerUnique(samplerCreateInfo);
         }
 
-        ImageData* imageData;
         vk::UniqueSampler samplerHandle;
     };
 }

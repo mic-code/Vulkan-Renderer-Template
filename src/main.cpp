@@ -44,7 +44,7 @@ void run(WindowProvider* windowProvider)
         core.get(),renderGraph.get(), windowDesc, imageCount, vk::PresentModeKHR::eMailbox,
         windowProvider->GetWindowSize());
     
-    std::unique_ptr<ENGINE::DescriptorAllocator> descriptorAllocator;
+    std::unique_ptr<ENGINE::DescriptorAllocator> descriptorAllocator = std::make_unique<ENGINE::DescriptorAllocator>();
     
       ENGINE::DescriptorAllocator::PoolSizeRatio poolSizeRatio= {vk::DescriptorType::eSampler, 1.5f};
     std::vector<ENGINE::DescriptorAllocator::PoolSizeRatio> poolSizeRatios ={
@@ -53,11 +53,10 @@ void run(WindowProvider* windowProvider)
         {vk::DescriptorType::eUniformBuffer, 1.5f},
         {vk::DescriptorType::eStorageImage, 1.5f},
     };
-    // descriptorAllocator->BeginPool(core->logicalDevice.get(), 100, poolSizeRatios);
+    descriptorAllocator->BeginPool(core->logicalDevice.get(), 10, poolSizeRatios);
 
 
     std::unique_ptr<Rendering::ForwardRenderer> fRenderer = std::make_unique<Rendering::ForwardRenderer>(core.get(), windowProvider, descriptorAllocator.get());
-    fRenderer->CreateResources();
     fRenderer->SetRenderOperation(inFlightQueue.get());
     
     while (!windowProvider->WindowShouldClose())

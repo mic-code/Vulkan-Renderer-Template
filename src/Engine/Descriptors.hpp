@@ -17,28 +17,29 @@ namespace ENGINE
             .setDescriptorType(type);
             bindings.push_back(newBinding);
         }
-        void clear()
-        {
-            bindings.clear();
-        }
 
-            vk::UniqueDescriptorSetLayout BuildBindings(vk::Device device, vk::ShaderStageFlags stageFlags, void* pNext = nullptr,
-                                              vk::DescriptorSetLayoutCreateFlags flags =
-                                                  vk::DescriptorSetLayoutCreateFlags())
+
+        vk::UniqueDescriptorSetLayout BuildBindings(vk::Device device, vk::ShaderStageFlags stageFlags,
+                                                    void* pNext = nullptr,
+                                                    vk::DescriptorSetLayoutCreateFlags flags =
+                                                        vk::DescriptorSetLayoutCreateFlags())
         {
             for (auto& binding : bindings)
             {
                 binding.stageFlags |= stageFlags;
             }
             auto dstSetLayoutCreateInfo = vk::DescriptorSetLayoutCreateInfo()
-            .setPNext(pNext)
-            .setPBindings(bindings.data())
-            .setBindingCount(static_cast<uint32_t>(bindings.size()))
-            .setFlags(flags);
+                                          .setPNext(pNext)
+                                          .setPBindings(bindings.data())
+                                          .setBindingCount(static_cast<uint32_t>(bindings.size()))
+                                          .setFlags(flags);
 
             return device.createDescriptorSetLayoutUnique(dstSetLayoutCreateInfo);
         }
-        
+         void clear()
+        {
+            bindings.clear();
+        }       
         std::vector<vk::DescriptorSetLayoutBinding> bindings;
         
     };
