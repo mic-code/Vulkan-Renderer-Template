@@ -4,6 +4,7 @@
 //
 
 
+
 #include "WindowAPI/WindowInclude.hpp"
 #include "Engine/EngineInclude.hpp"
 #include "Rendering/RenderingInclude.hpp"
@@ -45,8 +46,7 @@ void run(WindowProvider* windowProvider)
         windowProvider->GetWindowSize());
     
     std::unique_ptr<ENGINE::DescriptorAllocator> descriptorAllocator = std::make_unique<ENGINE::DescriptorAllocator>();
-    
-      ENGINE::DescriptorAllocator::PoolSizeRatio poolSizeRatio= {vk::DescriptorType::eSampler, 1.5f};
+   
     std::vector<ENGINE::DescriptorAllocator::PoolSizeRatio> poolSizeRatios ={
         {vk::DescriptorType::eSampler, 1.5f},
         {vk::DescriptorType::eStorageBuffer, 1.5f},
@@ -59,6 +59,9 @@ void run(WindowProvider* windowProvider)
     std::unique_ptr<Rendering::ForwardRenderer> fRenderer = std::make_unique<Rendering::ForwardRenderer>(core.get(), windowProvider, descriptorAllocator.get());
     fRenderer->SetRenderOperation(inFlightQueue.get());
     
+    std::unique_ptr<Rendering::ImguiRenderer> imguiRenderer = std::make_unique<Rendering::ImguiRenderer>(
+        core.get(), windowProvider);
+     
     while (!windowProvider->WindowShouldClose())
     {
         windowProvider->PollEvents();
@@ -79,9 +82,18 @@ void run(WindowProvider* windowProvider)
             }
             try
             {
-                inFlightQueue->BeginFrame();
+
                 
+                
+                inFlightQueue->BeginFrame();
+
+               
                 auto& currFrame = inFlightQueue->frameResources[inFlightQueue->frameIndex];
+
+                core->renderGraphRef->ExecuteAll(&currFrame);
+              
+                imguiRenderer->RenderFrame(currFrame.commandBuffer.get(),
+                                           inFlightQueue->currentSwapchainImageView->imageView.get());
                 
                 inFlightQueue->EndFrame();
             }
@@ -92,6 +104,7 @@ void run(WindowProvider* windowProvider)
         }
         core->WaitIdle();
     }
+    imguiRenderer->Destroy();
     windowProvider->DestroyWindow();
 }
 

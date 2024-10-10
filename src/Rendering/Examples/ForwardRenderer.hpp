@@ -1,23 +1,10 @@
 ﻿//
 
-
-
-
-
-
 // Created by carlo on 2024-10-07.
 //
 
-
-
-
-
-
-
-
 #ifndef FORWARDRENDERER_HPP
 #define FORWARDRENDERER_HPP
-
 
 namespace Rendering
 {

@@ -45,6 +45,8 @@ namespace ENGINE
         bool resizeRequested = false;
         RenderGraph* renderGraphRef;
         SwapChain* swapchainRef;
+        std::deque<std::function<void()>*> deletionQueue;
+        
 
     private:
         

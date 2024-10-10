@@ -67,6 +67,11 @@ namespace ENGINE
 
     Core::~Core()
     {
+        for (auto& func : deletionQueue)
+        {
+            (*func)();
+        }
+        deletionQueue.clear();
     }
 
     void Core::ClearCaches()

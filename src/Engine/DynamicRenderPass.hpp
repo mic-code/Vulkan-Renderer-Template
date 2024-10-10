@@ -15,7 +15,10 @@ namespace ENGINE
         vk::RenderingAttachmentInfo attachmentInfo;
         vk::Format format;
     };
-    static AttachmentInfo GetColorAttachmentInfo(vk::Format format = vk::Format::eB8G8R8A8Srgb, vk::AttachmentLoadOp loadOp = vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp storeOp = vk::AttachmentStoreOp::eStore)
+
+    static AttachmentInfo GetColorAttachmentInfo(vk::Format format = vk::Format::eB8G8R8A8Srgb,
+                                                 vk::AttachmentLoadOp loadOp = vk::AttachmentLoadOp::eClear,
+                                                 vk::AttachmentStoreOp storeOp = vk::AttachmentStoreOp::eStore)
     {
         AttachmentInfo attachmentInfo;
         attachmentInfo.attachmentInfo = vk::RenderingAttachmentInfo()
@@ -79,6 +82,24 @@ namespace ENGINE
             assert(
                 colorAttachments.size() == expectedColorAttachmentSize &&
                 "Color attachment must be the same as the one indicated in the pipeline creation");
+             renderInfo = vk::RenderingInfo()
+            .setRenderArea({{0, 0},{framebufferSize.x, framebufferSize.y}})
+            .setLayerCount(1)
+            .setColorAttachmentCount(colorAttachments.size())
+            .setPColorAttachments(colorAttachments.data());
+            if (depthAttachment->imageView != nullptr)
+            {
+                renderInfo.setPDepthAttachment(depthAttachment);
+            }
+        }
+
+        void SetRenderInfoUnsafe(std::vector<vk::RenderingAttachmentInfo>& colorAttachments,
+                           glm::uvec2 framebufferSize, vk::RenderingAttachmentInfo* depthAttachment)
+        {
+            for (auto& element : colorAttachments)
+            {
+                assert(element.imageView != nullptr && "Image view was not set before setting the render info");
+            }
              renderInfo = vk::RenderingInfo()
             .setRenderArea({{0, 0},{framebufferSize.x, framebufferSize.y}})
             .setLayerCount(1)

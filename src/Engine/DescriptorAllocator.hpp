@@ -58,6 +58,10 @@ namespace ENGINE
         {
             device.resetDescriptorPool(this->pool.get()); 
         }
+        void DestroyPool()
+        {
+            pool.release();
+        }
         
         
         vk::UniqueDescriptorPool pool;

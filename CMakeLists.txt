@@ -21,6 +21,7 @@ set(GLM_INCLUDE_DIR "${SOLUTION_DIR}/dependencies/glm-master/glm")
 set(STB_INCLUDE_DIR "${SOLUTION_DIR}/dependencies/stb-master")
 set(SPIRVCROSS_INCLUDE_DIR "${SOLUTION_DIR}/dependencies/spirv-cross")
 set(TINYGLTF_INCLUDE_DIR "${SOLUTION_DIR}/dependencies/tinygltf-release")
+set(IMGUI_INCLUDE_DIR "${SOLUTION_DIR}/dependencies/imgui-docking")
 
 include_directories("${Vulkan_INCLUDE_DIRS}")
 include_directories("${GLFW3_INCLUDE_DIR}")
@@ -28,9 +29,10 @@ include_directories("${GLM_INCLUDE_DIR}")
 include_directories("${STB_INCLUDE_DIR}")
 include_directories("${SPIRVCROSS_INCLUDE_DIR}")
 include_directories("${TINYGLTF_INCLUDE_DIR}")
+include_directories("${IMGUI_INCLUDE_DIR}")
 
 
-file(GLOB_RECURSE dep_sources "${SPIRVCROSS_INCLUDE_DIR}/*.cpp")
+file(GLOB_RECURSE dep_sources "${SPIRVCROSS_INCLUDE_DIR}/*.cpp" "${IMGUI_INCLUDE_DIR}/*.cpp")
 file(GLOB_RECURSE engine_sources "${SOLUTION_DIR}/src/*.cpp")
 file(GLOB_RECURSE engine_headers "${SOLUTION_DIR}/src/*.hpp")
 
