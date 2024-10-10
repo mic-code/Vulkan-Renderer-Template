@@ -39,6 +39,7 @@ namespace ENGINE
 
             commandBuffer.copyBuffer(stagingBuffer->bufferHandle.get(), deviceBuffer->bufferHandle.get(), {copyRegion});
         }
+        
 
         vk::Buffer GetBuffer()
         {

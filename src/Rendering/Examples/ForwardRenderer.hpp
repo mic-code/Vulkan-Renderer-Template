@@ -93,11 +93,6 @@ namespace Rendering
             renderNode->BuildRenderGraphNode();
             
         }
-        
-        void CreateResources()
-        {
-        }
-
         ~ForwardRenderer() override
         {
         }

@@ -75,7 +75,7 @@ namespace Rendering
             std::vector<vk::RenderingAttachmentInfo> attachmentInfos = {attachmentInfo.attachmentInfo};
             vk::RenderingAttachmentInfo depthAttachment;
             
-            dynamicRenderPass.SetRenderInfoUnsafe(attachmentInfos, windowProvider->GetWindowSize(), &depthAttachment);
+            dynamicRenderPass.SetRenderInfoUnsafe(attachmentInfos, windowProvider->GetWindowSizze(), &depthAttachment);
 
             commandBuffer.beginRendering(dynamicRenderPass.renderInfo);
             
