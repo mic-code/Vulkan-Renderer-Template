@@ -6,9 +6,11 @@ This project is a **Vulkan Renderer** with a **RenderGraph** architecture that p
 The goal of this engine is to simplify and accelerate the development process by offering an easy-to-use framework, while still leveraging the full power of Vulkan's explicit API.
 
 ### Features
-- RenderGraph-based architecture for flexible rendering pipeline setups (In progress)
+- RenderGraph-based architecture for flexible rendering pipeline setups (Working but not optimal)
 - Modular Vulkan interface designed for rapid prototyping.
-- Base renderer example (soon)
+- Base renderer example
+- Compute renderer example (TO-DO)
+- Imgui integration
 
 ### Current Status
 This project is **currently under development**. More features and improvements will be added in future updates.
