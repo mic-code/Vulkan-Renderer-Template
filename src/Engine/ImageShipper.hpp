@@ -89,7 +89,6 @@ namespace ENGINE
             }
         }
 
-
         std::unique_ptr<Image> image;
         std::unique_ptr<Sampler> sampler;
         std::unique_ptr<ImageView> imageView;

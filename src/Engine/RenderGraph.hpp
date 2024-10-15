@@ -5,6 +5,8 @@
 
 
 
+
+
 #ifndef RENDERGRAPH_HPP
 #define RENDERGRAPH_HPP
 
@@ -19,40 +21,91 @@ namespace ENGINE
 
         RenderGraphNode(){
         }
-        void BuildRenderGraphNode()
+
+        void RecreateResources()
         {
-            // assert(!shaderModules.empty() && "It must be at least one shader module")
-            assert(&pipelineLayoutCI != nullptr && "Pipeline layout is null");
-            std::vector<vk::Format> colorFormats;
-            colorFormats.reserve(colAttachments.size());
-            std::vector<vk::RenderingAttachmentInfo> renderingAttachmentInfos;
-            for (auto& colAttachment : colAttachments)
-            {
-                colorFormats.push_back(colAttachment.format);
-                renderingAttachmentInfos.push_back(colAttachment.attachmentInfo);
-            }
-            dynamicRenderPass.SetPipelineRenderingInfo(colAttachments.size(), colorFormats, depthAttachment.format);
-            
-            // dynamicRenderPass.SetRenderInfo(renderingAttachmentInfos, frameBufferSize, &depthAttachment.attachmentInfo);
+             assert(&pipelineLayoutCI != nullptr && "Pipeline layout is null");
+            pipeline.reset();
+
             if (fragShaderModule && vertShaderModule)
             {
+                std::vector<vk::Format> colorFormats;
+                colorFormats.reserve(colAttachments.size());
+                std::vector<vk::RenderingAttachmentInfo> renderingAttachmentInfos;
+                for (auto& colAttachment : colAttachments)
+                {
+                    colorFormats.push_back(colAttachment.format);
+                    renderingAttachmentInfos.push_back(colAttachment.attachmentInfo);
+                }
+                dynamicRenderPass.SetPipelineRenderingInfo(colAttachments.size(), colorFormats, depthAttachment.format);
+            
                 pipelineLayout = core->logicalDevice->createPipelineLayoutUnique(pipelineLayoutCI);
                 std::unique_ptr<GraphicsPipeline> graphicsPipeline = std::make_unique<ENGINE::GraphicsPipeline>(
                     core->logicalDevice.get(), vertShaderModule->shaderModuleHandle.get(),
                     fragShaderModule->shaderModuleHandle.get(), pipelineLayout.get(),
                     dynamicRenderPass.pipelineRenderingCreateInfo,
                     colorBlendConfigs, depthConfig,
-                    vertexInput
+                    vertexInput, pipelineCache.get()
                 );
                 pipeline = std::move(graphicsPipeline->pipelineHandle);
                 pipelineType = vk::PipelineBindPoint::eGraphics;
                 std::cout << "Graphics pipeline created\n";
+                
             }else if(compShaderModule)
             {
                 pipelineLayout = core->logicalDevice->createPipelineLayoutUnique(pipelineLayoutCI);
                 std::unique_ptr<ComputePipeline> computePipeline;
                 std::unique_ptr<ComputePipeline> graphicsPipeline = std::make_unique<ENGINE::ComputePipeline>(
-                    core->logicalDevice.get(), compShaderModule->shaderModuleHandle.get(), pipelineLayout.get());
+                    core->logicalDevice.get(), compShaderModule->shaderModuleHandle.get(), pipelineLayout.get(),
+                    pipelineCache.get());
+                pipeline = std::move(computePipeline->pipelineHandle);
+                pipelineType = vk::PipelineBindPoint::eCompute;
+                std::cout << "Compute pipeline created\n";
+            }else
+            {
+                std::cout << "No compute or graphics shaders were set\n";
+            }
+                       
+        }
+        void BuildRenderGraphNode()
+        {
+            assert(&pipelineLayoutCI != nullptr && "Pipeline layout is null");
+            auto pipelineCacheCreateInfo = vk::PipelineCacheCreateInfo();
+            pipelineCache = core->logicalDevice->createPipelineCacheUnique(pipelineCacheCreateInfo);
+ 
+            if (fragShaderModule && vertShaderModule)
+            {
+                std::vector<vk::Format> colorFormats;
+                colorFormats.reserve(colAttachments.size());
+                std::vector<vk::RenderingAttachmentInfo> renderingAttachmentInfos;
+                for (auto& colAttachment : colAttachments)
+                {
+                    colorFormats.push_back(colAttachment.format);
+                    renderingAttachmentInfos.push_back(colAttachment.attachmentInfo);
+                }
+                dynamicRenderPass.SetPipelineRenderingInfo(colAttachments.size(), colorFormats, depthAttachment.format);
+            
+                pipelineLayout = core->logicalDevice->createPipelineLayoutUnique(pipelineLayoutCI);
+
+               
+                std::unique_ptr<GraphicsPipeline> graphicsPipeline = std::make_unique<ENGINE::GraphicsPipeline>(
+                    core->logicalDevice.get(), vertShaderModule->shaderModuleHandle.get(),
+                    fragShaderModule->shaderModuleHandle.get(), pipelineLayout.get(),
+                    dynamicRenderPass.pipelineRenderingCreateInfo,
+                    colorBlendConfigs, depthConfig,
+                    vertexInput, pipelineCache.get()
+                );
+                pipeline = std::move(graphicsPipeline->pipelineHandle);
+                pipelineType = vk::PipelineBindPoint::eGraphics;
+                std::cout << "Graphics pipeline created\n";
+                
+            }else if(compShaderModule)
+            {
+                pipelineLayout = core->logicalDevice->createPipelineLayoutUnique(pipelineLayoutCI);
+                std::unique_ptr<ComputePipeline> computePipeline;
+                std::unique_ptr<ComputePipeline> graphicsPipeline = std::make_unique<ENGINE::ComputePipeline>(
+                    core->logicalDevice.get(), compShaderModule->shaderModuleHandle.get(), pipelineLayout.get(), 
+                    pipelineCache.get());
                 pipeline = std::move(computePipeline->pipelineHandle);
                 pipelineType = vk::PipelineBindPoint::eCompute;
                 std::cout << "Compute pipeline created\n";
@@ -62,35 +115,8 @@ namespace ENGINE
             }
             
         }
-        void ExecutePass(vk::CommandBuffer commandBuffer)
+        void TransitionImages(vk::CommandBuffer commandBuffer)
         {
-            for (int i = 0; i < tasks.size(); ++i)
-            {
-                if (tasks[i]!= nullptr)
-                {
-                    (*tasks[i])();
-                }
-            }
-
-            dynamicRenderPass.SetViewport(frameBufferSize, frameBufferSize);
-            commandBuffer.setViewport(0,1,&dynamicRenderPass.viewport);
-            commandBuffer.setScissor(0, 1, &dynamicRenderPass.scissor);
-            
-            assert(imagesAttachment.size()== colAttachments.size()&& "Not all color attachments were set");
-            int index = 0;
-            std::vector<vk::RenderingAttachmentInfo> attachmentInfos;
-            attachmentInfos.reserve(colAttachments.size());
-            for (auto& imagePair : imagesAttachment)
-            {
-                if (IsImageTransitionNeeded(imagePair.second->imageData->currentLayout, COLOR_ATTACHMENT))
-                {
-                    TransitionImage(imagePair.second->imageData, COLOR_ATTACHMENT, imagePair.second->GetSubresourceRange(), commandBuffer);
-                }
-                colAttachments[index].attachmentInfo.setImageView(imagePair.second->imageView.get());
-                attachmentInfos.push_back(colAttachments[index].attachmentInfo);
-                index++;
-            }
-            index =0;
             for (auto& storageImage : storageImages)
             {
                 LayoutPatterns dstPattern = EMPTY;
@@ -107,7 +133,8 @@ namespace ENGINE
                 }
                 if (IsImageTransitionNeeded(storageImage.second->imageData->currentLayout, dstPattern))
                 {
-                    TransitionImage(storageImage.second->imageData, dstPattern, storageImage.second->GetSubresourceRange(),
+                    TransitionImage(storageImage.second->imageData, dstPattern,
+                                    storageImage.second->GetSubresourceRange(),
                                     commandBuffer);
                 }
             }
@@ -130,20 +157,70 @@ namespace ENGINE
                     TransitionImage(sampler.second->imageData, dstPattern, sampler.second->GetSubresourceRange(),
                                     commandBuffer);
                 }
+            }           
+        }
+        void ExecutePass(vk::CommandBuffer commandBuffer)
+        {
+ 
+            dynamicRenderPass.SetViewport(frameBufferSize, frameBufferSize);
+            commandBuffer.setViewport(0,1,&dynamicRenderPass.viewport);
+            commandBuffer.setScissor(0, 1, &dynamicRenderPass.scissor);
+            
+            assert(imagesAttachment.size()== colAttachments.size()&& "Not all color attachments were set");
+            int index = 0;
+            std::vector<vk::RenderingAttachmentInfo> attachmentInfos;
+            attachmentInfos.reserve(colAttachments.size());
+            for (auto& imagePair : imagesAttachment)
+            {
+                if (IsImageTransitionNeeded(imagePair.second->imageData->currentLayout, COLOR_ATTACHMENT))
+                {
+                    TransitionImage(imagePair.second->imageData, COLOR_ATTACHMENT, imagePair.second->GetSubresourceRange(), commandBuffer);
+                }
+                colAttachments[index].attachmentInfo.setImageView(imagePair.second->imageView.get());
+                attachmentInfos.push_back(colAttachments[index].attachmentInfo);
+                index++;
             }
+
+            TransitionImages(commandBuffer);
                        
             if (depthImage != nullptr)
             {
                 depthAttachment.attachmentInfo.imageView = depthImage->imageView.get();
             }
-            
-            
             dynamicRenderPass.SetRenderInfo(attachmentInfos, frameBufferSize, &depthAttachment.attachmentInfo);
             commandBuffer.bindPipeline(pipelineType, pipeline.get());
             commandBuffer.beginRendering(dynamicRenderPass.renderInfo);
             (*renderOperations)(commandBuffer);
-            commandBuffer.endRendering();
+            commandBuffer.endRendering();           
+        }
+        void ExecuteCompute(vk::CommandBuffer commandBuffer)
+        {
+            TransitionImages(commandBuffer);
+            commandBuffer.bindPipeline(pipelineType, pipeline.get());
+            (*renderOperations)(commandBuffer);
             
+        }
+        void Execute(vk::CommandBuffer commandBuffer)
+        {
+            for (int i = 0; i < tasks.size(); ++i)
+            {
+                if (tasks[i]!= nullptr)
+                {
+                    (*tasks[i])();
+                }
+            }
+            switch (pipelineType)
+            {
+            case vk::PipelineBindPoint::eGraphics:
+                ExecutePass(commandBuffer);
+                break;
+            case vk::PipelineBindPoint::eCompute:
+                ExecuteCompute(commandBuffer);
+                break;
+            default:
+                assert(false && "Unsuported pipeline type");
+                break;
+            }
         }
 
         void SetVertexInput(VertexInput vertexInput)
@@ -308,6 +385,7 @@ namespace ENGINE
         
         vk::UniquePipeline pipeline;
         vk::UniquePipelineLayout pipelineLayout;
+        vk::UniquePipelineCache pipelineCache;
         vk::PipelineLayoutCreateInfo pipelineLayoutCI;
         vk::PipelineBindPoint pipelineType;
         DynamicRenderPass dynamicRenderPass;
@@ -481,12 +559,25 @@ namespace ENGINE
         void ExecuteAll(FrameResources* currentFrame)
         {
             assert(currentFrame && "Current frame reference is null");
+            RenderGraphNode* lastNode = nullptr;
             for (auto& renderNode : renderNodes)
             {
                 RenderGraphNode* node = renderNode.second.get();
-                node->ExecutePass(currentFrame->commandBuffer.get());
+                if (lastNode != nullptr)
+                {
+                    if (node->dependencies.contains(lastNode->passName))
+                    {
+
+                        BufferUsageTypes lastNodeType = (lastNode->pipelineType == vk::PipelineBindPoint::eGraphics) ? B_GRAPHICS_WRITE :  B_COMPUTE_WRITE;
+                        BufferUsageTypes currNodeType = (lastNode->pipelineType == vk::PipelineBindPoint::eGraphics) ? B_GRAPHICS_WRITE :  B_COMPUTE_WRITE;
+                        BufferAccessPattern lastNodePattern = GetSrcBufferAccessPattern(lastNodeType);
+                        BufferAccessPattern currNodePattern = GetSrcBufferAccessPattern(currNodeType);
+                        CreateMemBarrier(lastNodePattern, currNodePattern, currentFrame->commandBuffer.get());
+                    }
+                }
+                node->Execute(currentFrame->commandBuffer.get());
+                lastNode = node;
             }
-            
         }
     };
 }

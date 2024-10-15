@@ -83,11 +83,13 @@ void run(WindowProvider* windowProvider)
             try
             {
 
-                
+                if (glfwGetKey(windowProvider->window, GLFW_KEY_W))
+                {
+                   fRenderer->ReloadShaders(); 
+                }
                 
                 inFlightQueue->BeginFrame();
 
-               
                 auto& currFrame = inFlightQueue->frameResources[inFlightQueue->frameIndex];
 
                 core->renderGraphRef->ExecuteAll(&currFrame);

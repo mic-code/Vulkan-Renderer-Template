@@ -3,6 +3,7 @@
 // Created by carlo on 2024-10-07.
 //
 
+
 #ifndef FORWARDRENDERER_HPP
 #define FORWARDRENDERER_HPP
 
@@ -113,7 +114,6 @@ namespace Rendering
             auto renderOp = new std::function<void(vk::CommandBuffer& command_buffer)>(
                 [this](vk::CommandBuffer& commandBuffer)
                 {
-                    commandBuffer.bindPipeline(renderGraphRef->GetNode(forwardPassName)->pipelineType, renderGraphRef->GetNode(forwardPassName)->pipeline.get());
                     vk::DeviceSize offset = {0};
                     commandBuffer.bindDescriptorSets(renderGraphRef->GetNode(forwardPassName)->pipelineType,
                                                      renderGraphRef->GetNode(forwardPassName)->pipelineLayout.get(), 0, 1,
@@ -129,11 +129,26 @@ namespace Rendering
 
         void RenderFrame() override
         {
-            
         }
 
         void ReloadShaders() override
         {
+            
+            auto renderNode = renderGraphRef->GetNode(forwardPassName);
+            
+            std::cout<< "Shaders reloaded\n";
+            std::vector<uint32_t> vertCode = ENGINE::GetByteCode(
+                "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.vert.spv");
+            std::vector<uint32_t> fragCode = ENGINE::GetByteCode(
+                "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.frag.spv");
+
+            ENGINE::ShaderModule vertShaderModule(core->logicalDevice.get(), vertCode);
+            ENGINE::ShaderModule fragShaderModule(core->logicalDevice.get(), fragCode);
+            
+            renderNode->SetVertModule(&vertShaderModule);
+            renderNode->SetFragModule(&fragShaderModule);
+            renderNode->RecreateResources();
+
         }
 
 

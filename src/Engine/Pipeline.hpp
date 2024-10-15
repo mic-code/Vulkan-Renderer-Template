@@ -110,7 +110,7 @@ namespace ENGINE
         GraphicsPipeline(vk::Device& logicalDevice, vk::ShaderModule vertexShader, vk::ShaderModule fragmentShader,
                          vk::PipelineLayout pipelineLayout,
                          vk::PipelineRenderingCreateInfo dynamicRenderPass,
-                         std::vector<BlendConfigs>& blendConfigs, DepthConfigs depthConfigs, VertexInput& vertexInput)
+                         std::vector<BlendConfigs>& blendConfigs, DepthConfigs depthConfigs, VertexInput& vertexInput, vk::PipelineCache pipelineCache = nullptr)
         {
             assert(!vertexInput.inputDescription.empty()&&"vertexInput is empty");
             assert((vertexShader != nullptr) &&"vertex shader module is empty");
@@ -194,7 +194,7 @@ namespace ENGINE
                                     .setBasePipelineHandle(VK_NULL_HANDLE)
                                     .setBasePipelineIndex(-1);
 
-            pipelineHandle = logicalDevice.createGraphicsPipelineUnique(nullptr, graphicsPipeline).value;
+            pipelineHandle = logicalDevice.createGraphicsPipelineUnique(pipelineCache, graphicsPipeline).value;
         }
 
 
@@ -205,7 +205,7 @@ namespace ENGINE
     class ComputePipeline
     {
     public:
-        ComputePipeline(vk::Device logicalDevice, vk::ShaderModule computeModule, vk::PipelineLayout pipelineLayout)
+        ComputePipeline(vk::Device logicalDevice, vk::ShaderModule computeModule, vk::PipelineLayout pipelineLayout, vk::PipelineCache pipelineCache = nullptr)
         {
             assert(computeModule != nullptr&& "Compute shader module is empty");
             this->pipelineLayout = pipelineLayout;
@@ -223,7 +223,7 @@ namespace ENGINE
                                    .setBasePipelineHandle(nullptr)
                                    .setBasePipelineIndex(-1);
 
-            pipelineHandle = logicalDevice.createComputePipelineUnique(nullptr, computePipeline).value;
+            pipelineHandle = logicalDevice.createComputePipelineUnique(pipelineCache, computePipeline).value;
         }
 
         vk::PipelineLayout pipelineLayout;

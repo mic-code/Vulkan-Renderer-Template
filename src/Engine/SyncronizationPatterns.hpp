@@ -203,6 +203,18 @@ namespace ENGINE
         return bufferAccessPattern;
         
     }
+
+    static void CreateMemBarrier(BufferAccessPattern srcBarrier, BufferAccessPattern dstBarrier,
+                                vk::CommandBuffer& commandBuffer)
+    {
+
+        auto memBarrier = vk::MemoryBarrier()
+                            .setSrcAccessMask(srcBarrier.accessMask)
+                            .setDstAccessMask(dstBarrier.accessMask);
+
+        commandBuffer.pipelineBarrier(srcBarrier.stage, dstBarrier.stage, {}, memBarrier,
+                                      nullptr, nullptr);
+    }
    
 }
 

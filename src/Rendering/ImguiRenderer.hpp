@@ -5,6 +5,7 @@
 // Created by carlo on 2024-10-10.
 //
 
+
 #ifndef IMGUIRENDERER_HPP
 #define IMGUIRENDERER_HPP
 
@@ -75,7 +76,7 @@ namespace Rendering
             std::vector<vk::RenderingAttachmentInfo> attachmentInfos = {attachmentInfo.attachmentInfo};
             vk::RenderingAttachmentInfo depthAttachment;
             
-            dynamicRenderPass.SetRenderInfoUnsafe(attachmentInfos, windowProvider->GetWindowSizze(), &depthAttachment);
+            dynamicRenderPass.SetRenderInfoUnsafe(attachmentInfos, windowProvider->GetWindowSize(), &depthAttachment);
 
             commandBuffer.beginRendering(dynamicRenderPass.renderInfo);
             
