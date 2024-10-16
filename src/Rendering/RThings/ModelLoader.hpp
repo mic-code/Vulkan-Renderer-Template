@@ -1,6 +1,7 @@
 ﻿//
 
 
+
 // Created by carlo on 2024-10-16.
 //
 
@@ -62,17 +63,19 @@ namespace Rendering
     			tinygltf::Mesh& currMesh = gltfModel.meshes[node.mesh];
 			    for (auto& primitive : currMesh.primitives)
 			    {
+				    int vertexCount = 0;
+				    int indexCount = 0;
 			    	{
 			    		const float* posBuff = nullptr;
 			    		const float* normalsBuff = nullptr;
 			    		const float* tangentsBuff = nullptr;
 			    		const float* textCoordsBuff = nullptr;
-
 			    		if (primitive.attributes.find("POSITION") != primitive.attributes.end())
 			    		{
 			    			tinygltf::Accessor& accessor = gltfModel.accessors[primitive.attributes.find("POSITION")->second];
 			    			tinygltf::BufferView& view = gltfModel.bufferViews[accessor.bufferView];
 			    			posBuff = reinterpret_cast<const float*> (&gltfModel.buffers[view.buffer].data[view.byteOffset + accessor.byteOffset]);
+			    			vertexCount = accessor.count;
 			    			
 			    		}
 					    if (primitive.attributes.find("NORMAL") != primitive.attributes.end())
@@ -101,13 +104,56 @@ namespace Rendering
 							    byteOffset + accessor.byteOffset]);
 					    }
 
-
+					    for (int i = 0; i < vertexCount; ++i)
+					    {
+							M_Vertex vertex{};
+					    	vertex.pos = glm::make_vec3(&posBuff[i * 3]);
+							vertex.normal = normalsBuff ? glm::make_vec3(&normalsBuff[i * 3]) : glm::vec3(0.0f);
+							vertex.uv = textCoordsBuff? glm::make_vec3(&textCoordsBuff[i * 2]): glm::vec2(0.0f);
+					    	
+					    	//not passing vec4 tangents at the moment
+							glm::vec4 tangent = tangentsBuff ? glm::make_vec4(&tangentsBuff[i * 4]) : glm::vec4(0.0f);
+					    	vertex.tangent = tangentsBuff? glm::vec3 (tangent.x,tangent.y,tangent.z) * tangent.w: glm::vec3 (0.0f);
+						    
+					    }
 			    		
 			    	}
+				    //indices
+					{
+						tinygltf::Accessor& accessor = gltfModel.accessors[primitive.indices];
+						tinygltf::BufferView& bufferView = gltfModel.bufferViews[accessor.bufferView];
+						indexCount+= static_cast<uint32_t>(accessor.count);
+						// meshIndexCount.push_back(indexCount);
+						switch (accessor.componentType) {
+							case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT: {
+								const uint32_t* buff = reinterpret_cast<const uint32_t*>(&(gltfModel.buffers[bufferView.buffer].data[bufferView.byteOffset + accessor.byteOffset]));
+								for (size_t j = 0; j <accessor.count; ++j) {
+									model.indices.push_back(buff[j]);
+								}
+								break;
+							}
+							case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT: {
+								const uint16_t* buff = reinterpret_cast<const uint16_t*>(&(gltfModel.buffers[bufferView.buffer].data[bufferView.byteOffset + accessor.byteOffset]));
+								for (size_t j = 0; j <accessor.count; ++j) {
+									model.indices.push_back(buff[j]);
+								}
+								break;
+							}
+							case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE: {
+								const uint8_t* buff = reinterpret_cast<const uint8_t*>(&(gltfModel.buffers[bufferView.buffer].data[bufferView.byteOffset + accessor.byteOffset]));
+								for (size_t j = 0; j <accessor.count; ++j) {
+									model.indices.push_back(buff[j]);
+								}
+								break;
+							}
+							default:
+								std::cerr << "Index component type " << accessor.componentType << " not supported!" << std::endl;
+								return;
+						}
+
+					}
 				    
 			    }
-
-    			
     			
     		}
     		

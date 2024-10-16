@@ -17,7 +17,7 @@ namespace Rendering
     {
         glm::vec3 pos;
         glm::vec3 normal;
-        glm::vec4 tangent;
+        glm::vec3 tangent;
         glm::vec2 uv;
         
 		bool operator==(const M_Vertex& other) const {
@@ -39,7 +39,7 @@ namespace std
 			// Hash the position, color, normal, and texCoord
 			size_t hash1 = hash<glm::vec3>()(vertex.pos);
 			size_t hash2 = hash<glm::vec3>()(vertex.normal);
-			size_t hash3 = hash<glm::vec4>()(vertex.tangent);
+			size_t hash3 = hash<glm::vec3>()(vertex.tangent);
 			size_t hash4 = hash<glm::vec2>()(vertex.uv);
 
 			// Combine the hashes using bitwise operations
