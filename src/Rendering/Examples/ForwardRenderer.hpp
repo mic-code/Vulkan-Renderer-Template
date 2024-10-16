@@ -133,7 +133,15 @@ namespace Rendering
 
         void ReloadShaders() override
         {
+
             
+            int result = std::system("C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\shaders\\compile.bat");
+            if (result == 0)
+            {
+            }else
+            {
+                assert(false &&"reload shaders failed");
+            }
             auto renderNode = renderGraphRef->GetNode(forwardPassName);
             
             std::cout<< "Shaders reloaded\n";

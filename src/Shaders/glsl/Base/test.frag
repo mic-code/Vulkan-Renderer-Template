@@ -9,6 +9,5 @@ layout(set=0 , binding = 0) uniform sampler2D testImage;
 
 void main() {
     vec4 text = texture(testImage, textCoord);
-    
     outColor = text;
 }

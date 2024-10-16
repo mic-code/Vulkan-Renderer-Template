@@ -7,13 +7,12 @@
 
 namespace Rendering
 {
-    class Model
+    struct Model
     {
-
         std::vector<Vertex> vertices;
         std::vector<uint32_t> indices;
-        
-        
+        std::vector<glm::mat4> matrices;
+        int meshCount;
     };
 }
 #endif //MODEL_HPP

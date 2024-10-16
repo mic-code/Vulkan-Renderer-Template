@@ -17,10 +17,22 @@ namespace Rendering
             this->renderGraphRef = renderGraph;
             
         }
-        void RecreateSwapChainResources() override;
-        void SetRenderOperation(ENGINE::InFlightQueue* inflightQueue) override;
-        void RenderFrame() override;
-        void ReloadShaders() override;
+        void RecreateSwapChainResources() override
+        {
+            
+        }
+        void SetRenderOperation(ENGINE::InFlightQueue* inflightQueue) override
+        {
+            
+        }
+        void RenderFrame() override
+        {
+            
+        }
+        void ReloadShaders() override
+        {
+            
+        }
         
         std::string computePassName;
         ENGINE::DescriptorAllocator* descriptorAllocatorRef;
