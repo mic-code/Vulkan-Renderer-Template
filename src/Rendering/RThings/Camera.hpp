@@ -23,6 +23,7 @@ namespace Rendering
 			E_FREE
 		};
 
+	public:
 		Camera(glm::vec3 camPos = glm::vec3(0.0f), CameraMode mode = E_FREE, glm::uvec2 aspect = glm::uvec2(800, 600))
 		{
 			SetPerspective(45.0f, (float)aspect.x/ (float)aspect.y, 0.1f, 512.0f);

@@ -7,6 +7,7 @@
 
 
 
+
 #ifndef FORWARDRENDERER_HPP
 #define FORWARDRENDERER_HPP
 
@@ -140,8 +141,6 @@ namespace Rendering
 
         void ReloadShaders() override
         {
-
-            
             int result = std::system("C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\shaders\\compile.bat");
             if (result == 0)
             {
@@ -163,7 +162,6 @@ namespace Rendering
             renderNode->SetVertModule(&vertShaderModule);
             renderNode->SetFragModule(&fragShaderModule);
             renderNode->RecreateResources();
-
         }
 
 
@@ -171,6 +169,7 @@ namespace Rendering
         vk::UniqueDescriptorSetLayout dstLayout;
         vk::UniqueDescriptorSet dstSet;
 
+        Camera camera = {glm::vec3(0)};
 
         ENGINE::ImageShipper imageShipper;
         std::string forwardPassName;
