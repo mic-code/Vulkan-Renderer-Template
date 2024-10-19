@@ -4,6 +4,9 @@
 //
 
 
+
+
+
 #ifndef FORWARDRENDERER_HPP
 #define FORWARDRENDERER_HPP
 
@@ -21,7 +24,8 @@ namespace Rendering
             this->descriptorAllocatorRef = descriptorAllocator;
             auto logicalDevice = core->logicalDevice.get();
             auto physicalDevice = core->physicalDevice;
-
+            
+            
             std::vector<uint32_t> vertCode = ENGINE::GetByteCode(
                 "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.vert.spv");
             std::vector<uint32_t> fragCode = ENGINE::GetByteCode(
@@ -100,6 +104,7 @@ namespace Rendering
 
         void RecreateSwapChainResources() override
         {
+
         }
 
         void SetRenderOperation(ENGINE::InFlightQueue* inflightQueue) override
@@ -107,7 +112,9 @@ namespace Rendering
             auto setViewTask = new std::function<void()>([this, inflightQueue]()
             {
                 auto* currImage = inflightQueue->currentSwapchainImageView;
-                renderGraphRef->AddImageResource("ForwardPass", "color", currImage);
+                auto* currDepthImage = core->swapchainRef->depthImagesFull.at(inflightQueue->frameIndex).imageView.get();
+                renderGraphRef->AddColorImageResource("ForwardPass", "color", currImage);
+                renderGraphRef->AddDepthImageResource("ForwardPass", "depth", currDepthImage);
                 renderGraphRef->GetNode("ForwardPass")->SetFramebufferSize(windowProvider->GetWindowSize());
             });
 
@@ -169,6 +176,7 @@ namespace Rendering
         std::string forwardPassName;
         std::vector<Vertex> vertices;
         std::unique_ptr<ENGINE::Buffer> buffer;
+       
         ENGINE::DescriptorAllocator* descriptorAllocatorRef;
         WindowProvider* windowProvider;
         ENGINE::Core* core;

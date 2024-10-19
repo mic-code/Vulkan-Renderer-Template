@@ -209,6 +209,7 @@ namespace ENGINE
                     (*tasks[i])();
                 }
             }
+
             switch (pipelineType)
             {
             case vk::PipelineBindPoint::eGraphics:
@@ -327,6 +328,11 @@ namespace ENGINE
                 imagesAttachment.at(name)= imageView;
             }
         }
+
+        void SetNodeDepthAttachmentImg(std::string name, ImageView* imageView)
+        {
+            depthImage = imageView;
+        }
         void AddNodeSampler(std::string name, ImageView* imageView)
         {
             if (!sampledImages.contains(name))
@@ -359,18 +365,7 @@ namespace ENGINE
                 std::cout << "Renderpass \""<<this->passName<<" Already depends on \"" <<dependency <<"\" \n";
             }
         }
-        //this resources wiil be invalid at runtime
-        void ClearUnusedResources()
-        {
-            vertShaderModule = nullptr;
-            fragShaderModule = nullptr;
-            compShaderModule = nullptr;
-            colorBlendConfigs.clear();
-            depthConfig = D_NONE;
-            colAttachments.clear();
-            tasks.clear();
-            renderOperations = nullptr;
-        }
+
          void ClearOperations()
         {
             delete renderOperations;
@@ -470,7 +465,7 @@ namespace ENGINE
                 return nullptr;
             }
         }
-        ImageView* AddImageResource(std::string passName,std::string name, ImageView* imageView)
+        ImageView* AddColorImageResource(std::string passName,std::string name, ImageView* imageView)
         {
             assert(imageView && "ImageView is null");
             if (!imagesProxy.contains(name))
@@ -490,6 +485,35 @@ namespace ENGINE
                 if (renderNodes.contains(passName))
                 {
                     renderNodes.at(passName)->AddNodeColAttachmentImg(name, imageView);
+                }else
+                {
+                    std::cout << "Renderpass: " << passName << " does not exist, saving the image anyways. \n";
+                }
+                // std::cout << "Image with name: \"" << name << "\" has changed \n";
+            }
+            return imageView;
+        }
+
+        ImageView* AddDepthImageResource(std::string passName, std::string name, ImageView* imageView)
+        {
+            assert(imageView && "ImageView is null");
+            if (!imagesProxy.contains(name))
+            {
+                imagesProxy.try_emplace(name, imageView);
+                if (renderNodes.contains(passName))
+                {
+                    renderNodes.at(passName)->SetNodeDepthAttachmentImg(name, imageView);
+                }
+                else
+                {
+                    std::cout << "Renderpass: " << passName << " does not exist, saving the image anyways. \n";
+                }
+            }else
+            {
+                imagesProxy.at(name) = imageView;
+                if (renderNodes.contains(passName))
+                {
+                    renderNodes.at(passName)->SetNodeDepthAttachmentImg(name, imageView);
                 }else
                 {
                     std::cout << "Renderpass: " << passName << " does not exist, saving the image anyways. \n";
@@ -554,6 +578,14 @@ namespace ENGINE
                 // std::cout << "Image with name: \"" << name << "\" has changed \n";
             }
             return imageView;
+        }
+        void RecreateFrameResources()
+        {
+            
+            for (auto& renderNode : renderNodes)
+            {
+                renderNode.second->ClearOperations();
+            }
         }
 
         void ExecuteAll(FrameResources* currentFrame)

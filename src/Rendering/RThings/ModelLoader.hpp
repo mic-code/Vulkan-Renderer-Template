@@ -5,6 +5,8 @@
 // Created by carlo on 2024-10-16.
 //
 
+
+
 #ifndef MODELLOADER_HPP
 #define MODELLOADER_HPP
 
@@ -22,44 +24,47 @@ namespace Rendering
 		    tinygltf::TinyGLTF gltfContext;
 		    gltfContext.LoadASCIIFromFile(&gltfModel, &err, &warn, path);
     		
-		    int meshCount = gltfModel.meshes.size();
-
+		    model.meshCount = gltfModel.meshes.size();
+    		NodeMat rootNode;
 
 		    for (auto& scene : gltfModel.scenes)
 		    {
 			    for (auto& node : scene.nodes)
 			    {
-			    	LoadGLTFNode(gltfModel, gltfModel.nodes[node], model);
-				    
+			    	LoadGLTFNode(gltfModel, gltfModel.nodes[node], rootNode, model);
 			    }
 			    
 		    }
     	}
-    	void LoadGLTFNode(tinygltf::Model& gltfModel, tinygltf::Node& node, Model& model)
+    	void LoadGLTFNode(tinygltf::Model& gltfModel, tinygltf::Node& node, NodeMat& parentNodeMat, Model& model)
     	{
-    	
-    		glm::mat4 nodeMat = glm::mat4(1.0f);
+
+    		NodeMat nodeMat{};
     		if(node.scale.size()==3){
-    			nodeMat = glm::scale(nodeMat,glm::vec3 (glm::make_vec3(node.scale.data())));
+    			nodeMat.matrix = glm::scale(nodeMat.matrix,glm::vec3 (glm::make_vec3(node.scale.data())));
     		}
     		if(node.rotation.size()==4){
     			glm::quat rot = glm::make_quat(node.rotation.data());
-    			nodeMat *= glm::mat4(rot);
+    			nodeMat.matrix *= glm::mat4(rot);
     		}
     		if(node.translation.size()==3){
-    			nodeMat = glm::translate(nodeMat,glm::vec3 (glm::make_vec3(node.translation.data())));
+    			nodeMat.matrix = glm::translate(nodeMat.matrix,glm::vec3 (glm::make_vec3(node.translation.data())));
     		}
     		if(node.matrix.size()==16){
-    			nodeMat = glm::make_mat4(node.matrix.data());
+    			nodeMat.matrix = glm::make_mat4(node.matrix.data());
     		}
 
 		    for (auto& child : node.children)
 		    {
-		    	LoadGLTFNode(gltfModel, gltfModel.nodes[child], model);
+		    	LoadGLTFNode(gltfModel, gltfModel.nodes[child], nodeMat, model);
 		    }
+    		
     		if (node.mesh > -1)
     		{
-    			model.matrices.push_back(nodeMat);
+    			nodeMat.parentMat = &parentNodeMat;
+    			model.nodeMats.push_back(nodeMat);
+    			model.firstVertices.push_back(model.vertices.size());
+    			model.firstIndices.push_back(model.firstIndices.size());
     			tinygltf::Mesh& currMesh = gltfModel.meshes[node.mesh];
 			    for (auto& primitive : currMesh.primitives)
 			    {
@@ -111,12 +116,10 @@ namespace Rendering
 							vertex.normal = normalsBuff ? glm::make_vec3(&normalsBuff[i * 3]) : glm::vec3(0.0f);
 							vertex.uv = textCoordsBuff? glm::make_vec3(&textCoordsBuff[i * 2]): glm::vec2(0.0f);
 					    	
-					    	//not passing vec4 tangents at the moment
+							//not passing vec4 tangents at the moment
 							glm::vec4 tangent = tangentsBuff ? glm::make_vec4(&tangentsBuff[i * 4]) : glm::vec4(0.0f);
 					    	vertex.tangent = tangentsBuff? glm::vec3 (tangent.x,tangent.y,tangent.z) * tangent.w: glm::vec3 (0.0f);
-						    
 					    }
-			    		
 			    	}
 				    //indices
 					{
@@ -158,23 +161,20 @@ namespace Rendering
     		}
     		
     	}
-
-
-
-
-    	
-    	ModelLoader(ENGINE::Core* core)
-    	{
-    		this->core = core; 
-    	}
-	    ModelLoader* ModelLoader::GetInstance(ENGINE::Core* core = nullptr)
-	    {
-		    if (instance == nullptr)
-		    {
-			    instance = new ModelLoader(core);
-		    }
-		    return instance;
-	    }
+	    //
+    	//
+    	// ModelLoader(ENGINE::Core* core)
+    	// {
+    	// 	this->core = core; 
+    	// }
+	    // ModelLoader* ModelLoader::GetInstance(ENGINE::Core* core = nullptr)
+	    // {
+		   //  if (instance == nullptr)
+		   //  {
+			  //   instance = new ModelLoader(core);
+		   //  }
+		   //  return instance;
+	    // }
         static ModelLoader* instance;
     	ENGINE::Core* core;
     };

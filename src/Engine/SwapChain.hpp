@@ -79,7 +79,27 @@ namespace ENGINE
                 images.emplace_back(std::move(imageFull));
             }
             
+            this->depthImages.clear();
+            this->depthImagesFull.clear();
             
+            for (int i = 0; i < images.size(); ++i)
+            {
+                auto createInfo = ENGINE::Image::CreateInfo2d(glm::vec2(extent.width, extent.height), 1, 1, depthFormat, ENGINE::depthImageUsage);
+                std::unique_ptr<ENGINE::Image> image = std::make_unique<ENGINE::Image>(physicalDevice, logicalDevice, createInfo);
+                depthImages.emplace_back(std::move(image));
+            }
+            for (int imageIndex = 0; imageIndex < images.size(); ++imageIndex)
+            {
+                ImageSwapchain depthImageFull;
+                depthImageFull.imageData = std::make_unique<ENGINE::ImageData>(depthImages[imageIndex]->imageHandle.get(), vk::ImageType::e2D,
+                                                                  glm::vec3(extent.width, extent.height, 1), 1, 1,
+                                                                  depthFormat, vk::ImageLayout::eUndefined);
+                depthImageFull.imageView = std::make_unique<ENGINE::ImageView>(logicalDevice, depthImageFull.imageData.get(), 0, 1, 0, 1);
+
+                depthImagesFull.emplace_back(std::move(depthImageFull));
+            }
+
+                        
         }
         vk::ResultValue<uint32_t> AcquireNextImage(vk::Semaphore semaphore)
         {
@@ -95,10 +115,21 @@ namespace ENGINE
             return resImageViews;
         }
 
+        std::vector<ImageView*> GetDepthImageViews()
+        {
+            std::vector<ImageView*> resImageViews;
+            for (auto& image : this->depthImagesFull)
+            {
+                resImageViews.push_back(image.imageView.get());
+            }
+            return resImageViews;
+        }
+
         vk::Format GetFormat()
         {
             return surfaceFormat.format;
         }
+        
         
 
         static vk::SurfaceFormatKHR FindSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& avalibleFormats)
@@ -196,6 +227,9 @@ namespace ENGINE
         };
 
         std::vector<ImageSwapchain> images;
+        
+        std::vector<std::unique_ptr<Image>> depthImages;
+        std::vector<ImageSwapchain> depthImagesFull;
 
         vk::UniqueSurfaceKHR surface;
         vk::UniqueSwapchainKHR swapchainHandle;

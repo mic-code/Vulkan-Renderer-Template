@@ -77,7 +77,8 @@ void run(WindowProvider* windowProvider)
                     windowSize);
                 windowProvider->framebufferResized = false;
                 core->resizeRequested = false;
-                
+                renderGraph->RecreateFrameResources();
+                fRenderer->RecreateSwapChainResources();
                 fRenderer->SetRenderOperation(inFlightQueue.get());
             }
             try

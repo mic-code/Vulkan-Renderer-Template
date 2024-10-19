@@ -72,12 +72,12 @@ namespace Rendering
 			camForward.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 		}
 
-		void Camera::SetPerspective(float fov, float aspect, float znear, float zfar)
+		void SetPerspective(float fov, float aspect, float znear, float zfar)
 		{
 			matrices.perspective = glm::perspective(glm::radians(fov), aspect, znear, zfar);
 		}
 
-		void Camera::SetLookAt(glm::vec3 targetPosition)
+		void SetLookAt(glm::vec3 targetPosition)
 		{
 			this->lookAt = targetPosition;
 			matrices.view = glm::lookAt(position,

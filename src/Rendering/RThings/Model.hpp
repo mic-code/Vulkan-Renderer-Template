@@ -7,11 +7,19 @@
 
 namespace Rendering
 {
+    struct NodeMat
+    {
+        NodeMat* parentMat;
+        glm::mat4 matrix;
+    };
     struct Model
     {
         std::vector<Vertex> vertices;
         std::vector<uint32_t> indices;
-        std::vector<glm::mat4> matrices;
+        
+        std::vector<uint32_t> firstVertices;
+        std::vector<uint32_t> firstIndices;
+        std::vector<NodeMat> nodeMats;
         int meshCount;
     };
 }
