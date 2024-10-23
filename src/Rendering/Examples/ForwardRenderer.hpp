@@ -8,6 +8,7 @@
 
 
 
+
 #ifndef FORWARDRENDERER_HPP
 #define FORWARDRENDERER_HPP
 
@@ -65,16 +66,20 @@ namespace Rendering
             
             ENGINE::VertexInput vertexInput;
             vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC2, 0, offsetof(Vertex, pos), 0);
-            vertexInput.AddVertexInputBinding(0, sizeof(Vertex));
+            vertexInput.AddVertexInputBinding(0, sizeof(M_Vertex));
 
             vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC2, 0, offsetof(Vertex, uv), 1);
             vertexInput.AddVertexInputBinding(0, sizeof(Vertex));
+
+            vertexInput = M_Vertex::GetVertexInput();
            
             vertices= {
                 {{-0.5f, -0.5f}, {0.0f, 0.0f}},
                 {{0.5f, -0.5f}, {1.0f, 0.0f}}, 
                 {{0.0f, 0.5f}, {0.5f, 1.0f}}
             };
+
+            ModelLoader::GetInstance()->LoadGLTF("Path", model);
 
             buffer = std::make_unique<ENGINE::Buffer>(
                 physicalDevice, logicalDevice, vk::BufferUsageFlagBits::eVertexBuffer,
@@ -170,6 +175,7 @@ namespace Rendering
         vk::UniqueDescriptorSet dstSet;
 
         Camera camera = {glm::vec3(0)};
+        Model model;
 
         ENGINE::ImageShipper imageShipper;
         std::string forwardPassName;

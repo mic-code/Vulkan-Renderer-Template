@@ -16,6 +16,7 @@ namespace Rendering
     class ModelLoader
     {
 
+    public:
     	void LoadGLTF(std::string path,Model& model)
     	{
     		tinygltf::Model gltfModel;
@@ -159,22 +160,19 @@ namespace Rendering
 			    }
     			
     		}
-    		
     	}
-	    //
-    	//
-    	// ModelLoader(ENGINE::Core* core)
-    	// {
-    	// 	this->core = core; 
-    	// }
-	    // ModelLoader* ModelLoader::GetInstance(ENGINE::Core* core = nullptr)
-	    // {
-		   //  if (instance == nullptr)
-		   //  {
-			  //   instance = new ModelLoader(core);
-		   //  }
-		   //  return instance;
-	    // }
+    	ModelLoader(ENGINE::Core* core)
+    	{
+    		this->core = core; 
+    	}
+	    static ModelLoader* GetInstance(ENGINE::Core* core = nullptr)
+	    {
+		    if (instance == nullptr && core != nullptr)
+		    {
+			    instance = new ModelLoader(core);
+		    }
+		    return instance;
+	    }
         static ModelLoader* instance;
     	ENGINE::Core* core;
     };

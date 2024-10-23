@@ -24,6 +24,27 @@ namespace Rendering
 			return pos == other.pos && uv == other.uv && normal == other.normal && tangent == other.tangent;
 		}
 
+    	static ENGINE::VertexInput GetVertexInput()
+		{
+			
+            ENGINE::VertexInput vertexInput;
+            vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC3, 0, offsetof(M_Vertex, pos), 0);
+            vertexInput.AddVertexInputBinding(0, sizeof(M_Vertex));
+
+            vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC3, 0, offsetof(M_Vertex, normal), 1);
+            vertexInput.AddVertexInputBinding(0, sizeof(M_Vertex));
+			
+            vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC3, 0, offsetof(M_Vertex, tangent), 2);
+            vertexInput.AddVertexInputBinding(0, sizeof(M_Vertex));
+			
+            vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC2, 0, offsetof(M_Vertex, uv), 3);
+            vertexInput.AddVertexInputBinding(0, sizeof(M_Vertex));
+
+			return vertexInput;
+ 		}
+    	
+    	
+
     };
 
     
