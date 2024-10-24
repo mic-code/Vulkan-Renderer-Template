@@ -5,9 +5,24 @@
 #ifndef INPUTSYSTEM_HPP
 #define INPUTSYSTEM_HPP
 
-class InputSystem
+namespace SYSTEMS
 {
-    
-};
+    class InputSystem
+    {
+        InputSystem();
+        InputSystem* GetInstance()
+        {
+            if (instance == nullptr)
+            {
+                instance = new InputSystem;
+            }
+            return instance;
+        }
+        static InputSystem* instance;
+    };
+
+    InputSystem* InputSystem::instance = nullptr;
+   
+}
 
 #endif //INPUTSYSTEM_HPP
