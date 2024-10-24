@@ -38,20 +38,16 @@ namespace Rendering
 			// }
 
 		}
-		void Move(float deltaTime)
+		void Move(float deltaTime, glm::vec2 input)
 		{
-			RotateCamera();
-
-			glm::vec2 input = glm::vec2(0.0f);
 			position += forward * input.y * movementSpeed * deltaTime;
 			position += right * input.x * movementSpeed * deltaTime;
 			
 			matrices.view = glm::lookAt(position, position + forward, up);
 		}
-		void RotateCamera()
+		void RotateCamera(glm::vec2 input)
 		{
 			//todo: add input handler
-			glm::vec2 input;
 			float currentX = input.x;
 			float currentY = input.y;
 
@@ -70,20 +66,34 @@ namespace Rendering
 
 			xOffset *= sens;
 			yOffset *= sens;
+			
 			yaw += xOffset;
 			pitch += yOffset;
+			
+			pitch = glm::clamp(pitch, -89.0f, 89.0f);
 
+			if (inverseY)
+			{
+				WorldUp = glm::vec3(0.0f, -1.0f,0.0f);
+			}
 
 			glm::vec3 camForward;
 
 			camForward.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
 			camForward.y = sin(glm::radians(pitch));
 			camForward.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+			
+			forward = normalize(camForward);
+			right = normalize(cross(forward, WorldUp));
+			up = normalize(cross(right, forward));
+
+			
 		}
 
 		void SetPerspective(float fov, float aspect, float znear, float zfar)
 		{
 			matrices.perspective = glm::perspective(glm::radians(fov), aspect, znear, zfar);
+			matrices.perspective[1][1] *=-1;
 		}
 
 		void SetLookAt(glm::vec3 targetPosition)
@@ -106,9 +116,9 @@ namespace Rendering
 		float pitch = -90;
 		float lastX;
 		float lastY;
-		float sens = .4f;
+		float sens = 0.4f;
 		bool firstMouse = true;
-		bool inverseY = true;
+		bool inverseY = false;
 		CameraMode currentMode;
 		float movementSpeed = 5.0f;
 	};

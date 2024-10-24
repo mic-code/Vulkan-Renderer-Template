@@ -69,7 +69,6 @@ namespace ENGINE
         {
             return std::move(sampler);
         }
-        
         std::unique_ptr<Image> ShipImage()
         {
             return std::move(image);
@@ -78,6 +77,7 @@ namespace ENGINE
         {
             return std::move(imageView);
         }
+        
         void Clear()
         {
             if (imageView){imageView.release();}

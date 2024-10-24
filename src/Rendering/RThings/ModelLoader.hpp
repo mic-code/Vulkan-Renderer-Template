@@ -39,6 +39,7 @@ namespace Rendering
 			    }
 			    
 		    }
+    		model.SetWorldMatrices();
     	}
     	void LoadGLTFNode(tinygltf::Model& gltfModel, tinygltf::Node& node, NodeMat* parentNodeMat, Model& model)
     	{

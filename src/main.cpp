@@ -6,6 +6,7 @@
 
 
 
+
 float deltaTime;
 float previousTime;
 
@@ -61,7 +62,9 @@ void run(WindowProvider* windowProvider)
     };
     descriptorAllocator->BeginPool(core->logicalDevice.get(), 10, poolSizeRatios);
 
-
+    std::unique_ptr<Rendering::ComputeRenderer> compRenderer =std::make_unique<Rendering::ComputeRenderer>(core.get(), windowProvider, descriptorAllocator.get());
+    compRenderer->SetRenderOperation(inFlightQueue.get());
+    
     std::unique_ptr<Rendering::ForwardRenderer> fRenderer = std::make_unique<Rendering::ForwardRenderer>(core.get(), windowProvider, descriptorAllocator.get());
     fRenderer->SetRenderOperation(inFlightQueue.get());
     
@@ -90,17 +93,19 @@ void run(WindowProvider* windowProvider)
                 windowProvider->framebufferResized = false;
                 core->resizeRequested = false;
                 renderGraph->RecreateFrameResources();
+                compRenderer->RecreateSwapChainResources();
+                compRenderer->SetRenderOperation(inFlightQueue.get());
                 fRenderer->RecreateSwapChainResources();
                 fRenderer->SetRenderOperation(inFlightQueue.get());
             }
             try
             {
 
-                if (glfwGetKey(windowProvider->window, GLFW_KEY_W))
+                if (glfwGetKey(windowProvider->window, GLFW_KEY_RIGHT_CONTROL)&& glfwGetKey(windowProvider->window, GLFW_KEY_S))
                 {
                    fRenderer->ReloadShaders(); 
                 }
-                
+
                 inFlightQueue->BeginFrame();
 
                 auto& currFrame = inFlightQueue->frameResources[inFlightQueue->frameIndex];
@@ -109,7 +114,15 @@ void run(WindowProvider* windowProvider)
               
                 imguiRenderer->RenderFrame(currFrame.commandBuffer.get(),
                                            inFlightQueue->currentSwapchainImageView->imageView.get());
-                
+
+                glm::vec2 input = glm::vec2(0.0f);
+                if (glfwGetKey(windowProvider->window, GLFW_KEY_W)) { input = glm::vec2(0.0f, 1.0f); }
+                if (glfwGetKey(windowProvider->window, GLFW_KEY_S)) { input = glm::vec2(0.0f, -1.0f); }
+                if (glfwGetKey(windowProvider->window, GLFW_KEY_D)) { input = glm::vec2(1.0f, 0.0f); }
+                if (glfwGetKey(windowProvider->window, GLFW_KEY_A)) { input = glm::vec2(-1.0f, 0.0f); }
+                glm::vec2 mouseInput = glm::vec2(-ImGui::GetMousePos().x, ImGui::GetMousePos().y);
+                fRenderer->camera.RotateCamera(mouseInput);
+                fRenderer->camera.Move(deltaTime, input);
                 inFlightQueue->EndFrame();
             }
             catch (vk::OutOfDateKHRError err)

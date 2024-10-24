@@ -64,7 +64,7 @@ namespace ENGINE
                 std::cout << "Compute pipeline created\n";
             }else
             {
-                std::cout << "No compute or graphics shaders were set\n";
+                std::cout << "Not viable shader configuration set\n";
             }
                        
         }
@@ -103,8 +103,7 @@ namespace ENGINE
             }else if(compShaderModule)
             {
                 pipelineLayout = core->logicalDevice->createPipelineLayoutUnique(pipelineLayoutCI);
-                std::unique_ptr<ComputePipeline> computePipeline;
-                std::unique_ptr<ComputePipeline> graphicsPipeline = std::make_unique<ENGINE::ComputePipeline>(
+                std::unique_ptr<ComputePipeline> computePipeline = std::make_unique<ENGINE::ComputePipeline>(
                     core->logicalDevice.get(), compShaderModule->shaderModuleHandle.get(), pipelineLayout.get(), 
                     pipelineCache.get());
                 pipeline = std::move(computePipeline->pipelineHandle);
@@ -398,9 +397,9 @@ namespace ENGINE
         AttachmentInfo depthAttachment;
         
         ImageView* depthImage = nullptr;
-        std::map<std::string,ImageView*> imagesAttachment;
-        std::map<std::string,ImageView*> storageImages;
-        std::map<std::string,ImageView*> sampledImages;
+        std::unordered_map<std::string,ImageView*> imagesAttachment;
+        std::unordered_map<std::string,ImageView*> storageImages;
+        std::unordered_map<std::string,ImageView*> sampledImages;
         
         std::function<void(vk::CommandBuffer& commandBuffer)>* renderOperations = nullptr;
         std::vector<std::function<void()>*> tasks;
@@ -409,9 +408,9 @@ namespace ENGINE
         std::set<std::string> dependencies;
         
         Core* core;
-        std::map<std::string, ImageView*>* imagesProxyRef;
-        std::map<std::string, AttachmentInfo>* outColAttachmentsProxyRef;
-        std::map<std::string, AttachmentInfo>* outDepthAttachmentProxyRef;
+        std::unordered_map<std::string, ImageView*>* imagesProxyRef;
+        std::unordered_map<std::string, AttachmentInfo>* outColAttachmentsProxyRef;
+        std::unordered_map<std::string, AttachmentInfo>* outDepthAttachmentProxyRef;
         
     };
 
@@ -419,12 +418,14 @@ namespace ENGINE
     class RenderGraph
     {
     public:
-        std::map<std::string, std::unique_ptr<RenderGraphNode>> renderNodes;
+        std::unordered_map<std::string, std::unique_ptr<RenderGraphNode>> renderNodes;
         std::vector<RenderGraphNode*> renderNodesSorted;
-        std::map<std::string, ImageView*> imagesProxy;
-        std::map<std::string, AttachmentInfo> outColAttachmentsProxy;
-        std::map<std::string, AttachmentInfo> outDepthAttachmentProxy;
-        float deltaTime;
+        std::unordered_map<std::string, ImageView*> imagesProxy;
+        std::unordered_map<std::string, AttachmentInfo> outColAttachmentsProxy;
+        std::unordered_map<std::string, AttachmentInfo> outDepthAttachmentProxy;
+        
+        vk::Format storageImageFormat = vk::Format::eR32G32B32A32Sfloat;
+        
         Core* core;
         RenderGraph(Core* core)
         {

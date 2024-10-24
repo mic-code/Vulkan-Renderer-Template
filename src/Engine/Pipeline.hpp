@@ -139,7 +139,7 @@ namespace ENGINE
                                  .setDepthClampEnable(VK_FALSE)
                                  .setRasterizerDiscardEnable(VK_FALSE)
                                  .setPolygonMode(vk::PolygonMode::eFill)
-                                 .setCullMode(vk::CullModeFlagBits::eBack)
+                                 .setCullMode(vk::CullModeFlagBits::eNone)
                                  .setFrontFace(vk::FrontFace::eClockwise)
                                  .setLineWidth(1.0f);
 

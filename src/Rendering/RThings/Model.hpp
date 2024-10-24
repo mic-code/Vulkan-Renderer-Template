@@ -28,21 +28,20 @@ namespace Rendering
         std::vector<M_Vertex3D> vertices;
         std::vector<uint32_t> indices;
         
+        //map with mesh number
+        int meshCount;
         std::vector<uint32_t> firstVertices;
         std::vector<uint32_t> firstIndices;
         std::vector<uint32_t> verticesCount;
         std::vector<uint32_t> indicesCount;
-        //map with mesh number
         std::vector<NodeMat*> nodeMats;
         std::vector<glm::mat4> modelsMat;
-        int meshCount;
         void SetWorldMatrices(){
             modelsMat.reserve(meshCount);
             for (auto& node : nodeMats)
             {
                 modelsMat.emplace_back(node->GetWorlMat());
             }
-            
         }
         ~Model()
         {

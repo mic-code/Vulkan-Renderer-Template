@@ -26,12 +26,11 @@ namespace Rendering
             auto physicalDevice = core->physicalDevice;
 
             camera.SetLookAt(glm::vec3(0.0f));
-			camera.matrices.perspective[1][1] *=-1;
+            
             ModelLoader::GetInstance()->LoadGLTF(
-                "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\Assets\\Models\\3d_pbr_curved_sofa\\scene.gltf",
+                "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\Resources\\Assets\\Models\\3d_pbr_curved_sofa\\scene.gltf",
                 model);
 
-            model.SetWorldMatrices();
             
             
             vertexBuffer = std::make_unique<ENGINE::Buffer>(
@@ -45,9 +44,9 @@ namespace Rendering
             
             
             std::vector<uint32_t> vertCode = ENGINE::GetByteCode(
-                "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.vert.spv");
+                    "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Examples\\fSample.vert.spv");
             std::vector<uint32_t> fragCode = ENGINE::GetByteCode(
-                    "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.frag.spv");
+                    "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Examples\\fSample.frag.spv");
             
             
             ENGINE::ShaderParser vertParser(vertCode);
@@ -139,38 +138,27 @@ namespace Rendering
                     
                     for (int i = 0; i < model.meshCount; ++i)
                     {
+                        camera.SetPerspective(
+                            45.0f, (float)windowProvider->GetWindowSize().x / (float)windowProvider->GetWindowSize().y,
+                            0.1f, 512.0f);
                         pc.projView = camera.matrices.perspective * camera.matrices.view;
-                        pc.model = model.modelsMat[1];
-                        pc.model = glm::scale(pc.model, glm::vec3(1.5f));
+                        pc.model = model.modelsMat[i];
+                        // pc.model = glm::scale(pc.model, glm::vec3(0.01f));
                     
-                        
                         commandBuffer.pushConstants(renderGraphRef->GetNode(forwardPassName)->pipelineLayout.get(),
                                                     vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
                                                     0, sizeof(ForwardPc), &pc);
                     
-                    
                         commandBuffer.drawIndexed(model.indicesCount[i], 1, model.firstIndices[i],
                                                   static_cast<int32_t>(model.firstVertices[i]), 0);
                     }
-                    
-                    //
-                    // pc.model = model.modelsMat[0];
-                    // pc.model =glm::scale(pc.model, glm::vec3(0.01f));
-                    // pc.projView = camera.matrices.perspective * camera.matrices.view;
-                    // commandBuffer.pushConstants(renderGraphRef->GetNode(forwardPassName)->pipelineLayout.get(),
-                    //                             vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
-                    //                             0, sizeof(ForwardPc), &pc);
-                    // commandBuffer.drawIndexed(model.indices.size(), 1, 0,
-                    //                           0, 0);
+           
                 });
             
             renderGraphRef->GetNode(forwardPassName)->AddTask(setViewTask);
             renderGraphRef->GetNode(forwardPassName)->SetRenderOperation(renderOp);
         }
 
-        void RenderFrame() override
-        {
-        }
 
         void ReloadShaders() override
         {
@@ -208,26 +196,27 @@ namespace Rendering
         }
 
 
-        ENGINE::DescriptorWriterBuilder writerBuilder;
-        vk::UniqueDescriptorSetLayout dstLayout;
-        vk::UniqueDescriptorSet dstSet;
-
-        Camera camera = {glm::vec3(-10.0f), Camera::CameraMode::E_FIXED};
-        Model model;
-        ForwardPc pc;
-        std::vector<Vertex2D> vertices;
-        std::vector<uint32_t> indices;
-
-        ENGINE::ImageShipper imageShipper;
-        std::string forwardPassName;
-        std::unique_ptr<ENGINE::Buffer> vertexBuffer;
-        std::unique_ptr<ENGINE::Buffer> indexBuffer;
-        
-       
         ENGINE::DescriptorAllocator* descriptorAllocatorRef;
         WindowProvider* windowProvider;
         ENGINE::Core* core;
         ENGINE::RenderGraph* renderGraphRef;
+        
+        ENGINE::DescriptorWriterBuilder writerBuilder;
+        vk::UniqueDescriptorSetLayout dstLayout;
+        vk::UniqueDescriptorSet dstSet;
+
+        std::string forwardPassName;
+        ENGINE::ImageShipper imageShipper;
+        std::unique_ptr<ENGINE::Buffer> vertexBuffer;
+        std::unique_ptr<ENGINE::Buffer> indexBuffer;
+        
+       
+        Camera camera = {glm::vec3(3.0f), Camera::CameraMode::E_FIXED};
+        Model model{};
+        ForwardPc pc{};
+        std::vector<Vertex2D> vertices;
+        std::vector<uint32_t> indices;
+
     };
 }
 

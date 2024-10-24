@@ -47,10 +47,6 @@ namespace ENGINE
             this->arrayLayersCount = arrayLayersCount;
             this->imageType = imageType;
 
-            // currentPattern.stage = vk::PipelineStageFlagBits::eTopOfPipe;
-            // currentPattern.accessMask = vk::AccessFlagBits::eNone;
-            // currentPattern.queueFamilyType = QueueFamilyTypes::UNDEFINED; 
-            // currentPattern.layout = layout;
             currentLayout = EMPTY;
 
             glm::vec3 currSize = size;
