@@ -50,6 +50,10 @@ public:
     {
         glfwPollEvents();
     }
+    float GetTime()
+    {
+        return glfwGetTime();
+    }
     glm::uvec2 GetWindowSize()
     {
         return glm::uvec2(currentWidth, currentHeight);

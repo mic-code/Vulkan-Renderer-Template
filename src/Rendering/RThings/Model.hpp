@@ -10,7 +10,7 @@ namespace Rendering
     struct NodeMat
     {
         NodeMat* parentNode = nullptr;
-        glm::mat4 matrix;
+        glm::mat4 matrix = glm::mat4(1.0f);
         glm::mat4 GetWorlMat()
         {
             NodeMat* parent = parentNode;
@@ -25,22 +25,31 @@ namespace Rendering
     };
     struct Model
     {
-        std::vector<Vertex> vertices;
+        std::vector<M_Vertex3D> vertices;
         std::vector<uint32_t> indices;
         
         std::vector<uint32_t> firstVertices;
         std::vector<uint32_t> firstIndices;
+        std::vector<uint32_t> verticesCount;
+        std::vector<uint32_t> indicesCount;
         //map with mesh number
-        std::vector<NodeMat> nodeMats;
+        std::vector<NodeMat*> nodeMats;
         std::vector<glm::mat4> modelsMat;
         int meshCount;
-        void ConvertToWorldMatrix(){
+        void SetWorldMatrices(){
             modelsMat.reserve(meshCount);
             for (auto& node : nodeMats)
             {
-                modelsMat.emplace_back(node.GetWorlMat());
+                modelsMat.emplace_back(node->GetWorlMat());
             }
             
+        }
+        ~Model()
+        {
+            for (auto node : nodeMats)
+            {
+                delete node;
+            }
         }
         
     };

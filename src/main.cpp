@@ -6,6 +6,9 @@
 
 
 
+float deltaTime;
+float previousTime;
+
 #include "WindowAPI/WindowInclude.hpp"
 #include "Engine/EngineInclude.hpp"
 #include "Rendering/RenderingInclude.hpp"
@@ -68,6 +71,11 @@ void run(WindowProvider* windowProvider)
      
     while (!windowProvider->WindowShouldClose())
     {
+        //handle time and frames better
+        float time = windowProvider->GetTime();
+        deltaTime = time - previousTime;
+        previousTime = time;
+        
         windowProvider->PollEvents();
         {
             glm::uvec2 windowSize = windowProvider->GetWindowSize();

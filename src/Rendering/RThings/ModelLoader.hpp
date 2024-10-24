@@ -7,6 +7,8 @@
 
 
 
+
+
 #ifndef MODELLOADER_HPP
 #define MODELLOADER_HPP
 
@@ -24,9 +26,10 @@ namespace Rendering
 		    std::string warn;
 		    tinygltf::TinyGLTF gltfContext;
 		    gltfContext.LoadASCIIFromFile(&gltfModel, &err, &warn, path);
-    		
+
 		    model.meshCount = gltfModel.meshes.size();
-    		NodeMat rootNode;
+
+    		NodeMat* rootNode = new NodeMat();
 
 		    for (auto& scene : gltfModel.scenes)
 		    {
@@ -37,23 +40,27 @@ namespace Rendering
 			    
 		    }
     	}
-    	void LoadGLTFNode(tinygltf::Model& gltfModel, tinygltf::Node& node, NodeMat& parentNodeMat, Model& model)
+    	void LoadGLTFNode(tinygltf::Model& gltfModel, tinygltf::Node& node, NodeMat* parentNodeMat, Model& model)
     	{
 
-    		NodeMat nodeMat{};
+    		glm::mat4 nodeMatrix = glm::mat4(1.0f);
     		if(node.scale.size()==3){
-    			nodeMat.matrix = glm::scale(nodeMat.matrix,glm::vec3 (glm::make_vec3(node.scale.data())));
+    			nodeMatrix = glm::scale(nodeMatrix,glm::vec3 (glm::make_vec3(node.scale.data())));
     		}
     		if(node.rotation.size()==4){
     			glm::quat rot = glm::make_quat(node.rotation.data());
-    			nodeMat.matrix *= glm::mat4(rot);
+    			nodeMatrix *= glm::mat4(rot);
     		}
     		if(node.translation.size()==3){
-    			nodeMat.matrix = glm::translate(nodeMat.matrix,glm::vec3 (glm::make_vec3(node.translation.data())));
+    			nodeMatrix = glm::translate(nodeMatrix,glm::vec3 (glm::make_vec3(node.translation.data())));
     		}
     		if(node.matrix.size()==16){
-    			nodeMat.matrix = glm::make_mat4(node.matrix.data());
+    			nodeMatrix = glm::make_mat4(node.matrix.data());
     		}
+    		
+    		NodeMat* nodeMat = new NodeMat();
+		    nodeMat->parentNode = parentNodeMat;
+    		nodeMat->matrix = nodeMatrix;
 
 		    for (auto& child : node.children)
 		    {
@@ -62,10 +69,9 @@ namespace Rendering
     		
     		if (node.mesh > -1)
     		{
-    			nodeMat.parentMat = &parentNodeMat;
     			model.nodeMats.push_back(nodeMat);
     			model.firstVertices.push_back(model.vertices.size());
-    			model.firstIndices.push_back(model.firstIndices.size());
+    			model.firstIndices.push_back(model.indices.size());
     			tinygltf::Mesh& currMesh = gltfModel.meshes[node.mesh];
 			    for (auto& primitive : currMesh.primitives)
 			    {
@@ -92,9 +98,9 @@ namespace Rendering
 						    normalsBuff = reinterpret_cast<const float*>(&gltfModel.buffers[view.buffer].data[view.
 							    byteOffset + accessor.byteOffset]);
 					    }
-					    if (primitive.attributes.find("TEXTCOORD_0") != primitive.attributes.end())
+					    if (primitive.attributes.find("TEXCOORD_0") != primitive.attributes.end())
 					    {
-						    tinygltf::Accessor& accessor = gltfModel.accessors[primitive.attributes.find("TEXTCOORD_0")->
+						    tinygltf::Accessor& accessor = gltfModel.accessors[primitive.attributes.find("TEXCOORD_0")->
 							    second];
 						    tinygltf::BufferView& view = gltfModel.bufferViews[accessor.bufferView];
 						    textCoordsBuff = reinterpret_cast<const float*>(&gltfModel.buffers[view.buffer].data[view.
@@ -110,16 +116,19 @@ namespace Rendering
 							    byteOffset + accessor.byteOffset]);
 					    }
 
+					    model.vertices.reserve(vertexCount);
 					    for (int i = 0; i < vertexCount; ++i)
 					    {
-							M_Vertex vertex{};
+							M_Vertex3D vertex{};
 					    	vertex.pos = glm::make_vec3(&posBuff[i * 3]);
 							vertex.normal = normalsBuff ? glm::make_vec3(&normalsBuff[i * 3]) : glm::vec3(0.0f);
-							vertex.uv = textCoordsBuff? glm::make_vec3(&textCoordsBuff[i * 2]): glm::vec2(0.0f);
-					    	
 							//not passing vec4 tangents at the moment
 							glm::vec4 tangent = tangentsBuff ? glm::make_vec4(&tangentsBuff[i * 4]) : glm::vec4(0.0f);
-					    	vertex.tangent = tangentsBuff? glm::vec3 (tangent.x,tangent.y,tangent.z) * tangent.w: glm::vec3 (0.0f);
+							vertex.tangent = tangentsBuff ? glm::vec3(tangent.x, tangent.y, tangent.z) * tangent.w: glm::vec3(0.0f);
+							vertex.uv = textCoordsBuff? glm::make_vec2(&textCoordsBuff[i * 2]): glm::vec2(0.0f);
+					    	
+							model.vertices.push_back(vertex);
+
 					    }
 			    	}
 				    //indices
@@ -156,7 +165,9 @@ namespace Rendering
 						}
 
 					}
-				    
+			    	
+			    	model.indicesCount.push_back(indexCount);
+			    	model.verticesCount.push_back(vertexCount);
 			    }
     			
     		}

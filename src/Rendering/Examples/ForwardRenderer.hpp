@@ -1,12 +1,10 @@
 ﻿//
 
+
+
+
 // Created by carlo on 2024-10-07.
 //
-
-
-
-
-
 
 
 #ifndef FORWARDRENDERER_HPP
@@ -26,6 +24,24 @@ namespace Rendering
             this->descriptorAllocatorRef = descriptorAllocator;
             auto logicalDevice = core->logicalDevice.get();
             auto physicalDevice = core->physicalDevice;
+
+            camera.SetLookAt(glm::vec3(0.0f));
+			camera.matrices.perspective[1][1] *=-1;
+            ModelLoader::GetInstance()->LoadGLTF(
+                "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\Assets\\Models\\3d_pbr_curved_sofa\\scene.gltf",
+                model);
+
+            model.SetWorldMatrices();
+            
+            
+            vertexBuffer = std::make_unique<ENGINE::Buffer>(
+                physicalDevice, logicalDevice, vk::BufferUsageFlagBits::eVertexBuffer,
+                vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+                sizeof(M_Vertex3D) * model.vertices.size(), model.vertices.data());
+            indexBuffer = std::make_unique<ENGINE::Buffer>(
+                physicalDevice, logicalDevice, vk::BufferUsageFlagBits::eIndexBuffer,
+                vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+                sizeof(uint32_t) * model.indices.size(), model.indices.data());
             
             
             std::vector<uint32_t> vertCode = ENGINE::GetByteCode(
@@ -49,8 +65,14 @@ namespace Rendering
              dstLayout = builder.BuildBindings(
                 core->logicalDevice.get(), vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
 
+            auto pushConstantRange = vk::PushConstantRange()
+            .setOffset(0)
+            .setStageFlags(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment)
+            .setSize(sizeof(ForwardPc));
+            
             auto layoutCreateInfo = vk::PipelineLayoutCreateInfo()
                                     .setSetLayoutCount(1)
+                                    .setPushConstantRanges(pushConstantRange)    
                                     .setPSetLayouts(&dstLayout.get());
             
             imageShipper.SetDataFromPath("C:\\Users\\carlo\\OneDrive\\Pictures\\Screenshots\\Screenshot 2024-09-19 172847.png");
@@ -64,27 +86,7 @@ namespace Rendering
             writerBuilder.UpdateSet(core->logicalDevice.get(), dstSet.get());
  
             
-            ENGINE::VertexInput vertexInput;
-            vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC2, 0, offsetof(Vertex, pos), 0);
-            vertexInput.AddVertexInputBinding(0, sizeof(M_Vertex));
-
-            vertexInput.AddVertexAttrib(ENGINE::VertexInput::VEC2, 0, offsetof(Vertex, uv), 1);
-            vertexInput.AddVertexInputBinding(0, sizeof(Vertex));
-
-            vertexInput = M_Vertex::GetVertexInput();
-           
-            vertices= {
-                {{-0.5f, -0.5f}, {0.0f, 0.0f}},
-                {{0.5f, -0.5f}, {1.0f, 0.0f}}, 
-                {{0.0f, 0.5f}, {0.5f, 1.0f}}
-            };
-
-            ModelLoader::GetInstance()->LoadGLTF("Path", model);
-
-            buffer = std::make_unique<ENGINE::Buffer>(
-                physicalDevice, logicalDevice, vk::BufferUsageFlagBits::eVertexBuffer,
-                vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-                sizeof(Vertex) * vertices.size(), vertices.data());
+            ENGINE::VertexInput vertexInput= M_Vertex3D::GetVertexInput();
 
             ENGINE::AttachmentInfo colInfo = ENGINE::GetColorAttachmentInfo();
             ENGINE::AttachmentInfo depthInfo = ENGINE::GetDepthAttachmentInfo();
@@ -127,13 +129,39 @@ namespace Rendering
             auto renderOp = new std::function<void(vk::CommandBuffer& command_buffer)>(
                 [this](vk::CommandBuffer& commandBuffer)
                 {
-                    vk::DeviceSize offset = {0};
+                    vk::DeviceSize offset = 0;
                     commandBuffer.bindDescriptorSets(renderGraphRef->GetNode(forwardPassName)->pipelineType,
                                                      renderGraphRef->GetNode(forwardPassName)->pipelineLayout.get(), 0, 1,
                                                      &dstSet.get(), 0 , nullptr);
-                                                     
-                    commandBuffer.bindVertexBuffers(0, 1, &buffer->bufferHandle.get(), &offset);
-                    commandBuffer.draw(vertices.size(), 1, 0, 0);
+
+                    commandBuffer.bindVertexBuffers(0, 1, &vertexBuffer->bufferHandle.get(), &offset);
+                    commandBuffer.bindIndexBuffer(indexBuffer->bufferHandle.get(), 0, vk::IndexType::eUint32);
+                    
+                    for (int i = 0; i < model.meshCount; ++i)
+                    {
+                        pc.projView = camera.matrices.perspective * camera.matrices.view;
+                        pc.model = model.modelsMat[1];
+                        pc.model = glm::scale(pc.model, glm::vec3(1.5f));
+                    
+                        
+                        commandBuffer.pushConstants(renderGraphRef->GetNode(forwardPassName)->pipelineLayout.get(),
+                                                    vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
+                                                    0, sizeof(ForwardPc), &pc);
+                    
+                    
+                        commandBuffer.drawIndexed(model.indicesCount[i], 1, model.firstIndices[i],
+                                                  static_cast<int32_t>(model.firstVertices[i]), 0);
+                    }
+                    
+                    //
+                    // pc.model = model.modelsMat[0];
+                    // pc.model =glm::scale(pc.model, glm::vec3(0.01f));
+                    // pc.projView = camera.matrices.perspective * camera.matrices.view;
+                    // commandBuffer.pushConstants(renderGraphRef->GetNode(forwardPassName)->pipelineLayout.get(),
+                    //                             vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
+                    //                             0, sizeof(ForwardPc), &pc);
+                    // commandBuffer.drawIndexed(model.indices.size(), 1, 0,
+                    //                           0, 0);
                 });
             
             renderGraphRef->GetNode(forwardPassName)->AddTask(setViewTask);
@@ -154,6 +182,16 @@ namespace Rendering
                 assert(false &&"reload shaders failed");
             }
             auto renderNode = renderGraphRef->GetNode(forwardPassName);
+            auto pushConstantRange = vk::PushConstantRange()
+                                     .setOffset(0)
+                                     .setStageFlags(
+                                         vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment)
+                                     .setSize(sizeof(ForwardPc));
+
+            auto layoutCreateInfo = vk::PipelineLayoutCreateInfo()
+                                    .setSetLayoutCount(1)
+                                    .setPushConstantRanges(pushConstantRange)
+                                    .setPSetLayouts(&dstLayout.get());
             
             std::cout<< "Shaders reloaded\n";
             std::vector<uint32_t> vertCode = ENGINE::GetByteCode(
@@ -163,7 +201,7 @@ namespace Rendering
 
             ENGINE::ShaderModule vertShaderModule(core->logicalDevice.get(), vertCode);
             ENGINE::ShaderModule fragShaderModule(core->logicalDevice.get(), fragCode);
-            
+            renderNode->SetPipelineLayoutCI(layoutCreateInfo);
             renderNode->SetVertModule(&vertShaderModule);
             renderNode->SetFragModule(&fragShaderModule);
             renderNode->RecreateResources();
@@ -174,13 +212,17 @@ namespace Rendering
         vk::UniqueDescriptorSetLayout dstLayout;
         vk::UniqueDescriptorSet dstSet;
 
-        Camera camera = {glm::vec3(0)};
+        Camera camera = {glm::vec3(-10.0f), Camera::CameraMode::E_FIXED};
         Model model;
+        ForwardPc pc;
+        std::vector<Vertex2D> vertices;
+        std::vector<uint32_t> indices;
 
         ENGINE::ImageShipper imageShipper;
         std::string forwardPassName;
-        std::vector<Vertex> vertices;
-        std::unique_ptr<ENGINE::Buffer> buffer;
+        std::unique_ptr<ENGINE::Buffer> vertexBuffer;
+        std::unique_ptr<ENGINE::Buffer> indexBuffer;
+        
        
         ENGINE::DescriptorAllocator* descriptorAllocatorRef;
         WindowProvider* windowProvider;

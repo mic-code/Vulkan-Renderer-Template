@@ -26,6 +26,7 @@ namespace ENGINE
         {
              assert(&pipelineLayoutCI != nullptr && "Pipeline layout is null");
             pipeline.reset();
+            pipelineLayout.reset();
 
             if (fragShaderModule && vertShaderModule)
             {
@@ -38,7 +39,7 @@ namespace ENGINE
                     renderingAttachmentInfos.push_back(colAttachment.attachmentInfo);
                 }
                 dynamicRenderPass.SetPipelineRenderingInfo(colAttachments.size(), colorFormats, depthAttachment.format);
-            
+
                 pipelineLayout = core->logicalDevice->createPipelineLayoutUnique(pipelineLayoutCI);
                 std::unique_ptr<GraphicsPipeline> graphicsPipeline = std::make_unique<ENGINE::GraphicsPipeline>(
                     core->logicalDevice.get(), vertShaderModule->shaderModuleHandle.get(),
@@ -241,11 +242,9 @@ namespace ENGINE
         {
             this->tasks.push_back(task);
         }
-        
         void SetPipelineLayoutCI(vk::PipelineLayoutCreateInfo createInfo)
         {
             this->pipelineLayoutCI = createInfo;
-            
         }
         void SetDepthConfig(DepthConfigs dephtConfig)
         {
@@ -423,10 +422,9 @@ namespace ENGINE
         std::map<std::string, std::unique_ptr<RenderGraphNode>> renderNodes;
         std::vector<RenderGraphNode*> renderNodesSorted;
         std::map<std::string, ImageView*> imagesProxy;
-        
         std::map<std::string, AttachmentInfo> outColAttachmentsProxy;
-        
         std::map<std::string, AttachmentInfo> outDepthAttachmentProxy;
+        float deltaTime;
         Core* core;
         RenderGraph(Core* core)
         {

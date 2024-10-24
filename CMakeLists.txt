@@ -42,7 +42,6 @@ set(CMAKE_BUILD_TYPE Debug)
 add_executable(Engine "${SOLUTION_DIR}/src/main.cpp")
 
 target_sources(Engine PRIVATE
-        "${TINYGLTF_INCLUDE_DIR}/tiny_gltf.h"
         ${dep_sources}
         ${engine_headers}
         ${engine_sources})
