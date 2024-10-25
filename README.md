@@ -1,4 +1,4 @@
-# CodeVk_Renderer: A Vulkan-Based RenderGraph Renderer
+# CodeVkRenderer: A Vulkan-Based RenderGraph Renderer
 
 CodeVk_Renderer is a lightweight Vulkan-based rendering engine utilizing a RenderGraph architecture. It aims to simplify the development of graphics applications by providing an easy-to-use interface for rapid prototyping while maintaining the flexibility and control of Vulkan's explicit API.
 
@@ -19,6 +19,14 @@ CodeVk_Renderer is a lightweight Vulkan-based rendering engine utilizing a Rende
 - **Imgui Integration**.
 
 ## Getting Started
+
+### Project Structure
+
+The project is organized into two primary branches: **Main** and **Personal**.
+
+- **Main**: This branch contains a streamlined version of the renderer, stripped of any personal additions. It serves as a lightweight, clean base version of the project.
+  
+- **Personal**: This branch builds upon the template found in the Main branch, incorporating all of my personal features and customizations.
 
 ### Prerequisites
 
