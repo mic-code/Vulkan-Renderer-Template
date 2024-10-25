@@ -129,8 +129,7 @@ After the pipeline creation, set the tasks and render operation that the Renderg
             renderGraphRef->GetNode(forwardPassName)->SetRenderOperation(renderOp);
         }
 ```
-
-that is pretty much all is need it for a simple 
+PD: The usage will be updated documentation later when the template become more stable.
 
 
 ### Current Status
