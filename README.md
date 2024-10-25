@@ -2,7 +2,7 @@
 
 CodeVk_Renderer is a minimal Vulkan Renderer leveraging a RenderGraph architecture to provide a streamlined interface for rapid prototyping of graphics applications. This engine aims to simplify and accelerate development, offering an easy-to-use framework while retaining the power of Vulkan's explicit API.
 
-##Features
+## Features
 
 RenderGraph-Based Architecture: Flexible rendering pipeline setups, designed for easier prototyping. (Note: This is functional but still undergoing optimization.)
 
@@ -18,7 +18,7 @@ RenderGraph-Based Architecture: Flexible rendering pipeline setups, designed for
 
 - Imgui Integration: Easy integration of ImGui for GUI overlays.
 
-##Getting Started
+## Getting Started
 
 Prerequisites: 
 
@@ -28,13 +28,13 @@ Prerequisites:
 
 - Vulkan SDK: Ensure you have the latest Vulkan SDK installed.
 
-##Usage
+## Usage
 
 Minimal Setup for a Forward Renderer
 
 Below is a basic example of setting up a forward rendering pipeline using CodeVk_Renderer.
 
-###Shader Setup
+### Shader Setup
 
 Create shader modules for both vertex and fragment shaders:
 ```
@@ -47,7 +47,7 @@ ENGINE::ShaderParser fragParser(fragCode);
 ENGINE::ShaderModule vertShaderModule(logicalDevice, vertCode);
 ENGINE::ShaderModule fragShaderModule(logicalDevice, fragCode);
 ```
-###Descriptor Setup
+### Descriptor Setup
 
 Automatically generate descriptor set layouts:
 ```
@@ -60,7 +60,7 @@ vk::DescriptorSetLayout dstLayout = builder.BuildBindings(
     vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment
 );
 ```
-###RenderGraph Node Setup
+### RenderGraph Node Setup
 
 Create a render pass node for the forward renderer:
 
@@ -80,7 +80,7 @@ renderNode->SetDepthConfig(ENGINE::DepthConfigs::D_ENABLE);
 renderNode->BuildRenderGraphNode();
 ```
 
-###Frame Tasks and Render Operation
+### Frame Tasks and Render Operation
 
 The tasks are executed before the render operation, with the RenderGraph handling image transitions and pipeline barriers.
 
@@ -130,15 +130,15 @@ void SetRenderOperation(ENGINE::InFlightQueue* inflightQueue) override {
 }
 ```
 
-##Current Status
+## Current Status
 
 This project is currently under development. More features, optimizations, and examples will be added in future updates.
 
-##Contributions
+## Contributions
 
 Contributions are welcome! If you'd like to contribute, please open an issue or submit a pull request.
 
-##Future Improvements
+## Future Improvements
 
 - Extended Documentation: As the project evolves, more detailed usage guides and API documentation will be added.
 
