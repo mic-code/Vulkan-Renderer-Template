@@ -1,4 +1,4 @@
-# CodeVk_Renderer: A Vulkan-Based RenderGraph Renderer
+# CodeVk_Renderer_Template: A Vulkan-Based RenderGraph Renderer
 
 CodeVk_Renderer is a lightweight Vulkan-based rendering engine utilizing a RenderGraph architecture. It aims to simplify the development of graphics applications by providing an easy-to-use interface for rapid prototyping while maintaining the flexibility and control of Vulkan's explicit API.
 
