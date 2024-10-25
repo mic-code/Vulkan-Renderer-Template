@@ -1,43 +1,56 @@
 # CodeVk_Renderer: A Vulkan-Based RenderGraph Renderer
 
-CodeVk_Renderer is a minimal Vulkan Renderer leveraging a RenderGraph architecture to provide a streamlined interface for rapid prototyping of graphics applications. This engine aims to simplify and accelerate development, offering an easy-to-use framework while retaining the power of Vulkan's explicit API.
+CodeVk_Renderer is a lightweight Vulkan-based rendering engine utilizing a RenderGraph architecture. It aims to simplify the development of graphics applications by providing an easy-to-use interface for rapid prototyping while maintaining the flexibility and control of Vulkan's explicit API.
 
 ## Features
 
-RenderGraph-Based Architecture: Flexible rendering pipeline setups, designed for easier prototyping. (Note: This is functional but still undergoing optimization.)
+- **RenderGraph-Based Architecture**: Flexible setup of rendering pipelines designed to facilitate rapid prototyping. This system is functional but still undergoing optimization for improved performance.
 
-- Modular Vulkan Interface: Built with modularity in mind for rapid iteration.
+- **Modular Vulkan Interface**: Built with modularity in mind, allowing rapid iteration and customization.
 
-- GLTF Loader: Import and render GLTF models.
+- **GLTF Loader**: Import and render GLTF models with ease, streamlining 3D asset integration.
 
-- Simple First-Person Camera.
+- **Simple First-Person Camera**: Includes a basic first-person camera controller to easily navigate scenes.
 
-- [Forward Renderer Example: A straightforward implementation of a forward rendering pipeline](https://github.com/Carcodee/CodeVk_Renderer/blob/main/src/Rendering/Examples/ForwardRenderer.hpp).
+- **Examples**:
+  - [**Forward Renderer**](https://github.com/Carcodee/CodeVk_Renderer/blob/main/src/Rendering/Examples/ForwardRenderer.hpp): A straightforward implementation of a forward rendering pipeline.
+  - [**Compute Renderer**](https://github.com/Carcodee/CodeVk_Renderer/blob/main/src/Rendering/Examples/ComputeRenderer.hpp): Demonstrates compute shader usage within Vulkan.
 
-- [Compute Renderer Example: Demonstrates compute operations within the Vulkan framework](https://github.com/Carcodee/CodeVk_Renderer/blob/main/src/Rendering/Examples/ComputeRenderer.hpp)
-
-- Imgui Integration.
+- **Imgui Integration**: Provides a simple UI layer for runtime tweaks and visual debugging.
 
 ## Getting Started
 
-Prerequisites: 
+### Prerequisites
 
-- C++20 Compiler: Make sure to have a modern C++ compiler that supports C++20.
+- **C++20 Compiler**: A modern C++ compiler supporting C++20 features is required.
+- **CMake**: Version 3.26 or later.
+- **Vulkan SDK**: Ensure you have the latest version of the Vulkan SDK installed.
 
-- CMake: Version 3.26 or later.
+### Building the Project
 
-- Vulkan SDK: Ensure you have the latest Vulkan SDK installed.
+1. Clone the repository.
+   ```sh
+   git clone https://github.com/Carcodee/CodeVk_Renderer.git
+   ```
+2. Create a build directory and run CMake.
+   ```sh
+   mkdir build && cd build
+   cmake ..
+   ```
+3. Compile the project.
+   ```sh
+   make
+   ```
 
-## Usage
+## Example Usage: Setting Up a Forward Renderer
 
-Minimal Setup for a Forward Renderer
-
-Below is a basic example of setting up a forward rendering pipeline using CodeVk_Renderer.
+Below is an example of setting up a forward rendering pipeline using CodeVk_Renderer.
 
 ### Shader Setup
 
-Create shader modules for both vertex and fragment shaders:
-```
+To begin, create shader modules for the vertex and fragment shaders:
+
+```cpp
 std::vector<uint32_t> vertCode = ENGINE::GetByteCode("path/to/vertex_shader.vert.spv");
 std::vector<uint32_t> fragCode = ENGINE::GetByteCode("path/to/fragment_shader.frag.spv");
 
@@ -47,10 +60,12 @@ ENGINE::ShaderParser fragParser(fragCode);
 ENGINE::ShaderModule vertShaderModule(logicalDevice, vertCode);
 ENGINE::ShaderModule fragShaderModule(logicalDevice, fragCode);
 ```
+
 ### Descriptor Setup
 
-Automatically generate descriptor set layouts:
-```
+Automatically generate descriptor set layouts based on the parsed shaders:
+
+```cpp
 ENGINE::DescriptorLayoutBuilder builder;
 ENGINE::ShaderParser::GetLayout(vertParser, builder);
 ENGINE::ShaderParser::GetLayout(fragParser, builder);
@@ -60,11 +75,12 @@ vk::DescriptorSetLayout dstLayout = builder.BuildBindings(
     vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment
 );
 ```
+
 ### RenderGraph Node Setup
 
-Create a render pass node for the forward renderer:
+Next, create a render pass node for the forward rendering pass:
 
-```
+```cpp
 forwardPassName = "ForwardPass";
 auto renderNode = renderGraphRef->AddPass(forwardPassName);
 
@@ -82,11 +98,9 @@ renderNode->BuildRenderGraphNode();
 
 ### Frame Tasks and Render Operation
 
-The tasks are executed before the render operation, with the RenderGraph handling image transitions and pipeline barriers.
+Define the tasks that must be executed before the render operation. The RenderGraph manages image transitions and pipeline barriers automatically.
 
-- Setting Render Operations
-
-```
+```cpp
 void SetRenderOperation(ENGINE::InFlightQueue* inflightQueue) override {
     auto setViewTask = new std::function<void()>([this, inflightQueue]() {
         auto* currImage = inflightQueue->currentSwapchainImageView;
@@ -132,18 +146,16 @@ void SetRenderOperation(ENGINE::InFlightQueue* inflightQueue) override {
 
 ## Current Status
 
-This project is currently under development. More features, optimizations, and examples will be added in future updates.
+CodeVk_Renderer is actively under development. More features, optimizations, and examples will be added in future updates.
 
 ## Contributions
 
-Contributions are welcome! If you'd like to contribute, please open an issue or submit a pull request.
+Contributions are welcome! If you'd like to contribute, please feel free to open an issue or submit a pull request. Suggestions for features, optimizations, and code improvements are highly appreciated.
 
 ## Future Improvements
 
-- Extended Documentation: As the project evolves, more detailed usage guides and API documentation will be added.
-
-- Stability Improvements: Continuous refactoring and optimization to ensure robust performance.
-
-- Feature Expansion: Additional render paths, more advanced shading techniques, and improved debugging tools.
+- **Extended Documentation**: More detailed usage guides and API documentation are in the pipeline.
+- **Stability Improvements**: Ongoing efforts to refactor and optimize for robust performance.
+- **Feature Expansion**: Addition of new rendering paths, advanced shading techniques, and improved debugging tools to enhance development capabilities.
 
 
