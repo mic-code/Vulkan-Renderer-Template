@@ -12,9 +12,9 @@ RenderGraph-Based Architecture: Flexible rendering pipeline setups, designed for
 
 - Simple First-Person Camera.
 
-- [Forward Renderer Example: A straightforward implementation of a forward rendering pipeline]([src/Rendering/Examples/ForwardRenderer](https://github.com/Carcodee/CodeVk_Renderer/blob/main/src/Rendering/Examples/ForwardRenderer.hpp)).
+- [Forward Renderer Example: A straightforward implementation of a forward rendering pipeline](https://github.com/Carcodee/CodeVk_Renderer/blob/main/src/Rendering/Examples/ForwardRenderer.hpp).
 
-- [Compute Renderer Example: Demonstrates compute operations within the Vulkan framework]([src/Rendering/Examples/ComputeRenderer](https://github.com/Carcodee/CodeVk_Renderer/blob/main/src/Rendering/Examples/ComputeRenderer.hpp))
+- [Compute Renderer Example: Demonstrates compute operations within the Vulkan framework](https://github.com/Carcodee/CodeVk_Renderer/blob/main/src/Rendering/Examples/ComputeRenderer.hpp)
 
 - Imgui Integration.
 
