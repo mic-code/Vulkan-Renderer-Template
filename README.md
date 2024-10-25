@@ -81,7 +81,7 @@ This is the minimal setup for a forward renderer
            
 ```
 
-After the pipeline creation, set the render operation that the Rendergraph needs to execute during the frame, do not worry about image transitions or pipeline barriers, the Rendergraph should take care of that. 
+After the pipeline creation, set the tasks and render operation that the Rendergraph needs to execute during the frame, do not worry about image transitions or pipeline barriers, the Rendergraph should take care of that. Keep in mind that the tasks are always executed before the render operation
 
 ```
         void SetRenderOperation(ENGINE::InFlightQueue* inflightQueue) override
@@ -129,6 +129,9 @@ After the pipeline creation, set the render operation that the Rendergraph needs
             renderGraphRef->GetNode(forwardPassName)->SetRenderOperation(renderOp);
         }
 ```
+
+that is pretty much all is need it for a simple 
+
 
 ### Current Status
 This project is **currently under development**. More features and improvements will be added in future updates.
