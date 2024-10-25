@@ -31,8 +31,6 @@ namespace Rendering
                 "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\Resources\\Assets\\Models\\3d_pbr_curved_sofa\\scene.gltf",
                 model);
 
-            
-            
             vertexBuffer = std::make_unique<ENGINE::Buffer>(
                 physicalDevice, logicalDevice, vk::BufferUsageFlagBits::eVertexBuffer,
                 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
@@ -111,7 +109,6 @@ namespace Rendering
 
         void RecreateSwapChainResources() override
         {
-
         }
 
         void SetRenderOperation(ENGINE::InFlightQueue* inflightQueue) override
@@ -183,9 +180,9 @@ namespace Rendering
             
             std::cout<< "Shaders reloaded\n";
             std::vector<uint32_t> vertCode = ENGINE::GetByteCode(
-                "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.vert.spv");
+                "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\fSample.vert.spv");
             std::vector<uint32_t> fragCode = ENGINE::GetByteCode(
-                "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\test.frag.spv");
+                "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Base\\fSample.frag.spv");
 
             ENGINE::ShaderModule vertShaderModule(core->logicalDevice.get(), vertCode);
             ENGINE::ShaderModule fragShaderModule(core->logicalDevice.get(), fragCode);
