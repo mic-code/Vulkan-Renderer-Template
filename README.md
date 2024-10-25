@@ -8,15 +8,15 @@ RenderGraph-Based Architecture: Flexible rendering pipeline setups, designed for
 
 - Modular Vulkan Interface: Built with modularity in mind for rapid iteration.
 
-- GLTF Loader: Import and render GLTF models effortlessly.
+- GLTF Loader: Import and render GLTF models.
 
-- Simple First-Person Camera: Navigate and view your scenes with ease.
+- Simple First-Person Camera.
 
-- Forward Renderer Example: A straightforward implementation of a forward rendering pipeline.
+- [Forward Renderer Example: A straightforward implementation of a forward rendering pipeline](src/Rendering/Examples/ForwardRenderer).
 
-- Compute Renderer Example: Demonstrates compute operations within the Vulkan framework.
+- [Compute Renderer Example: Demonstrates compute operations within the Vulkan framework](src/Rendering/Examples/ComputeRenderer)
 
-- Imgui Integration: Easy integration of ImGui for GUI overlays.
+- Imgui Integration.
 
 ## Getting Started
 
