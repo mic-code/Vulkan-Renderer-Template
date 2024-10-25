@@ -10,13 +10,13 @@ CodeVk_Renderer is a lightweight Vulkan-based rendering engine utilizing a Rende
 
 - **GLTF Loader**: Import and render GLTF models with ease, streamlining 3D asset integration.
 
-- **Simple First-Person Camera**: Includes a basic first-person camera controller to easily navigate scenes.
+- **Simple First-Person Camera**: Includes a basic first-person camera controller.
 
 - **Examples**:
   - [**Forward Renderer**](https://github.com/Carcodee/CodeVk_Renderer/blob/main/src/Rendering/Examples/ForwardRenderer.hpp): A straightforward implementation of a forward rendering pipeline.
-  - [**Compute Renderer**](https://github.com/Carcodee/CodeVk_Renderer/blob/main/src/Rendering/Examples/ComputeRenderer.hpp): Demonstrates compute shader usage within Vulkan.
+  - [**Compute Renderer**](https://github.com/Carcodee/CodeVk_Renderer/blob/main/src/Rendering/Examples/ComputeRenderer.hpp): Demonstrates compute shader usage with the RenderGraph.
 
-- **Imgui Integration**: Provides a simple UI layer for runtime tweaks and visual debugging.
+- **Imgui Integration**.
 
 ## Getting Started
 
