@@ -105,7 +105,9 @@ void run(WindowProvider* windowProvider)
 
                 if (glfwGetKey(windowProvider->window, GLFW_KEY_RIGHT_CONTROL)&& glfwGetKey(windowProvider->window, GLFW_KEY_S))
                 {
-                   fRenderer->ReloadShaders(); 
+                    renderGraph->RecompileShaders();
+                    compRenderer->ReloadShaders();
+                    fRenderer->ReloadShaders();
                 }
 
                 inFlightQueue->BeginFrame();
