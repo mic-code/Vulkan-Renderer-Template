@@ -79,6 +79,11 @@ namespace ENGINE
                     Flush();
                 }
             }
+            if ((bufferUsageFlags & vk::BufferUsageFlagBits::eStorageBuffer) || (bufferUsageFlags &
+                vk::BufferUsageFlagBits::eUniformBuffer))
+            {
+                SetupDescriptor();
+            }
             
             logicalDevice.bindBufferMemory(bufferHandle.get() ,deviceMemHandle.get(), 0);
         }

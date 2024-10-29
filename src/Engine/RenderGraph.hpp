@@ -337,13 +337,13 @@ namespace ENGINE
             }
         }
         
-        void SetNodeDepthAttachmentImg(ImageView* imageView)
+        void SetDepthImageResource(ImageView* imageView)
         {
             depthImage = imageView;
         }
 
         //We change the image view if the name already exist when using resources
-        void AddNodeColAttachmentImg(std::string name, ImageView* imageView)
+        void AddColorImageResource(std::string name, ImageView* imageView)
         {
             if (!imagesAttachment.contains(name))
             {
@@ -357,7 +357,7 @@ namespace ENGINE
             AddImageToProxy(name, imageView);
         }
 
-        void AddNodeSampler(std::string name, ImageView* imageView)
+        void AddSamplerResource(std::string name, ImageView* imageView)
         {
             if (!sampledImages.contains(name))
             {
@@ -371,7 +371,7 @@ namespace ENGINE
             AddImageToProxy(name, imageView);
         }
 
-        void AddNodeStorageImg(std::string name, ImageView* imageView)
+        void AddStorageResource(std::string name, ImageView* imageView)
         {
             if (!storageImages.contains(name))
             {
@@ -497,12 +497,14 @@ namespace ENGINE
             if (!renderNodes.contains(name))
             {
                 auto renderGraphNode = std::make_unique<RenderGraphNode>();
+                renderGraphNode->passName = name;
                 renderGraphNode->imagesProxyRef = &imagesProxy;
                 renderGraphNode->outColAttachmentsProxyRef = &outColAttachmentsProxy;
                 renderGraphNode->outDepthAttachmentProxyRef = &outColAttachmentsProxy;
                 renderGraphNode->core = core;
                 
                 renderNodes.try_emplace(name,std::move(renderGraphNode));
+                renderNodesSorted.push_back(renderNodes.at(name).get());
                 return renderNodes.at(name).get();
             }else
             {
@@ -517,7 +519,7 @@ namespace ENGINE
                 imagesProxy.try_emplace(name, imageView);
                 if (renderNodes.contains(passName))
                 {
-                    renderNodes.at(passName)->AddNodeColAttachmentImg(name, imageView);
+                    renderNodes.at(passName)->AddColorImageResource(name, imageView);
                 }
                 else
                 {
@@ -528,7 +530,7 @@ namespace ENGINE
                 imagesProxy.at(name) = imageView;
                 if (renderNodes.contains(passName))
                 {
-                    renderNodes.at(passName)->AddNodeColAttachmentImg(name, imageView);
+                    renderNodes.at(passName)->AddColorImageResource(name, imageView);
                 }else
                 {
                     std::cout << "Renderpass: " << passName << " does not exist, saving the image anyways. \n";
@@ -538,7 +540,7 @@ namespace ENGINE
             return imageView;
         }
 
-        ImageView* AddDepthImageResource(std::string passName, std::string name, ImageView* imageView)
+        ImageView* SetDepthImageResource(std::string passName, std::string name, ImageView* imageView)
         {
             assert(imageView && "ImageView is null");
             if (!imagesProxy.contains(name))
@@ -546,7 +548,7 @@ namespace ENGINE
                 imagesProxy.try_emplace(name, imageView);
                 if (renderNodes.contains(passName))
                 {
-                    renderNodes.at(passName)->SetNodeDepthAttachmentImg(imageView);
+                    renderNodes.at(passName)->SetDepthImageResource(imageView);
                 }
                 else
                 {
@@ -557,7 +559,7 @@ namespace ENGINE
                 imagesProxy.at(name) = imageView;
                 if (renderNodes.contains(passName))
                 {
-                    renderNodes.at(passName)->SetNodeDepthAttachmentImg(imageView);
+                    renderNodes.at(passName)->SetDepthImageResource(imageView);
                 }else
                 {
                     std::cout << "Renderpass: " << passName << " does not exist, saving the image anyways. \n";
@@ -574,7 +576,7 @@ namespace ENGINE
                 imagesProxy.try_emplace(name, imageView);
                 if (renderNodes.contains(passName))
                 {
-                    renderNodes.at(passName)->AddNodeSampler(name, imageView);
+                    renderNodes.at(passName)->AddSamplerResource(name, imageView);
                 }
                 else
                 {
@@ -585,7 +587,7 @@ namespace ENGINE
                 imagesProxy.at(name) = imageView;
                 if (renderNodes.contains(passName))
                 {
-                    renderNodes.at(passName)->AddNodeSampler(name, imageView);
+                    renderNodes.at(passName)->AddSamplerResource(name, imageView);
                 }else
                 {
                     std::cout << "Renderpass: " << passName << " does not exist, saving the image anyways. \n";
@@ -603,7 +605,7 @@ namespace ENGINE
                 imagesProxy.try_emplace(name, imageView);
                 if (renderNodes.contains(passName))
                 {
-                    renderNodes.at(passName)->AddNodeStorageImg(name, imageView);
+                    renderNodes.at(passName)->AddStorageResource(name, imageView);
                 }
                 else
                 {
@@ -614,7 +616,7 @@ namespace ENGINE
                 imagesProxy.at(name) = imageView;
                 if (renderNodes.contains(passName))
                 {
-                    renderNodes.at(passName)->AddNodeStorageImg(name, imageView);
+                    renderNodes.at(passName)->AddStorageResource(name, imageView);
                 }else
                 {
                     std::cout << "Renderpass: " << passName << " does not exist, saving the image anyways. \n";
@@ -660,9 +662,9 @@ namespace ENGINE
         {
             assert(currentFrame && "Current frame reference is null");
             std::vector<std::string> allPassesNames;
-            for (auto& renderNode : renderNodes)
+            for (auto& renderNode : renderNodesSorted)
             {
-                RenderGraphNode* node = renderNode.second.get();
+                RenderGraphNode* node = renderNode;
                 bool dependancyNeed = false;
                 std::string dependancyName = "";
                 for (auto& passName : allPassesNames)
@@ -679,7 +681,7 @@ namespace ENGINE
                     BufferUsageTypes lastNodeType = (dependancyNode->pipelineType == vk::PipelineBindPoint::eGraphics)
                                                         ? B_GRAPHICS_WRITE
                                                         : B_COMPUTE_WRITE;
-                    BufferUsageTypes currNodeType = (dependancyNode->pipelineType == vk::PipelineBindPoint::eGraphics)
+                    BufferUsageTypes currNodeType = (node->pipelineType == vk::PipelineBindPoint::eGraphics)
                                                         ? B_GRAPHICS_WRITE
                                                         : B_COMPUTE_WRITE;
                     BufferAccessPattern lastNodePattern = GetSrcBufferAccessPattern(lastNodeType);
