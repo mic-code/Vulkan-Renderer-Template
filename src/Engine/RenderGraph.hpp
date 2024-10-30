@@ -154,11 +154,11 @@ namespace ENGINE
                 default:
                     assert(false && "pipeline type is unknown");
                 }
-                if (IsImageTransitionNeeded(sampler.second->imageData->currentLayout, dstPattern))
-                {
-                    TransitionImage(sampler.second->imageData, dstPattern, sampler.second->GetSubresourceRange(),
-                                    commandBuffer);
-                }
+                // if (IsImageTransitionNeeded(sampler.second->imageData->currentLayout, dstPattern))
+                // {
+                // }
+                TransitionImage(sampler.second->imageData, dstPattern, sampler.second->GetSubresourceRange(),
+                                commandBuffer);
             }           
         }
         void ReloadShaders()
