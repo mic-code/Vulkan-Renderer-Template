@@ -154,6 +154,7 @@ namespace ENGINE
                 default:
                     assert(false && "pipeline type is unknown");
                 }
+                //TODO: Better transition for sampler images
                 // if (IsImageTransitionNeeded(sampler.second->imageData->currentLayout, dstPattern))
                 // {
                 // }
