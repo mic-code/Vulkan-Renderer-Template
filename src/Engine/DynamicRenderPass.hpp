@@ -2,6 +2,7 @@
 // Created by carlo on 2024-09-30.
 //
 
+
 #ifndef DYNAMICRENDERPASS_HPP
 #define DYNAMICRENDERPASS_HPP
 
@@ -16,7 +17,8 @@ namespace ENGINE
         vk::Format format;
     };
 
-    static AttachmentInfo GetColorAttachmentInfo(vk::Format format = vk::Format::eB8G8R8A8Srgb,
+    static AttachmentInfo GetColorAttachmentInfo(glm::vec4 clearCol = glm::vec4(0.0f, 0.1f, 0.1f, 1.0f),
+                                                 vk::Format format = g_32bFormat,
                                                  vk::AttachmentLoadOp loadOp = vk::AttachmentLoadOp::eClear,
                                                  vk::AttachmentStoreOp storeOp = vk::AttachmentStoreOp::eStore)
     {
@@ -28,7 +30,7 @@ namespace ENGINE
                                         .setStoreOp(storeOp)
                                         .setClearValue(
                                             vk::ClearValue(vk::ClearColorValue(std::array<float, 4>{
-                                                0.2f, 0.2f, 0.5f, 1.0f
+                                                clearCol.x, clearCol.y, clearCol.z, clearCol.w
                                             })));
 
         attachmentInfo.format = format;
@@ -60,7 +62,7 @@ namespace ENGINE
         {
             if (colorFormats.empty())
             {
-                colorFormats.push_back(vk::Format::eB8G8R8A8Srgb);
+                colorFormats.push_back(g_32bFormat);
             }
             this->colorFormats = colorFormats;
             this->depthFormat = depthFormat;
