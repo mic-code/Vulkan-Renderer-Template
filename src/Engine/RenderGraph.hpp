@@ -193,6 +193,14 @@ namespace ENGINE
                 attachmentInfos.push_back(colAttachments[index].attachmentInfo);
                 index++;
             }
+            if (depthImage)
+            {
+                if (depthImage->imageData->currentLayout != DEPTH_ATTACHMENT)
+                {
+                    TransitionImage(depthImage->imageData, DEPTH_ATTACHMENT, depthImage->GetSubresourceRange(),
+                                    commandBuffer);
+                }
+            }
 
             TransitionImages(commandBuffer);
                        
