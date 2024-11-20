@@ -54,7 +54,8 @@
 #include "RenderGraph.hpp"
 #include "CoreImpl.hpp"
 
+#include "PresentQueue.hpp"
+
 #include "ImageShipper.hpp"
 #include "DescriptorCache.hpp"
 
-#include "PresentQueue.hpp"
