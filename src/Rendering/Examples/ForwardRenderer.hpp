@@ -135,7 +135,7 @@ namespace Rendering
                 renderGraphRef->AddColorImageResource("ForwardPass", "color", currImage);
                 renderGraphRef->SetDepthImageResource("ForwardPass", "depth", currDepthImage);
                 renderGraphRef->GetNode("ForwardPass")->SetFramebufferSize(windowProvider->GetWindowSize());
-                descriptorCache->SetImage("testImage", imageShipper.imageView.get(), imageShipper.sampler);
+                descriptorCache->SetImage("testImagesdfa", imageShipper.imageView.get(), imageShipper.sampler);
             });
 
             auto renderOp = new std::function<void(vk::CommandBuffer& command_buffer)>(
