@@ -6,6 +6,7 @@
 // Created by carlo on 2024-11-19.
 //
 
+
 #ifndef DESCRIPTORCACHE_HPP
 #define DESCRIPTORCACHE_HPP
 namespace ENGINE
@@ -46,7 +47,6 @@ namespace ENGINE
                 {
                     continue;
                 }
-                Sampler* storageImageSampler;
                 std::unique_ptr<Buffer> ubo;
                 std::unique_ptr<Buffer> ssbo;
                 std::unique_ptr<Image> storageImage;

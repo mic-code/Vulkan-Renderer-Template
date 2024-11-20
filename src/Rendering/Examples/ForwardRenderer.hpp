@@ -135,12 +135,17 @@ namespace Rendering
                 renderGraphRef->AddColorImageResource("ForwardPass", "color", currImage);
                 renderGraphRef->SetDepthImageResource("ForwardPass", "depth", currDepthImage);
                 renderGraphRef->GetNode("ForwardPass")->SetFramebufferSize(windowProvider->GetWindowSize());
-                descriptorCache->SetImage("testImagesdfa", imageShipper.imageView.get(), imageShipper.sampler);
             });
 
             auto renderOp = new std::function<void(vk::CommandBuffer& command_buffer)>(
                 [this](vk::CommandBuffer& commandBuffer)
                 {
+
+                    //IMPORTANT
+                    //image binding always should be done in the render operation, because it guarantees that the layout will be correct, otherwise layout errors can happen
+
+                    
+                    descriptorCache->SetImage("testImage", imageShipper.imageView.get(), imageShipper.sampler);
                     vk::DeviceSize offset = 0;
                     commandBuffer.bindDescriptorSets(renderGraphRef->GetNode(forwardPassName)->pipelineType,
                                                      renderGraphRef->GetNode(forwardPassName)->pipelineLayout.get(), 0, 1,
