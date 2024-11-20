@@ -16,6 +16,7 @@ namespace ENGINE
             .setDescriptorCount(1)
             .setDescriptorType(type);
             bindings.push_back(newBinding);
+            uniqueBindings.insert(binding);
         }
 
 
@@ -42,6 +43,7 @@ namespace ENGINE
             bindings.clear();
         }       
         std::vector<vk::DescriptorSetLayoutBinding> bindings;
+        std::set<int> uniqueBindings;
         
     };
 

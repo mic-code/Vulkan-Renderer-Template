@@ -18,6 +18,7 @@
 
 
 
+
 #ifndef FORWARDRENDERER_HPP
 #define FORWARDRENDERER_HPP
 
@@ -57,8 +58,8 @@ namespace Rendering
            
             ENGINE::DescriptorLayoutBuilder builder;
 
-            ENGINE::ShaderParser::GetLayout(*vertShader->sParser, builder);
-            ENGINE::ShaderParser::GetLayout(*fragShader->sParser, builder);
+            vertShader->sParser->GetLayout(builder);
+            fragShader->sParser->GetLayout(builder);
             
              dstLayout = builder.BuildBindings(
                 core->logicalDevice.get(), vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);

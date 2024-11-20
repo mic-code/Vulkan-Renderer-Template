@@ -252,7 +252,8 @@ namespace ENGINE
                                 .setPpEnabledLayerNames(validationLayers.data());
 
         auto deviceFeatures12 = vk::PhysicalDeviceVulkan12Features()
-            .setScalarBlockLayout(true);
+            .setScalarBlockLayout(true)
+            .setDescriptorIndexing(true);
 
         auto deviceFeatures13 = vk::PhysicalDeviceVulkan13Features()
         .setDynamicRendering(true);
