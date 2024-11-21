@@ -1,6 +1,8 @@
 ﻿//
 
+
 // Created by carlo on 2024-09-21.
+
 //
 
 
@@ -126,18 +128,16 @@ void run(WindowProvider* windowProvider)
                 if (glfwGetKey(windowProvider->window, GLFW_KEY_A)) { input += glm::vec2(-1.0f, 0.0f); }
                 input =glm::clamp(input, glm::vec2(-1.0, -1.0), glm::vec2(1.0, 1.0));
                 glm::vec2 mouseInput = glm::vec2(-ImGui::GetMousePos().x, ImGui::GetMousePos().y);
-                clusterRenderer->camera.mouseInput = mouseInput;
+                fRenderer->camera.mouseInput = mouseInput;
                 if (glfwGetMouseButton(windowProvider->window, GLFW_MOUSE_BUTTON_2))
                 {
-                    clusterRenderer->camera.RotateCamera();
-                    clusterRenderer->camera.Move(deltaTime, input);
+                    fRenderer->camera.RotateCamera();
+                    fRenderer->camera.Move(deltaTime, input);
                 }else
                 {
-                    clusterRenderer->camera.firstMouse = true;
+                    fRenderer->camera.firstMouse = true;
                 }
-                cpuTask.endTime = windowProvider->GetTime() - now;
                 
-                startGpu = windowProvider->GetTime();
                 inFlightQueue->EndFrame();
             }
             catch (vk::OutOfDateKHRError err)
