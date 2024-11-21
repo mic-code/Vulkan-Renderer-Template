@@ -34,7 +34,6 @@ namespace ENGINE
                                           .setPBindings(bindings.data())
                                           .setBindingCount(static_cast<uint32_t>(bindings.size()))
                                           .setFlags(flags);
-
             clear();
             return device.createDescriptorSetLayoutUnique(dstSetLayoutCreateInfo);
         }
