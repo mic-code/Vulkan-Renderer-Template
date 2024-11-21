@@ -34,6 +34,7 @@ namespace Rendering
 			SetPerspective(45.0f, (float)aspect.x/ (float)aspect.y, 0.1f, 512.0f);
 			this->position = camPos;
 			this->currentMode = mode;
+			this->mouseInput = glm::vec2(0.0); 
 			// switch (this->currentMode)
 			// {
 			// case E_FIXED:
@@ -44,6 +45,7 @@ namespace Rendering
 			// }
 
 		}
+
 		void Move(float deltaTime, glm::vec2 input)
 		{
 			position += forward * input.y * movementSpeed * deltaTime;
@@ -51,11 +53,11 @@ namespace Rendering
 			
 			matrices.view = glm::lookAt(position, position + forward, up);
 		}
-		void RotateCamera(glm::vec2 input)
+		void RotateCamera()
 		{
 			//todo: add input handler
-			float currentX = input.x;
-			float currentY = input.y;
+			float currentX = mouseInput.x;
+			float currentY = mouseInput.y;
 
 			if (firstMouse)
 			{
@@ -88,7 +90,7 @@ namespace Rendering
 			camForward.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
 			camForward.y = sin(glm::radians(pitch));
 			camForward.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-			
+
 			forward = normalize(camForward);
 			right = normalize(cross(forward, WorldUp));
 			up = normalize(cross(right, forward));
@@ -122,6 +124,7 @@ namespace Rendering
 		glm::vec3 up;
 		glm::vec3 lookAt = glm::vec3(0.0f);
 
+		glm::vec2 mouseInput;
 		glm::vec3 position;
 		float yaw = -90;
 		float pitch = -90;
