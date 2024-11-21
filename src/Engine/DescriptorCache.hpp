@@ -3,6 +3,7 @@
 
 
 
+
 // Created by carlo on 2024-11-19.
 //
 
@@ -11,6 +12,7 @@
 #define DESCRIPTORCACHE_HPP
 namespace ENGINE
 {
+#define DEFAULT_VAR_DESCRIPTOR_COUNT 1000
     class DescriptorCache
     {
 
@@ -59,14 +61,19 @@ namespace ENGINE
                     assert(defaultSampler != nullptr && "Default sampler is needed");
                     assert(defaultImageView != nullptr && "Default Image view is needed");
                     imageBindings.try_emplace(resource.name, resource);
-                    imageBindingsData.try_emplace(resource.binding, ImageBinding(defaultImageView, defaultSampler));
+                    if (resource.array){
+                        imageBindingsData.try_emplace(resource.binding, ImageBinding(defaultImageView, defaultSampler, true));
+                    }else
+                    {
+                        imageBindingsData.try_emplace(resource.binding, ImageBinding(defaultImageView, defaultSampler));
+                    }
                     break;
                 case vk::DescriptorType::eStorageImage:
                     assert(defaultStorgeSampler != nullptr && "Default sampler is needed");
                     assert(defaultStorageImageView != nullptr && "Default Image view is needed");
                     imageBindings.try_emplace(resource.name, resource);
                     imageBindingsData.try_emplace(resource.binding, ImageBinding(defaultStorageImageView, defaultStorgeSampler));
-
+                    
                     break;
                 case vk::DescriptorType::eUniformBuffer:
                     bufferBindings.try_emplace(resource.name, resource);
@@ -85,7 +92,13 @@ namespace ENGINE
                     buffersData.try_emplace(resource.binding,std::move(ssbo));
                     break;
                 }
-                dstSetBuilder.AddBinding(resource.binding, resource.type);
+                if (resource.array)
+                {
+                    dstSetBuilder.AddBinding(resource.binding, resource.type, DEFAULT_VAR_DESCRIPTOR_COUNT);
+                }else
+                {
+                    dstSetBuilder.AddBinding(resource.binding, resource.type);
+                }
             }
             
             assert(uniqueResources.size()==dstSetBuilder.bindings.size() && "Resources and builder must have the same size");
@@ -150,6 +163,7 @@ namespace ENGINE
                     ImageBinding& binding = imageBindingsData.at(imageBinding.second.binding);
                     writerBuilder.AddWriteImage(imageBinding.second.binding, binding.imageView, binding.sampler->samplerHandle.get(), vk::ImageLayout::eGeneral, imageBinding.second.type);
                 }
+                
             }
             writerBuilder.UpdateSet(core->logicalDevice.get(), dstSet.get());
         }
@@ -201,6 +215,8 @@ namespace ENGINE
         {
             ImageView* imageView;
             Sampler* sampler;
+            bool imageArray = false;
+            std::vector<ImageView*> imageViewsArray{};
         };
        
         std::map<std::string, ShaderResource> bufferBindings;

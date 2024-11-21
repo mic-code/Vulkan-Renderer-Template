@@ -9,11 +9,11 @@ namespace ENGINE
 {
     struct DescriptorLayoutBuilder
     {
-        void AddBinding(uint32_t binding, vk::DescriptorType type)
+        void AddBinding(uint32_t binding, vk::DescriptorType type, int count = 1)
         {
             auto newBinding = vk::DescriptorSetLayoutBinding()
             .setBinding(binding)
-            .setDescriptorCount(1)
+            .setDescriptorCount(count)
             .setDescriptorType(type);
             bindings.push_back(newBinding);
             uniqueBindings.insert(binding);
@@ -50,6 +50,29 @@ namespace ENGINE
 
     struct DescriptorWriterBuilder
     {
+        void AddImagesArray(int binding, std::vector<ImageView*>& imageView, std::vector<vk::Sampler*>& samplers, vk::ImageLayout layout,
+                           vk::DescriptorType type)
+        {
+
+            std::vector<vk::DescriptorImageInfo> imageInfos(imageView.size());
+
+            for (int i = 0; i < imageView.size(); ++i)
+            {
+                imageInfos[i].sampler = *samplers[i];
+                imageInfos[i].imageView = *imageView[i]->imageView;
+                imageInfos[i].imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+                
+            }
+
+            auto dstWrite = vk::WriteDescriptorSet()
+                            .setDstBinding(binding)
+                            .setDstSet(VK_NULL_HANDLE)
+                            .setDescriptorCount((uint32_t)imageInfos.size())
+                            .setDescriptorType(type)
+                            .setPImageInfo(imageInfos.data());
+
+            writes.push_back(dstWrite);
+        }
         void AddWriteImage(int binding, ImageView* imageView, vk::Sampler sampler,vk::ImageLayout layout, vk::DescriptorType type)
         {
 
