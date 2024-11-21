@@ -35,12 +35,14 @@ namespace ENGINE
                                           .setBindingCount(static_cast<uint32_t>(bindings.size()))
                                           .setFlags(flags);
 
+            clear();
             return device.createDescriptorSetLayoutUnique(dstSetLayoutCreateInfo);
         }
 
         void clear()
         {
             bindings.clear();
+            uniqueBindings.clear();
         }       
         std::vector<vk::DescriptorSetLayoutBinding> bindings;
         std::set<int> uniqueBindings;
@@ -96,6 +98,7 @@ namespace ENGINE
                 write.setDstSet(set);
             }
             device.updateDescriptorSets(static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
+            Clear();
         }
         
         std::map<std::string, vk::DescriptorBufferInfo*> bufferInfosRef;
