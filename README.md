@@ -50,7 +50,8 @@ The project is organized into two primary branches: **Main** and **Personal**.
    make
    ```
 
-## Example Usage: Setting Up a Forward Renderer
+## Example Usage(UNUSED NEW DOCUMENTATION SOON): Setting Up a Forward Renderer
+
 
 Below is an example of setting up a forward rendering pipeline using CodeVk_Renderer.
 
