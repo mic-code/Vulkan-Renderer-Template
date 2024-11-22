@@ -69,6 +69,11 @@ namespace Rendering
             descriptorCache->AddShaderInfo(*vertShader->sParser.get());
             descriptorCache->AddShaderInfo(*fragShader->sParser.get());
             descriptorCache->BuildDescriptorsCache(descriptorAllocatorRef, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment );
+
+            ssbo.push_back(pc);
+            ssbo.push_back(pc);
+            ssbo.push_back(pc);
+            ssbo.push_back(pc);
             
             auto pushConstantRange = vk::PushConstantRange()
             .setOffset(0)
@@ -132,6 +137,7 @@ namespace Rendering
                     
                     descriptorCache->SetSampler("testImage", imageShipper.imageView.get(), imageShipper.sampler);
                     descriptorCache->SetStorageImageArray("storagesImgs", imagesArray);
+                    descriptorCache->SetBuffer("Camera", pc);
                     vk::DeviceSize offset = 0;
                     commandBuffer.bindDescriptorSets(renderGraphRef->GetNode(forwardPassName)->pipelineType,
                                                      renderGraphRef->GetNode(forwardPassName)->pipelineLayout.get(), 0, 1,
@@ -196,6 +202,7 @@ namespace Rendering
         Camera camera = {glm::vec3(3.0f), Camera::CameraMode::E_FIXED};
         Model model{};
         ForwardPc pc{};
+        std::vector<ForwardPc> ssbo{};
 
     };
 }

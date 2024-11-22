@@ -97,7 +97,7 @@ namespace ENGINE
                 case vk::DescriptorType::eUniformBuffer:
                     bufferBindingsKeys.try_emplace(resource.name, resource);
                     ubo = std::make_unique<Buffer>(core->physicalDevice, core->logicalDevice.get(),
-                                                        vk::BufferUsageFlagBits::eUniformTexelBuffer,
+                                                        vk::BufferUsageFlagBits::eUniformBuffer,
                                                         vk::MemoryPropertyFlagBits::eHostVisible |
                                                         vk::MemoryPropertyFlagBits::eHostCoherent, 1);
                     buffersResources.try_emplace(resource.binding, std::move(ubo));
@@ -225,16 +225,27 @@ namespace ENGINE
             writerBuilder.UpdateSet(core->logicalDevice.get(), dstSet.get());
         }
         template<typename T>
-        void SetBuffer(std::string name, std::vector<T> bufferData)
+        void SetBuffer(std::string name, std::vector<T>& bufferData)
         {
             ShaderResource& binding = bufferBindingsKeys.at(name);
             Buffer* bufferRef = GetBufferByName(name);
             if (bufferRef==nullptr){return;}
-            
+                vk::BufferUsageFlags usageFlags;
+            if (binding.type == vk::DescriptorType::eUniformBuffer)
+            {
+                usageFlags = vk::BufferUsageFlagBits::eUniformBuffer;
+            }
+            else if (binding.type == vk::DescriptorType::eStorageBuffer)
+            {
+                usageFlags = vk::BufferUsageFlagBits::eStorageBuffer;
+            }else
+            {
+                assert(false && "unusported buffer type");
+            }
             if (sizeof(T) * bufferData.size()> bufferRef->deviceSize)
             {
                 buffersResources.at(binding.binding).reset(new Buffer(core->physicalDevice, core->logicalDevice.get(),
-                                                     vk::BufferUsageFlagBits::eStorageBuffer,
+                                                     usageFlags,
                                                      vk::MemoryPropertyFlagBits::eHostVisible |
                                                      vk::MemoryPropertyFlagBits::eHostCoherent,
                                                      sizeof(T) * bufferData.size(), bufferData.data()));
@@ -242,30 +253,58 @@ namespace ENGINE
             }else
             {
                 //pending to handle this if is a staged resource
+                if (bufferRef->mappedMem == nullptr)
+                {
+                    bufferRef->Map();
+                }
                 memcpy(bufferRef->mappedMem, bufferData.data(), bufferData.size() * sizeof(T));
+                if (usageFlags == vk::BufferUsageFlagBits::eStorageBuffer)
+                {
+                    bufferRef->Unmap();
+                }
             }
             
         }
 
         template <typename T>
-        void SetBuffer(std::string name, T bufferData)
+        void SetBuffer(std::string name, T& bufferData)
         {
             ShaderResource& binding = bufferBindingsKeys.at(name);
             Buffer* bufferRef = GetBufferByName(name);
             if (bufferRef==nullptr){return;}
-            
+
+            vk::BufferUsageFlags usageFlags;
+            if (binding.type == vk::DescriptorType::eUniformBuffer)
+            {
+                usageFlags = vk::BufferUsageFlagBits::eUniformBuffer;
+            }
+            else if (binding.type == vk::DescriptorType::eStorageBuffer)
+            {
+                usageFlags = vk::BufferUsageFlagBits::eStorageBuffer;
+            }else
+            {
+                assert(false && "unusported buffer type");
+            }
             if (sizeof(T) > bufferRef->deviceSize)
             {
                 buffersResources.at(binding.binding).reset(new Buffer(core->physicalDevice, core->logicalDevice.get(),
-                                                     vk::BufferUsageFlagBits::eStorageBuffer,
+                                                     usageFlags,
                                                      vk::MemoryPropertyFlagBits::eHostVisible |
                                                      vk::MemoryPropertyFlagBits::eHostCoherent,
-                                                     sizeof(T) * bufferData.size(), bufferData.data()));
+                                                     sizeof(T), &bufferData));
                 UpdateDescriptor();
             }else
             {
                 //pending to handle this if is a staged resource
+                if (bufferRef->mappedMem == nullptr)
+                {
+                    bufferRef->Map();
+                }
                 memcpy(bufferRef->mappedMem, &bufferData, sizeof(T));
+                if (usageFlags == vk::BufferUsageFlagBits::eStorageBuffer)
+                {
+                    bufferRef->Unmap();
+                }
             }
             
         }

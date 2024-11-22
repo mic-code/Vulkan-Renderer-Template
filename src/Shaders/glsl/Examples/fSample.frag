@@ -1,4 +1,5 @@
 ﻿#version 450
+#extension GL_EXT_scalar_block_layout : enable
 
 layout(location = 0) out vec4 outColor;
 layout(location = 0) in vec2 textCoord;
@@ -15,6 +16,15 @@ layout(set = 0, binding = 3, rgba32f) uniform image2D storagesImgs[];
 layout(set = 0, binding = 4, std140) uniform Camera{
     mat4 model;
     mat4 projView;
+}cPropsUniform;
+
+struct CameraSSBO{
+    mat4 model;
+    mat4 projView;
+};
+
+layout(set = 0, binding = 5, scalar) buffer CameraSSBO{
+    CameraSSBO camerasSSBO[];
 };
 
 void main() {

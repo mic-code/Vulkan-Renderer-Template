@@ -13,7 +13,8 @@ namespace ENGINE
 
         void* Map()
         {
-            return logicalDevice.mapMemory(deviceMemHandle.get(), 0, deviceSize);
+            mappedMem = logicalDevice.mapMemory(deviceMemHandle.get(), 0, deviceSize);
+            return mappedMem;
         }
 
         void Unmap()
