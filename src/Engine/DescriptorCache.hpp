@@ -21,20 +21,16 @@ namespace ENGINE
             ImageView* imageView;
             Sampler* sampler;
         };
-
         struct StorageBinding
         {
             ImageView* imageView;
             Sampler* sampler;
         };
-
-
         struct SamplerArray
         {
             std::vector<ImageView*> imageViewsArray{};
             std::vector<Sampler*> samplers;
         };
-
         struct StorageArray
         {
             std::vector<ImageView*> imageViewsArray{};

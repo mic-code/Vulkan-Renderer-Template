@@ -12,6 +12,10 @@ layout (set = 0, binding = 2) uniform sampler2D textures[];
 
 layout(set = 0, binding = 3, rgba32f) uniform image2D storagesImgs[];
 
+layout(set = 0, binding = 4, std140) uniform Camera{
+    mat4 model;
+    mat4 projView;
+};
 
 void main() {
 
