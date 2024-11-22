@@ -9,6 +9,10 @@
 //
 
 
+
+
+
+
 #ifndef FORWARDRENDERER_HPP
 #define FORWARDRENDERER_HPP
 
@@ -29,10 +33,10 @@ namespace Rendering
             descriptorCache = std::make_unique<ENGINE::DescriptorCache>(this->core);
 
             camera.SetLookAt(glm::vec3(0.0f));
-            
-            ModelLoader::GetInstance()->LoadGLTF(
-                "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\Resources\\Assets\\Models\\3d_pbr_curved_sofa\\scene.gltf",
-                model);
+
+            std::string modelPath = SYSTEMS::OS::GetInstance()->GetAssetsPath() + "\\Models\\3d_pbr_curved_sofa\\scene.gltf";
+
+            ModelLoader::GetInstance()->LoadGLTF(modelPath, model);
 
             vertexBuffer = std::make_unique<ENGINE::Buffer>(
                 physicalDevice, logicalDevice, vk::BufferUsageFlagBits::eVertexBuffer,
@@ -43,11 +47,13 @@ namespace Rendering
                 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
                 sizeof(uint32_t) * model.indices.size(), model.indices.data());
             
-            imageShipper.SetDataFromPath("C:\\Users\\carlo\\OneDrive\\Pictures\\Screenshots\\Screenshot 2024-09-19 172847.png");
+            std::string resourcesPath = SYSTEMS::OS::GetInstance()->GetEngineResourcesPath();
+            
+            imageShipper.SetDataFromPath(resourcesPath + "\\Images\\default_texture.jpg");
             imageShipper.BuildImage(core, 1, 1, renderGraphRef->core->swapchainRef->GetFormat(), ENGINE::GRAPHICS_READ);
 
             
-            defaultImageShipper.SetDataFromPath("C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\Resources\\Engine\\Images\\default_texture.jpg");
+            defaultImageShipper.SetDataFromPath(resourcesPath + "\\Images\\default_texture.jpg");
             defaultImageShipper.BuildImage(core, 1, 1, renderGraphRef->core->swapchainRef->GetFormat(), ENGINE::GRAPHICS_READ);
  
             ENGINE::ImageView* computeStorage = renderGraphRef->GetResource("storageImage");
@@ -56,8 +62,10 @@ namespace Rendering
             imagesArray.push_back(computeStorage);
             imagesArray.push_back(computeStorage);
 
-            vertShader = std::make_unique<ENGINE::Shader>(logicalDevice, "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Examples\\fSample.vert.spv");
-            fragShader = std::make_unique<ENGINE::Shader>(logicalDevice, "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Examples\\fSample.frag.spv");
+            std::string shadersPath = SYSTEMS::OS::GetInstance()->GetShadersPath();
+            
+            vertShader = std::make_unique<ENGINE::Shader>(logicalDevice, shadersPath + "\\spirv\\Examples\\fSample.vert.spv");
+            fragShader = std::make_unique<ENGINE::Shader>(logicalDevice, shadersPath + "\\spirv\\Examples\\fSample.frag.spv");
            
             ENGINE::DescriptorLayoutBuilder builder;
             
