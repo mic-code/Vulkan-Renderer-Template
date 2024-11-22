@@ -120,12 +120,12 @@ namespace ENGINE
                 }
             }
             
-            assert(uniqueResources.size()==dstSetBuilder.bindings.size() && "Resources and builder must have the same size");
         }
 
         void BuildDescriptorsCache(DescriptorAllocator* descriptorAllocatorRef, vk::ShaderStageFlags stageFlags)
         {
 
+            assert((imageBindingsKeys.size() + bufferBindingsKeys.size()) == dstSetBuilder.bindings.size() && "Resources and builder must have the same size");
             std::vector<vk::DescriptorBindingFlags> bindingFlags;
             for (int i = 0; i < dstSetBuilder.bindings.size(); ++i)
             {
