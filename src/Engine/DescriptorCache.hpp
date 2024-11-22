@@ -255,6 +255,10 @@ namespace ENGINE
                                                      vk::MemoryPropertyFlagBits::eHostCoherent,
                                                      sizeof(T) * bufferData.size(), bufferData.data()));
                 UpdateDescriptor();
+            }else
+            {
+
+                //pending to handle this if is a staged resource
             }
             
         }
