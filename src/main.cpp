@@ -103,7 +103,7 @@ void run(WindowProvider* windowProvider)
             try
             {
 
-                if (glfwGetKey(windowProvider->window, GLFW_KEY_RIGHT_CONTROL)&& glfwGetKey(windowProvider->window, GLFW_KEY_S))
+                if (glfwGetKey(windowProvider->window, GLFW_KEY_R))
                 {
                     renderGraph->RecompileShaders();
                     compRenderer->ReloadShaders();

@@ -58,6 +58,7 @@ namespace Rendering
  
             ENGINE::ImageView* computeStorage = renderGraphRef->GetResource("storageImage");
 
+            //sample for storage bindless
             imagesArray.push_back(computeStorage);
             imagesArray.push_back(computeStorage);
             imagesArray.push_back(computeStorage);
@@ -71,7 +72,8 @@ namespace Rendering
             
             vertShader->sParser->GetLayout(builder);
             fragShader->sParser->GetLayout(builder);
-            
+
+            //automatic descriptor handler
             descriptorCache->SetDefaultSamplerInfo(imageShipper.imageView.get(), imageShipper.sampler);
             descriptorCache->SetDefaultStorageInfo(computeStorage, imageShipper.sampler);
             descriptorCache->AddShaderInfo(*vertShader->sParser.get());
@@ -134,14 +136,15 @@ namespace Rendering
                 [this](vk::CommandBuffer& commandBuffer)
                 {
 
-                    //IMPORTANT
-                    //image binding always should be done in the render operation, because it guarantees that the layout will be correct, otherwise layout errors can happen
+                    //ssbo sample
                     ssbo.clear();
                     ssbo.push_back(pc);
                     ssbo.push_back(pc);
                     ssbo.push_back(pc);
-                    ssbo.push_back(pc);
                     
+                    //IMPORTANT
+                    //image binding always should be done in the render operation, because it guarantees that the layout will be correct, otherwise layout errors can happen
+
                     descriptorCache->SetSampler("testImage", imageShipper.imageView.get(), imageShipper.sampler);
                     descriptorCache->SetStorageImageArray("storagesImgs", imagesArray);
                     descriptorCache->SetBuffer("Camera", pc);
@@ -153,7 +156,6 @@ namespace Rendering
 
                     commandBuffer.bindVertexBuffers(0, 1, &vertexBuffer->bufferHandle.get(), &offset);
                     commandBuffer.bindIndexBuffer(indexBuffer->bufferHandle.get(), 0, vk::IndexType::eUint32);
-                    
                     for (int i = 0; i < model.meshCount; ++i)
                     {
                         camera.SetPerspective(
