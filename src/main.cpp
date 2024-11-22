@@ -5,10 +5,6 @@
 
 //
 
-
-
-
-
 float deltaTime;
 float previousTime;
 
@@ -20,7 +16,7 @@ float previousTime;
 
 #define GLM_FORCE_RADIANS
 #define GLM_DEPTH_ZERO_TO_ONE
-//#define GLM_FORCE_RIGHT_HANDED
+#define GLM_FORCE_RIGHT_HANDED
 #define GLM_ENABLE_EXPERIMENTAL
 
 CONST int WINDOWS_WIDTH = 1024;

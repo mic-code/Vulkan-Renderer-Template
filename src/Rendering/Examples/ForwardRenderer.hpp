@@ -4,25 +4,8 @@
 
 
 
-
-
-
-
-
-
-
 // Created by carlo on 2024-10-07.
 //
-
-
-
-
-
-
-
-
-
-
 
 
 #ifndef FORWARDRENDERER_HPP
@@ -30,7 +13,7 @@
 
 namespace Rendering
 {
-    class ForwardRenderer : BaseRenderer
+    class ForwardRenderer : BaseRenderer 
     {
     public:
         ForwardRenderer(ENGINE::Core* core, WindowProvider* windowProvider,
@@ -66,6 +49,11 @@ namespace Rendering
             defaultImageShipper.SetDataFromPath("C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\Resources\\Engine\\Images\\default_texture.jpg");
             defaultImageShipper.BuildImage(core, 1, 1, renderGraphRef->core->swapchainRef->GetFormat(), ENGINE::GRAPHICS_READ);
  
+            ENGINE::ImageView* computeStorage = renderGraphRef->GetResource("storageImage");
+
+            imagesArray.push_back(computeStorage);
+            imagesArray.push_back(computeStorage);
+            imagesArray.push_back(computeStorage);
 
             vertShader = std::make_unique<ENGINE::Shader>(logicalDevice, "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Examples\\fSample.vert.spv");
             fragShader = std::make_unique<ENGINE::Shader>(logicalDevice, "C:\\Users\\carlo\\CLionProjects\\Vulkan_Engine_Template\\src\\Shaders\\spirv\\Examples\\fSample.frag.spv");
@@ -74,15 +62,11 @@ namespace Rendering
             
             vertShader->sParser->GetLayout(builder);
             fragShader->sParser->GetLayout(builder);
-
-            ENGINE::ImageView* computeStorage = renderGraphRef->GetResource("storageImage");
             
-            descriptorCache->AddDefaultSampler(imageShipper.sampler);
-            descriptorCache->AddDefaultImageView(imageShipper.imageView.get());
-            descriptorCache->AddDefaultStorageSampler(imageShipper.sampler);
-            descriptorCache->AddDefaultStorageImageView(computeStorage);
-            descriptorCache->AddShaderInfo(*vertShader->sParser.get(), "vert");
-            descriptorCache->AddShaderInfo(*fragShader->sParser.get(), "vert");
+            descriptorCache->SetDefaultSamplerInfo(imageShipper.imageView.get(), imageShipper.sampler);
+            descriptorCache->SetDefaultStorageInfo(computeStorage, imageShipper.sampler);
+            descriptorCache->AddShaderInfo(*vertShader->sParser.get());
+            descriptorCache->AddShaderInfo(*fragShader->sParser.get());
             descriptorCache->BuildDescriptorsCache(descriptorAllocatorRef, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment );
             
             auto pushConstantRange = vk::PushConstantRange()
@@ -118,15 +102,15 @@ namespace Rendering
             renderNode->BuildRenderGraphNode();
             
         }
-        ~ForwardRenderer() override
+        ~ForwardRenderer() override 
         {
         }
 
-        void RecreateSwapChainResources() override
+        void RecreateSwapChainResources() override 
         {
         }
 
-        void SetRenderOperation(ENGINE::InFlightQueue* inflightQueue) override
+        void SetRenderOperation(ENGINE::InFlightQueue* inflightQueue) override 
         {
             auto setViewTask = new std::function<void()>([this, inflightQueue]()
             {
@@ -146,6 +130,7 @@ namespace Rendering
 
                     
                     descriptorCache->SetImage("testImage", imageShipper.imageView.get(), imageShipper.sampler);
+                    descriptorCache->SetStorageImageArray("storagesImgs", imagesArray);
                     vk::DeviceSize offset = 0;
                     commandBuffer.bindDescriptorSets(renderGraphRef->GetNode(forwardPassName)->pipelineType,
                                                      renderGraphRef->GetNode(forwardPassName)->pipelineLayout.get(), 0, 1,
@@ -178,7 +163,7 @@ namespace Rendering
         }
 
 
-        void ReloadShaders() override
+        void ReloadShaders() override 
         {
             auto renderNode = renderGraphRef->GetNode(forwardPassName);
             renderNode->RecreateResources();
@@ -198,6 +183,8 @@ namespace Rendering
         std::string forwardPassName;
         ENGINE::ImageShipper imageShipper;
         ENGINE::ImageShipper defaultImageShipper;
+        std::vector<ENGINE::ImageView*> imagesArray;
+        
         std::unique_ptr<ENGINE::Buffer> vertexBuffer;
         std::unique_ptr<ENGINE::Buffer> indexBuffer;
         
