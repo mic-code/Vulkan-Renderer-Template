@@ -4,6 +4,7 @@
 
 
 
+
 // Created by carlo on 2024-10-07.
 //
 
@@ -129,7 +130,7 @@ namespace Rendering
                     //image binding always should be done in the render operation, because it guarantees that the layout will be correct, otherwise layout errors can happen
 
                     
-                    descriptorCache->SetImage("testImage", imageShipper.imageView.get(), imageShipper.sampler);
+                    descriptorCache->SetSampler("testImage", imageShipper.imageView.get(), imageShipper.sampler);
                     descriptorCache->SetStorageImageArray("storagesImgs", imagesArray);
                     vk::DeviceSize offset = 0;
                     commandBuffer.bindDescriptorSets(renderGraphRef->GetNode(forwardPassName)->pipelineType,

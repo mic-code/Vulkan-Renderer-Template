@@ -16,11 +16,18 @@ namespace ENGINE
 #define DEFAULT_VAR_DESCRIPTOR_COUNT 1000
     class DescriptorCache
     {
-        struct ImageBinding
+        struct SamplerBinding 
         {
             ImageView* imageView;
             Sampler* sampler;
         };
+
+        struct StorageBinding
+        {
+            ImageView* imageView;
+            Sampler* sampler;
+        };
+
 
         struct SamplerArray
         {
@@ -74,7 +81,7 @@ namespace ENGINE
                         samplerArrayResources.try_emplace(resource.binding, SamplerArray({defaultImageView}, {defaultSampler}));
                     }else
                     {
-                        imageResources.try_emplace(resource.binding, ImageBinding(defaultImageView, defaultSampler));
+                        imageSamplers.try_emplace(resource.binding, SamplerBinding(defaultImageView, defaultSampler));
                     }
                     break;
                 case vk::DescriptorType::eStorageImage:
@@ -87,7 +94,7 @@ namespace ENGINE
                     }
                     else
                     {
-                        imageResources.try_emplace(resource.binding, ImageBinding(defaultStorageImageView, defaultStorageImage));
+                        storageImages.try_emplace(resource.binding, StorageBinding(defaultStorageImageView, defaultStorageImage));
                     }
                     
                     break;
@@ -162,14 +169,14 @@ namespace ENGINE
                 }
                 if (imageBinding.second.type == vk::DescriptorType::eCombinedImageSampler)
                 {
-                    ImageBinding& samplerBinding = imageResources.at(imageBinding.second.binding);
+                    SamplerBinding& samplerBinding = imageSamplers.at(imageBinding.second.binding);
                     writerBuilder.AddWriteImage(imageBinding.second.binding, samplerBinding.imageView,
                                                 samplerBinding.sampler->samplerHandle.get(),
                                                 vk::ImageLayout::eShaderReadOnlyOptimal, imageBinding.second.type);
                 }
                 else if (imageBinding.second.type == vk::DescriptorType::eStorageImage)
                 {
-                    ImageBinding& binding = imageResources.at(imageBinding.second.binding);
+                    StorageBinding& binding = storageImages.at(imageBinding.second.binding);
                     writerBuilder.AddWriteImage(imageBinding.second.binding, binding.imageView,
                                                 binding.sampler->samplerHandle.get(), vk::ImageLayout::eGeneral,
                                                 imageBinding.second.type);
@@ -206,13 +213,13 @@ namespace ENGINE
                 }
                 if (imageBinding.second.type == vk::DescriptorType::eCombinedImageSampler)
                 {
-                    ImageBinding& samplerBinding = imageResources.at(imageBinding.second.binding);
+                    SamplerBinding& samplerBinding = imageSamplers.at(imageBinding.second.binding);
                     writerBuilder.AddWriteImage(imageBinding.second.binding, samplerBinding.imageView,
                                                 samplerBinding.sampler->samplerHandle.get(),
                                                 vk::ImageLayout::eShaderReadOnlyOptimal, imageBinding.second.type);
                 }else if (imageBinding.second.type == vk::DescriptorType::eStorageBuffer)
                 {
-                    ImageBinding& binding = imageResources.at(imageBinding.second.binding);
+                    StorageBinding& binding = storageImages.at(imageBinding.second.binding);
                     writerBuilder.AddWriteImage(imageBinding.second.binding, binding.imageView,
                                                 binding.sampler->samplerHandle.get(), vk::ImageLayout::eGeneral,
                                                 imageBinding.second.type);
@@ -251,24 +258,38 @@ namespace ENGINE
             }
             
         }
-        void SetImage(std::string name, ImageView* imageView, Sampler* sampler = nullptr)
+        void SetSampler(std::string name, ImageView* imageView, Sampler* sampler = nullptr)
         {
-            if (!imageBindingsKeys.contains(name))
+            ShaderResource& resource = imageBindingsKeys.at(name);
+            assert(resource.type == vk::DescriptorType::eCombinedImageSampler && "The image view is not a sampler image");
+            SamplerBinding* samplerBinding = GetSamplerByName(name);
+
+            if (samplerBinding == nullptr){return;}
+            if (samplerBinding->imageView == imageView) { return; }
+
+            if (sampler)
             {
-                std::string text = "The Image with name: " + name + ": does not exist on shaders\n";
-                std::cout << text;
-                return;
+                samplerBinding->sampler = sampler;
             }
-            ShaderResource& binding = imageBindingsKeys.at(name);
-            if (imageResources.at(binding.binding).imageView != imageView)
+            samplerBinding->imageView = imageView;
+            UpdateDescriptor();    
+        }
+
+        void SetStorageImage(std::string name, ImageView* imageView, Sampler* sampler = nullptr)
+        {
+            ShaderResource& resource = imageBindingsKeys.at(name);
+            assert(resource.type == vk::DescriptorType::eStorageImage && "The image view is not a storage image");
+             StorageBinding* storageBinding = GetStorageImageByName(name);
+
+            if (storageBinding == nullptr){return;}
+            if (storageBinding->imageView == imageView) { return; }
+
+            if (sampler)
             {
-                if (sampler)
-                {
-                    imageResources.at(binding.binding).sampler = sampler;
-                }
-                imageResources.at(binding.binding).imageView = imageView;
-                UpdateDescriptor();
+                storageBinding->sampler = sampler;
             }
+            storageBinding->imageView = imageView;
+            UpdateDescriptor();               
         }
 
         void SetStorageImageArray(std::string name, std::vector<ImageView*>& imageViews,
@@ -405,13 +426,13 @@ namespace ENGINE
             ShaderResource& binding = bufferBindingsKeys.at(name);
             if (!buffersResources.contains(binding.binding))
             {
-                std::string text = "The buffer with name: " + name + ": is present in the bindings but is not registered as a resource this should not happen\n";
+                std::string text = "The buffer with name: " + name + ": is present in the bindings but is not registered as a buffer\n";
                 std::cout << text;
                 return nullptr;
             }
             return buffersResources.at(binding.binding).get();
         }
-        ImageBinding* GetImageByName(std::string name)
+        SamplerBinding* GetSamplerByName(std::string name)
         {
             if (!imageBindingsKeys.contains(name))
             {
@@ -419,14 +440,32 @@ namespace ENGINE
                 std::cout << text;
                 return nullptr;
             }
-            ShaderResource& binding = bufferBindingsKeys.at(name);
-            if (!imageResources.contains(binding.binding))
+            ShaderResource& binding = imageBindingsKeys.at(name);
+            if (!imageSamplers.contains(binding.binding))
             {
-                std::string text = "The image with name: " + name + ": is present in the bindings but is not registered as a resource this should not happen\n";
+                std::string text = "The image with name: " + name + ": is present in the bindings but is not registered as a sampler image \n";
                 std::cout << text;
                 return nullptr;
             }
-            return &imageResources.at(binding.binding);
+            return &imageSamplers.at(binding.binding);
+        }
+
+        StorageBinding* GetStorageImageByName(std::string name)
+        {
+            if (!imageBindingsKeys.contains(name))
+            {
+                std::string text = "The image with name: " + name + ": does not exist on shaders\n";
+                std::cout << text;
+                return nullptr;
+            }
+            ShaderResource& binding = imageBindingsKeys.at(name);
+            if (!storageImages.contains(binding.binding))
+            {
+                std::string text = "The image with name: " + name + ": is present in the image bindings but is not registered as a storage image\n";
+                std::cout << text;
+                return nullptr;
+            }
+            return &storageImages.at(binding.binding);
         }       
         SamplerArray* GetSamplerArrayByName(std::string name)
         {
@@ -467,7 +506,8 @@ namespace ENGINE
         std::unordered_map<std::string, ShaderResource> imageBindingsKeys;
         
         std::map<uint32_t, std::unique_ptr<Buffer>> buffersResources;
-        std::map<uint32_t, ImageBinding> imageResources;
+        std::map<uint32_t, SamplerBinding> imageSamplers;
+        std::map<uint32_t, StorageBinding> storageImages;
         std::map<uint32_t, SamplerArray> samplerArrayResources;
         std::map<uint32_t, StorageArray> storageArrayResources;
         
