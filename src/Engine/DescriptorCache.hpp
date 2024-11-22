@@ -246,7 +246,7 @@ namespace ENGINE
             }else
             {
                 //pending to handle this if is a staged resource
-                memcpy(bufferRef.mappedMem, bufferData.data(), bufferData.size() * sizeof(T));
+                memcpy(bufferRef->mappedMem, bufferData.data(), bufferData.size() * sizeof(T));
             }
             
         }
