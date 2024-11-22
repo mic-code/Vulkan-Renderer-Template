@@ -13,7 +13,9 @@
     <option name="reloaded" value="true" />
   </component>
   <component name="CMakeRunConfigurationManager">
-    <generated />
+    <generated>
+      <config projectName="CodeVkRenderer" targetName="Engine" />
+    </generated>
   </component>
   <component name="CMakeSettings">
     <configurations>

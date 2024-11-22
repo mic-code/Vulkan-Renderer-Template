@@ -231,23 +231,11 @@ namespace ENGINE
         template<typename T>
         void SetBuffer(std::string name, std::vector<T> bufferData)
         {
+            ShaderResource& binding = bufferBindingsKeys.at(name);
+            Buffer* bufferRef = GetBufferByName(name);
+            if (bufferRef==nullptr){return;}
             
-            if (!bufferBindingsKeys.contains(name))
-            {
-
-                std::string text = "The buffer with name: " + name + ": does not exist on shaders\n";
-                std::cout <<text;
-                return;
-            }
-            ShaderResource binding = bufferBindingsKeys.at(name);
-            if (buffersResources.contains(binding.binding))
-            {
-                std::string text = "The buffer with name: " + name + ": is present in the bindings but is not registered as a resource this should not happen\n";
-                std::cout <<text;
-                return;
-            }
-            Buffer& bufferRef = *buffersResources.at(binding.binding); 
-            if (sizeof(T) * bufferData.size()> bufferRef.deviceSize)
+            if (sizeof(T) * bufferData.size()> bufferRef->deviceSize)
             {
                 buffersResources.at(binding.binding).reset(new Buffer(core->physicalDevice, core->logicalDevice.get(),
                                                      vk::BufferUsageFlagBits::eStorageBuffer,
@@ -257,8 +245,31 @@ namespace ENGINE
                 UpdateDescriptor();
             }else
             {
-
                 //pending to handle this if is a staged resource
+                memcpy(bufferRef.mappedMem, bufferData.data(), bufferData.size() * sizeof(T));
+            }
+            
+        }
+
+        template <typename T>
+        void SetBuffer(std::string name, T bufferData)
+        {
+            ShaderResource& binding = bufferBindingsKeys.at(name);
+            Buffer* bufferRef = GetBufferByName(name);
+            if (bufferRef==nullptr){return;}
+            
+            if (sizeof(T) > bufferRef->deviceSize)
+            {
+                buffersResources.at(binding.binding).reset(new Buffer(core->physicalDevice, core->logicalDevice.get(),
+                                                     vk::BufferUsageFlagBits::eStorageBuffer,
+                                                     vk::MemoryPropertyFlagBits::eHostVisible |
+                                                     vk::MemoryPropertyFlagBits::eHostCoherent,
+                                                     sizeof(T) * bufferData.size(), bufferData.data()));
+                UpdateDescriptor();
+            }else
+            {
+                //pending to handle this if is a staged resource
+                memcpy(bufferRef->mappedMem, &bufferData, sizeof(T));
             }
             
         }
