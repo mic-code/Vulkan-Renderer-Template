@@ -146,6 +146,7 @@ void run(WindowProvider* windowProvider)
         }
         core->WaitIdle();
     }
+    ENGINE::ResourcesManager::GetInstance()->DestroyResources();
     imguiRenderer->Destroy();
     windowProvider->DestroyWindow();
 }
