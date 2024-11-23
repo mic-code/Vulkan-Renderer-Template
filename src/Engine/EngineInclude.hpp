@@ -57,5 +57,6 @@
 #include "PresentQueue.hpp"
 
 #include "ImageShipper.hpp"
+#include "ResourcesManager.hpp"
 #include "DescriptorCache.hpp"
 

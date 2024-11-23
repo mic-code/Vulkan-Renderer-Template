@@ -23,7 +23,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7360a5ad-4300-49d4-b960-e2473348fab3" name="Changes" comment="Simple input system and changed all the absolute paths" />
+    <list default="true" id="7360a5ad-4300-49d4-b960-e2473348fab3" name="Changes" comment="Simple input system and changed all the absolute paths">
+      <change afterPath="$PROJECT_DIR$/src/Engine/ResourcesManager.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Engine/DescriptorCache.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Engine/DescriptorCache.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Engine/EngineInclude.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Engine/EngineInclude.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Engine/StagedBuffer.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Engine/StagedBuffer.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Rendering/Examples/ForwardRenderer.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Rendering/Examples/ForwardRenderer.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -34,6 +42,11 @@
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="Personal" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -109,7 +122,17 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\carlo\CLionProjects\Vulkan_Engine_Template\src\Engine" />
+    </key>
+  </component>
   <component name="RunManager">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Engine" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="true" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" RUN_PATH="$PROJECT_DIR$/cmake-build-debug/bin/Engine.exe" EXPLICIT_BUILD_TARGET_NAME="all">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />

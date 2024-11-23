@@ -53,6 +53,7 @@ void run(WindowProvider* windowProvider)
         windowProvider->GetWindowSize());
     
     std::unique_ptr<ENGINE::DescriptorAllocator> descriptorAllocator = std::make_unique<ENGINE::DescriptorAllocator>();
+    auto resourceManager = ENGINE::ResourcesManager::GetInstance(core.get());
    
     Rendering::ModelLoader::GetInstance(core.get());
     

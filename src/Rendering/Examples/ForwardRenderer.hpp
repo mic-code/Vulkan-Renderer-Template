@@ -5,6 +5,7 @@
 
 
 
+
 // Created by carlo on 2024-10-07.
 //
 
@@ -76,8 +77,8 @@ namespace Rendering
             //automatic descriptor handler
             descriptorCache->SetDefaultSamplerInfo(imageShipper.imageView.get(), imageShipper.sampler);
             descriptorCache->SetDefaultStorageInfo(computeStorage, imageShipper.sampler);
-            descriptorCache->AddShaderInfo(*vertShader->sParser.get());
-            descriptorCache->AddShaderInfo(*fragShader->sParser.get());
+            descriptorCache->AddShaderInfo(vertShader->sParser.get());
+            descriptorCache->AddShaderInfo(fragShader->sParser.get());
             descriptorCache->BuildDescriptorsCache(descriptorAllocatorRef, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment );
 
             auto pushConstantRange = vk::PushConstantRange()
