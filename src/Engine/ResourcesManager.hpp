@@ -266,7 +266,7 @@ namespace ENGINE
         }
         void UpdateBuffers()
         {
-            if (!invalidateBuffers)
+            if (!invalidateBuffers){return;}
             for (auto& name : bufferNames)
             {
                 BufferUpdateInfo& bufferUpdateInfo = buffersState.at(name.second);
