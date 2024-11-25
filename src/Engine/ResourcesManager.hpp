@@ -164,8 +164,7 @@ namespace ENGINE
             return stagedBuffers.back().get();
         }
         
-        Buffer* SetBuffer(std::string name, vk::BufferUsageFlags bufferUsageFlags,
-                          vk::MemoryPropertyFlags memPropertyFlags, vk::DeviceSize deviceSize
+        Buffer* SetBuffer(std::string name, vk::DeviceSize deviceSize
                           , void* data = nullptr)
         {
             assert(core!= nullptr &&"core must be set");
