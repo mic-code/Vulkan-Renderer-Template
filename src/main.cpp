@@ -10,8 +10,8 @@ float deltaTime;
 float previousTime;
 
 #include "WindowAPI/WindowInclude.hpp"
-#include "Engine/EngineInclude.hpp"
 #include "Systems/SystemsInclude.hpp"
+#include "Engine/EngineInclude.hpp"
 #include "Rendering/RenderingInclude.hpp"
 
 #define ENGINE_ENABLE_DEBUGGING
@@ -81,7 +81,7 @@ void run(WindowProvider* windowProvider)
         float time = windowProvider->GetTime();
         deltaTime = time - previousTime;
         previousTime = time;
-        
+
         windowProvider->PollEvents();
         {
             glm::uvec2 windowSize = windowProvider->GetWindowSize();
@@ -111,6 +111,8 @@ void run(WindowProvider* windowProvider)
                     fRenderer->ReloadShaders();
                 }
 
+                ENGINE::ResourcesManager::GetInstance()->UpdateBuffers();
+                
                 inFlightQueue->BeginFrame();
 
                 auto& currFrame = inFlightQueue->frameResources[inFlightQueue->frameIndex];

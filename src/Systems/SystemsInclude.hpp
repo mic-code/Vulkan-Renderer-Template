@@ -8,8 +8,10 @@
 #include <iostream>
 #include <filesystem>
 #include <assert.h>
+#include <fstream>
 
 #include "InputSystem.hpp"
 #include "OS.hpp"
+#include "ObserverSystem.hpp"
 
 #endif //SYSTEMSINCLUDE_HPP
