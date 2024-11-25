@@ -205,7 +205,7 @@ namespace ENGINE
         StagedBuffer* SetStageBuffer(std::string name, vk::DeviceSize deviceSize, void* data)
         {
             assert(core!= nullptr &&"core must be set");
-            assert(!stagedBufferNames.contains(name) && "staged buffer dont exist");
+            assert(stagedBufferNames.contains(name) && "staged buffer dont exist");
 
             if (deviceSize > stagedBuffers.at(stagedBufferNames.at(name))->size)
             {

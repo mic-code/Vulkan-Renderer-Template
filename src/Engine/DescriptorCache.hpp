@@ -243,7 +243,7 @@ namespace ENGINE
             ShaderResource& binding = bufferBindingsKeys.at(name);
             Buffer* bufferRef = GetBufferByName(name);
             if (bufferRef==nullptr){return;}
-            buffersResources.at(binding.binding) = resourcesManagerRef->SetBuffer(
+            resourcesManagerRef->SetStageBuffer(
                 name,
                 sizeof(T),
                 &bufferData);
@@ -495,7 +495,8 @@ namespace ENGINE
         {
             for (auto key : bufferBindingsKeys)
             {
-                buffersResources.at(key.second.binding) = resourcesManagerRef->GetBuffFromName(key.first);
+                buffersResources.at(key.second.binding) = resourcesManagerRef->GetStagedBuffFromName(key.first)->
+                                                                               deviceBuffer.get();
             }
             UpdateDescriptor();
         }
