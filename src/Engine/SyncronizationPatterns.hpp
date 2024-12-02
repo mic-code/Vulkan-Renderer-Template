@@ -215,6 +215,7 @@ namespace ENGINE
         commandBuffer.pipelineBarrier(srcBarrier.stage, dstBarrier.stage, {}, memBarrier,
                                       nullptr, nullptr);
     }
+    
    
 }
 
