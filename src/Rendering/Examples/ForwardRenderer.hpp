@@ -152,7 +152,7 @@ namespace Rendering
                     descriptorCache->SetStorageImageArray("storagesImgs", imagesArray);
                     descriptorCache->SetBuffer("Camera", pc);
                     descriptorCache->SetBuffer("CameraBuffer", ssbo);
-                    ENGINE::ImageView* computeStorage = renderGraphRef->GetResource("storageImage");
+                    ENGINE::ImageView* computeStorage = renderGraphRef->GetImageResource("storageImage");
                     descriptorCache->SetStorageImage("storageImg", computeStorage);
                     
                     vk::DeviceSize offset = 0;

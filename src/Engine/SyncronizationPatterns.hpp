@@ -6,6 +6,7 @@
 // Created by carlo on 2024-09-25.
 //
 
+
 #ifndef SYNCRONIZATIONPATTERNS_HPP
 #define SYNCRONIZATIONPATTERNS_HPP
 
@@ -146,6 +147,11 @@ namespace ENGINE
             bufferAccessPattern.accessMask = vk::AccessFlags();
             bufferAccessPattern.queueFamilyType = QueueFamilyTypes::TRANSFER;
             break;
+        case B_DRAW_INDIRECT:
+            bufferAccessPattern.stage = vk::PipelineStageFlagBits::eDrawIndirect;
+            bufferAccessPattern.accessMask = vk::AccessFlagBits::eIndirectCommandRead;
+            bufferAccessPattern.queueFamilyType = QueueFamilyTypes::UNDEFINED;
+            break;
         case B_EMPTY:
             bufferAccessPattern.stage = vk::PipelineStageFlagBits::eTopOfPipe;
             bufferAccessPattern.accessMask = vk::AccessFlags();
@@ -189,6 +195,11 @@ namespace ENGINE
             bufferAccessPattern.stage = vk::PipelineStageFlagBits::eTransfer;
             bufferAccessPattern.accessMask = vk::AccessFlagBits::eTransferRead;
             bufferAccessPattern.queueFamilyType = QueueFamilyTypes::TRANSFER;
+            break;
+        case B_DRAW_INDIRECT:
+            bufferAccessPattern.stage = vk::PipelineStageFlagBits::eDrawIndirect;
+            bufferAccessPattern.accessMask = vk::AccessFlagBits::eIndirectCommandRead;
+            bufferAccessPattern.queueFamilyType = QueueFamilyTypes::UNDEFINED;
             break;
         case B_EMPTY:
             bufferAccessPattern.stage = vk::PipelineStageFlagBits::eTopOfPipe;

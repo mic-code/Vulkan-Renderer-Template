@@ -79,6 +79,7 @@ namespace ENGINE
         B_COMPUTE_WRITE,
         B_TRANSFER_DST,
         B_TRANSFER_SRC,
+        B_DRAW_INDIRECT,
         B_EMPTY
     };
 
