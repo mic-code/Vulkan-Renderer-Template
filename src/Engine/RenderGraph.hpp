@@ -12,6 +12,7 @@
 
 
 
+
 #ifndef RENDERGRAPH_HPP
 #define RENDERGRAPH_HPP
 
@@ -168,18 +169,16 @@ namespace ENGINE
                                 commandBuffer);
             }           
         }
-        void SyncBuffers(vk::CommandBuffer command_buffer)
+        void SyncBuffers(vk::CommandBuffer commandBuffer)
         {
             for (auto& pair : buffers)
             {
                 BufferKey buffer = pair.second;
                 BufferAccessPattern srcPattern = GetSrcBufferAccessPattern(buffer.buffer->bufferUsage);
                 BufferAccessPattern dstPattern = GetSrcBufferAccessPattern(buffer.usage);
-                
+                CreateBufferBarrier(srcPattern, dstPattern, buffer.buffer, commandBuffer);
+                buffer.buffer->bufferUsage = buffer.usage;
             }
-
-
-            
         }
         void ReloadShaders()
         {
@@ -223,7 +222,7 @@ namespace ENGINE
             }
 
             TransitionImages(commandBuffer);
-                       
+            SyncBuffers(commandBuffer);
             if (depthImage != nullptr)
             {
                 depthAttachment.attachmentInfo.imageView = depthImage->imageView.get();
@@ -237,6 +236,7 @@ namespace ENGINE
         void ExecuteCompute(vk::CommandBuffer commandBuffer)
         {
             TransitionImages(commandBuffer);
+            SyncBuffers(commandBuffer);
             commandBuffer.bindPipeline(pipelineType, pipeline.get());
             (*renderOperations)(commandBuffer);
         }

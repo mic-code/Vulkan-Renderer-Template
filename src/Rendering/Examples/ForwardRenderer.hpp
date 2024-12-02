@@ -59,7 +59,7 @@ namespace Rendering
             defaultImageShipper.SetDataFromPath(resourcesPath + "\\Images\\default_texture.jpg");
             defaultImageShipper.BuildImage(core, 1, 1, renderGraphRef->core->swapchainRef->GetFormat(), ENGINE::GRAPHICS_READ);
  
-            ENGINE::ImageView* computeStorage = renderGraphRef->GetResource("storageImage");
+            ENGINE::ImageView* computeStorage = renderGraphRef->GetImageResource("storageImage");
 
             //sample for storage bindless
             imagesArray.push_back(computeStorage);

@@ -228,7 +228,7 @@ namespace ENGINE
     }
         
     static void CreateBufferBarrier(BufferAccessPattern srcBarrier, BufferAccessPattern dstBarrier,
-                                vk::CommandBuffer& commandBuffer, Buffer* buffer)
+                                Buffer* buffer, vk::CommandBuffer& commandBuffer)
     {
         vk::BufferMemoryBarrier bufferMemoryBarrier{};
         bufferMemoryBarrier.srcAccessMask = srcBarrier.accessMask;

@@ -31,7 +31,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7360a5ad-4300-49d4-b960-e2473348fab3" name="Changes" comment="dynamic buffers updates" />
+    <list default="true" id="7360a5ad-4300-49d4-b960-e2473348fab3" name="Changes" comment="adding buffer sync in the RenderGraph.hpp">
+      <change beforePath="$PROJECT_DIR$/src/Engine/RenderGraph.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Engine/RenderGraph.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Engine/SyncronizationPatterns.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Engine/SyncronizationPatterns.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Rendering/Examples/ForwardRenderer.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Rendering/Examples/ForwardRenderer.hpp" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -518,7 +522,15 @@
       <option name="project" value="LOCAL" />
       <updated>1732505199021</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="adding buffer sync in the RenderGraph.hpp">
+      <option name="closed" value="true" />
+      <created>1733180363680</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1733180363680</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -549,7 +561,8 @@
     <MESSAGE value="Simple input system and changed all the absolute paths" />
     <MESSAGE value="Fixed some weird stuff in the ResourcesManager.hpp" />
     <MESSAGE value="dynamic buffers updates" />
-    <option name="LAST_COMMIT_MESSAGE" value="dynamic buffers updates" />
+    <MESSAGE value="adding buffer sync in the RenderGraph.hpp" />
+    <option name="LAST_COMMIT_MESSAGE" value="adding buffer sync in the RenderGraph.hpp" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
