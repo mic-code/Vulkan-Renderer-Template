@@ -215,7 +215,22 @@ namespace ENGINE
         commandBuffer.pipelineBarrier(srcBarrier.stage, dstBarrier.stage, {}, memBarrier,
                                       nullptr, nullptr);
     }
-    
+        
+    static void CreateBufferBarrier(BufferAccessPattern srcBarrier, BufferAccessPattern dstBarrier,
+                                vk::CommandBuffer& commandBuffer, Buffer* buffer)
+    {
+        vk::BufferMemoryBarrier bufferMemoryBarrier{};
+        bufferMemoryBarrier.srcAccessMask = srcBarrier.accessMask;
+        bufferMemoryBarrier.dstAccessMask = dstBarrier.accessMask; 
+        bufferMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        bufferMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        bufferMemoryBarrier.buffer = buffer->bufferHandle.get();
+        bufferMemoryBarrier.offset = 0; 
+        bufferMemoryBarrier.size = VK_WHOLE_SIZE;
+        commandBuffer.pipelineBarrier(srcBarrier.stage, dstBarrier.stage, {},{},
+                                      bufferMemoryBarrier, nullptr);
+    }
+   
    
 }
 
