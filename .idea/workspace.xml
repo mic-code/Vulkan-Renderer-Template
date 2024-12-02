@@ -31,11 +31,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7360a5ad-4300-49d4-b960-e2473348fab3" name="Changes" comment="adding buffer sync in the RenderGraph.hpp">
-      <change beforePath="$PROJECT_DIR$/src/Engine/RenderGraph.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Engine/RenderGraph.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Engine/SyncronizationPatterns.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Engine/SyncronizationPatterns.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Rendering/Examples/ForwardRenderer.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Rendering/Examples/ForwardRenderer.hpp" afterDir="false" />
-    </list>
+    <list default="true" id="7360a5ad-4300-49d4-b960-e2473348fab3" name="Changes" comment="adding buffer sync in the RenderGraph.hpp" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
