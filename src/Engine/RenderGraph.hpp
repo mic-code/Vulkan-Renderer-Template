@@ -21,7 +21,8 @@ namespace ENGINE
 {
     struct BufferKey
     {
-        BufferUsageTypes usage;
+        BufferUsageTypes srcUsage;
+        BufferUsageTypes dstUsage;
         Buffer* buffer;
     };
 
@@ -174,10 +175,9 @@ namespace ENGINE
             for (auto& pair : buffers)
             {
                 BufferKey buffer = pair.second;
-                BufferAccessPattern srcPattern = GetSrcBufferAccessPattern(buffer.buffer->bufferUsage);
-                BufferAccessPattern dstPattern = GetSrcBufferAccessPattern(buffer.usage);
+                BufferAccessPattern srcPattern = GetSrcBufferAccessPattern(buffer.srcUsage);
+                BufferAccessPattern dstPattern = GetSrcBufferAccessPattern(buffer.dstUsage);
                 CreateBufferBarrier(srcPattern, dstPattern, buffer.buffer, commandBuffer);
-                buffer.buffer->bufferUsage = buffer.usage;
             }
         }
         void ReloadShaders()
@@ -414,7 +414,7 @@ namespace ENGINE
             AddImageToProxy(name, imageView);
         }
 
-        void AddBufferResource(std::string name, BufferKey buffer)
+        void AddBufferSync(std::string name, BufferKey buffer)
         {
             assert(buffer.buffer && "Name does not exist or image view is null");
             if (!buffers.contains(name))
@@ -680,7 +680,7 @@ namespace ENGINE
             }
             return imageView;
         }
-        BufferKey AddBufferResource(std::string passName, std::string name, BufferKey buffer)
+        BufferKey& AddBufferSync(std::string passName, std::string name, BufferKey buffer)
         {
             assert(buffer.buffer && "ImageView is null");
             if (!buffersProxy.contains(name))
@@ -688,7 +688,7 @@ namespace ENGINE
                 buffersProxy.try_emplace(name, buffer);
                 if (renderNodes.contains(passName))
                 {
-                    renderNodes.at(passName)->AddBufferResource(name, buffer);
+                    renderNodes.at(passName)->AddBufferSync(name, buffer);
                 }
                 else
                 {
@@ -699,7 +699,7 @@ namespace ENGINE
                 buffersProxy.at(name) = buffer;
                 if (renderNodes.contains(passName))
                 {
-                    renderNodes.at(passName)->AddBufferResource(name, buffer);
+                    renderNodes.at(passName)->AddBufferSync(name, buffer);
                 }else
                 {
                     std::cout << "Renderpass: " << passName << " does not exist, saving the image anyways. \n";
@@ -718,7 +718,7 @@ namespace ENGINE
             PrintInvalidResource("Resource", name);
             return nullptr;
         }
-        BufferKey GetBufferResource(std::string name)
+        BufferKey& GetBufferResource(std::string name)
         {
             if (buffersProxy.contains(name))
             {
