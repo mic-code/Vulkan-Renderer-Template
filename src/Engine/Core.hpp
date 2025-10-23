@@ -3,7 +3,6 @@
 //
 
 
-
 #ifndef CORE_HPP
 
 namespace ENGINE
@@ -64,7 +63,7 @@ namespace ENGINE
        
         static vk::Queue GetDeviceQueue(vk::Device logicalDevice, uint32_t familyIndex);
 
-        static vk::UniqueHandle<vk::DebugUtilsMessengerEXT, vk::DispatchLoaderDynamic> CreateDebugUtilsMessenger(vk::Instance instance,PFN_vkDebugUtilsMessengerCallbackEXT debugCallback, vk::DispatchLoaderDynamic& loader);
+        static vk::UniqueHandle<vk::DebugUtilsMessengerEXT, vk::detail::DispatchLoaderDynamic> CreateDebugUtilsMessenger(vk::Instance instance,PFN_vkDebugUtilsMessengerCallbackEXT debugCallback, vk::detail::DispatchLoaderDynamic& loader);
  
         static VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessageCallback(
           VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -77,8 +76,8 @@ namespace ENGINE
         friend class RenderGraph;
         
         
-        vk::DispatchLoaderDynamic loader;
-        vk::UniqueHandle<vk::DebugUtilsMessengerEXT, vk::DispatchLoaderDynamic> debugUtilsMessenger;
+        vk::detail::DispatchLoaderDynamic loader;
+        vk::UniqueHandle<vk::DebugUtilsMessengerEXT, vk::detail::DispatchLoaderDynamic> debugUtilsMessenger;
         QueueFamilyIndices queueFamilyIndices;
         
     };

@@ -26,7 +26,7 @@ namespace ENGINE
         }
         this->instance = CreateInstance(resInstanceExtensions, validationLayers);
         
-        loader = vk::DispatchLoaderDynamic(instance.get(), vkGetInstanceProcAddr);
+        loader = vk::detail::DispatchLoaderDynamic(instance.get(), vkGetInstanceProcAddr);
         loader.init();
         
         auto properties = vk::enumerateInstanceLayerProperties();
@@ -283,7 +283,7 @@ namespace ENGINE
         return logicalDevice.getQueue(familyIndex, 0);
     }
 
-    vk::UniqueHandle<vk::DebugUtilsMessengerEXT, vk::DispatchLoaderDynamic> Core::CreateDebugUtilsMessenger(vk::Instance instance, PFN_vkDebugUtilsMessengerCallbackEXT debugCallback, vk::DispatchLoaderDynamic& loader)
+    vk::UniqueHandle<vk::DebugUtilsMessengerEXT, vk::detail::DispatchLoaderDynamic> Core::CreateDebugUtilsMessenger(vk::Instance instance, PFN_vkDebugUtilsMessengerCallbackEXT debugCallback, vk::detail::DispatchLoaderDynamic& loader)
     {
         auto messengerCreateInfo = vk::DebugUtilsMessengerCreateInfoEXT()
         .setMessageSeverity(vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning| vk::DebugUtilsMessageSeverityFlagBitsEXT::eError)
